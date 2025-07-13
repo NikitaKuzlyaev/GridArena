@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Callable, Awaitable
 
 # from core.dependencies.repository import get_repository, get_repository_manual
 from core.models import Contest
@@ -12,6 +12,7 @@ from core.schemas.permission import PermissionId
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
 from core.utilities.exceptions.database import EntityDoesNotExist
+from core.utilities.exceptions.permission import PermissionDenied
 from core.utilities.loggers.log_decorator import log_calls
 
 
@@ -22,6 +23,15 @@ class PermissionService(IPermissionService):
 
     ):
         self.permission_repo = permission_repo
+
+    async def raise_if_not_all(
+            self,
+            permissions: list[Callable[[], Awaitable[Permission | None]]],
+    ) -> None:
+        for permission in permissions:
+            result = await permission()
+            if result is None:
+                raise PermissionDenied('Permission denied')
 
     async def create_permission(
             self,

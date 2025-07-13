@@ -12,11 +12,11 @@ from core.schemas.contest import ContestId
 from core.utilities.loggers.log_decorator import log_calls
 
 
-class QuizCRUDRepository(BaseCRUDRepository):
+class QuizFieldCRUDRepository(BaseCRUDRepository):
+    ...
 
 
 
-
-quiz_repo = get_repository(
-    repo_type=QuizCRUDRepository
+quiz_field_repo = get_repository(
+    repo_type=QuizFieldCRUDRepository
 )

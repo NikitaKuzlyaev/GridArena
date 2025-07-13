@@ -6,23 +6,23 @@ from core.models import Contest
 from core.models.permission import PermissionResourceType, PermissionActionType
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.permission import PermissionCRUDRepository
-from core.repository.crud.quiz import QuizCRUDRepository
+from core.repository.crud.quiz import QuizFieldCRUDRepository
 from core.schemas.contest import ContestId, ContestShortInfo
 from core.schemas.quiz_field import QuizFieldId
 
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
-from core.services.interfaces.quiz import IQuizService
+from core.services.interfaces.quiz import IQuizFieldService
 from core.utilities.exceptions.database import EntityDoesNotExist
 from core.utilities.loggers.log_decorator import log_calls
 
 
-class QuizService(IQuizService):
+class QuizFieldService(IQuizFieldService):
     def __init__(
             self,
-            quiz_repo: QuizCRUDRepository,
+            quiz_field_repo: QuizFieldCRUDRepository,
     ):
-        self.quiz_repo = quiz_repo
+        self.quiz_field_repo = quiz_field_repo
 
     @log_calls
     async def create_quiz_field(

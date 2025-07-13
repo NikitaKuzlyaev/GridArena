@@ -13,3 +13,7 @@ class ProblemUpdateRequest(BaseSchemaModel):
     statement: str = Field(..., max_length=2048)
     answer: str = Field(..., max_length=32)
 
+class ProblemInfoForEditor(BaseSchemaModel):
+    problem_id: int
+    statement: str
+    answer: str

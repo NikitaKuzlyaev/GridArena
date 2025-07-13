@@ -9,9 +9,12 @@ from starlette.responses import JSONResponse, Response
 
 from core.dependencies.authorization import get_user
 from core.models import User
-from core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateRequest, ContestShortInfo
+from core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateRequest, ContestShortInfo, \
+    ContestInfoForEditor, ContestInfoForContestant
 from core.services.interfaces.contest import IContestService
+from core.services.interfaces.permission import IPermissionService
 from core.services.providers.contest import get_contest_service
+from core.services.providers.permission import get_permission_service
 
 from core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
 from core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
@@ -91,5 +94,66 @@ async def view_contests(
         )
     )
     result = [i.model_dump() for i in result]
+
+    return JSONResponse({'body': result})
+
+
+@router.get(
+    path="/info-editor",
+    response_model=ContestInfoForEditor,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def contest_info_for_editor(
+        contest_id=Query(...),
+        user: User = Depends(get_user),
+        contest_service: IContestService = Depends(get_contest_service),
+        permission_service: IPermissionService = Depends(get_permission_service),
+) -> JSONResponse:
+    await permission_service.raise_if_not_all([
+        lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=contest_id),
+    ])
+
+    result: ContestInfoForEditor = (
+        await contest_service.contest_info_for_editor(
+            user_id=user.id,
+            contest_id=contest_id,
+        )
+    )
+    result = result.model_dump()
+
+    return JSONResponse({'body': result})
+
+
+@router.get(
+    path="/info-contestant",
+    response_model=ContestInfoForContestant,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def contest_info_for_contestant(
+        contest_id=Query(...),
+        user: User = Depends(get_user),
+        contest_service: IContestService = Depends(get_contest_service),
+        permission_service: IPermissionService = Depends(get_permission_service),
+) -> JSONResponse:
+
+    result: ContestInfoForContestant = (
+        await contest_service.contest_info_for_contestant(
+            user_id=user.id,
+            contest_id=contest_id,
+        )
+    )
+    result = result.model_dump()
 
     return JSONResponse({'body': result})

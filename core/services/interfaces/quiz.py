@@ -8,7 +8,7 @@ from core.schemas.contest import ContestId, ContestCreateRequest, ContestShortIn
 from core.schemas.quiz_field import QuizFieldId
 
 
-class IQuizService(Protocol):
+class IQuizFieldService(Protocol):
 
     async def create_quiz_field(
             self,

@@ -4,10 +4,24 @@ from typing import Sequence
 
 from core.models import Contest
 
-from core.schemas.contest import ContestId, ContestCreateRequest, ContestShortInfo
+from core.schemas.contest import ContestId, ContestCreateRequest, ContestShortInfo, ContestInfoForEditor, \
+    ContestInfoForContestant
 
 
 class IContestService(Protocol):
+    async def contest_info_for_contestant(
+            self,
+            user_id,
+            contest_id,
+    ) -> ContestInfoForContestant:
+        ...
+
+    async def contest_info_for_editor(
+            self,
+            user_id,
+            contest_id,
+    ) -> ContestInfoForEditor:
+        ...
 
     async def create_contest(
             self,

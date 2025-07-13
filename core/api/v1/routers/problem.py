@@ -14,7 +14,7 @@ from core.schemas.problem import ProblemId, ProblemUpdateRequest
 from core.schemas.quiz_field import QuizFieldId, QuizFieldCreateRequest, QuizFieldUpdateRequest
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.problem import IProblemService
-from core.services.interfaces.quiz import IQuizService
+from core.services.interfaces.quiz import IQuizFieldService
 from core.services.providers.contest import get_contest_service
 from core.services.providers.problem import get_problem_service
 from core.services.providers.quiz import get_quiz_service

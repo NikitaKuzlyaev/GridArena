@@ -57,6 +57,22 @@ class ContestId(BaseSchemaModel):
 
 class ContestShortInfo(BaseSchemaModel):
     contest_id: int
-    name: str = Field(..., max_length=256)
+    name: str
+    started_at: datetime
+    closed_at: datetime
+
+
+class ContestInfoForEditor(BaseSchemaModel):
+    contest_id: int
+    name: str
+    start_points: int
+    number_of_slots_for_problems: int
+    started_at: datetime
+    closed_at: datetime
+
+
+class ContestInfoForContestant(BaseSchemaModel):
+    contest_id: int
+    name: str
     started_at: datetime
     closed_at: datetime
