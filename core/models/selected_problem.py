@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import String, DateTime, Integer, UniqueConstraint
+from sqlalchemy import String, DateTime, Integer, Boolean, ForeignKey
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import functions as sqlalchemy_functions
@@ -8,29 +8,20 @@ from sqlalchemy.sql import functions as sqlalchemy_functions
 from core.database.connection import Base
 
 
-class User(Base):
-    __tablename__ = "user"
-    # __table_args__ = (
-    #     UniqueConstraint("domain_number", "username", name="uq_user_domain_username"),
-    # )
+class SelectedProblem(Base):
+    __tablename__ = "selected_problem"
 
     id: Mapped[int] = mapped_column(
         primary_key=True
     )
 
-    # domain_number: Mapped[int] = mapped_column(
-    #     Integer,
-    #     nullable=True
-    # )
-
-    username: Mapped[str] = mapped_column(
-        String(64),
-        unique=True,
+    problem_card_id: Mapped[int] = mapped_column(
+        ForeignKey("problem_card.id"),
         nullable=False
     )
 
-    hashed_password: Mapped[str] = mapped_column(
-        String(128),
+    reward_rule: Mapped[int] = mapped_column(
+        Integer,
         nullable=False
     )
 
