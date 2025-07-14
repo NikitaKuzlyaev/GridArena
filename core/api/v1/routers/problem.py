@@ -17,7 +17,7 @@ from core.services.interfaces.problem import IProblemService
 from core.services.interfaces.quiz import IQuizFieldService
 from core.services.providers.contest import get_contest_service
 from core.services.providers.problem import get_problem_service
-from core.services.providers.quiz import get_quiz_service
+from core.services.providers.quiz import get_quiz_field_service
 
 from core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
 from core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
@@ -50,25 +50,3 @@ async def update_problem(
     result = result.model_dump()
 
     return JSONResponse({'body': result})
-
-# @router.get(
-#     path="/",
-#     response_model=Sequence[ContestShortInfo],
-#     status_code=200,
-# )
-# @async_http_exception_mapper(
-#     mapping={
-#     }
-# )
-# async def view_contests(
-#         user: User = Depends(get_user),
-#         contest_service: IContestService = Depends(get_contest_service),
-# ) -> JSONResponse:
-#     result: Sequence[ContestShortInfo] = (
-#         await contest_service.get_user_contests(
-#             user_id=user.id,
-#         )
-#     )
-#     result = [i.model_dump() for i in result]
-#
-#     return JSONResponse({'body': result})

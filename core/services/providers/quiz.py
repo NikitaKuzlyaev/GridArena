@@ -12,7 +12,7 @@ from core.services.interfaces.quiz import IQuizFieldService
 from core.services.providers.permission import get_permission_service
 
 
-def get_quiz_service(
+def get_quiz_field_service(
         quiz_repo: QuizFieldCRUDRepository = Depends(get_repository(QuizFieldCRUDRepository)),
 ) -> IQuizFieldService:
     return QuizFieldService(

@@ -6,9 +6,17 @@ from typing import Optional
 
 from pydantic import Field, validator, root_validator, model_validator
 
+from core.schemas.problem import ProblemInfoForEditor, ProblemInfoForContestant, ProblemId
 
-class ProblemCard(BaseSchemaModel):
+
+class ProblemCardId(BaseSchemaModel):
     problem_card_id: int
+
+
+class ProblemCardUpdateRequest(BaseSchemaModel):
+    problem_card_id: int
+    category_name: str = Field(..., max_length=32)
+    category_price: int = Field(..., ge=0, le=10000)
 
 
 class ProblemCardStatus(str, Enum):
@@ -20,10 +28,17 @@ class ProblemCardStatus(str, Enum):
 
 class ProblemCardInfoForEditor(BaseSchemaModel):
     problem_card_id: int
-    problem: ProblemInfoForEditor
+    problem: ProblemId
+    row: int
+    column: int
+    price: int
 
 
 class ProblemCardInfoForContestant(BaseSchemaModel):
     problem_card_id: int
-    problem: ProblemInfoForContestant
+    problem: ProblemId
     status: ProblemCardStatus
+    price: int
+    is_open_for_buy: bool = Field(default=False)
+    row: int
+    column: int

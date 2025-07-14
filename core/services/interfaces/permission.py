@@ -72,3 +72,10 @@ class IPermissionService(Protocol):
             contest_id: int,
     ) -> PermissionId | None:
         ...
+
+    async def check_permission_for_edit_problem_card(
+            self,
+            user_id: int,
+            problem_card_id: int,
+    ) -> PermissionId | None:
+        ...
