@@ -10,8 +10,8 @@ from core.database.connection import Base
 
 class PermissionActionType(enum.Enum):
     # --- [CONTEST] ---
-    ADMIN = ""
-    EDIT = ""
+    ADMIN = "ADMIN"
+    EDIT = "EDIT"
 
 
 class PermissionResourceType(enum.Enum):

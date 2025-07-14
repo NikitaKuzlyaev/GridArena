@@ -6,7 +6,7 @@ from core.models import Contest
 from core.models.permission import PermissionResourceType, PermissionActionType
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.permission import PermissionCRUDRepository
-from core.schemas.contest import ContestId, ContestShortInfo
+from core.schemas.contest import ContestId, ContestShortInfo, ArrayContestShortInfo
 
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
@@ -46,7 +46,7 @@ class ContestService(IContestService):
         await self.permission_service.give_permission_for_admin_contest(
             user_id=user_id, contest_id=contest.id,
         )
-        await self.permission_service.give_permission_for_admin_contest(
+        await self.permission_service.give_permission_for_edit_contest(
             user_id=user_id, contest_id=contest.id,
         )
         res = ContestId(contest_id=contest.id)
@@ -84,18 +84,20 @@ class ContestService(IContestService):
     async def get_user_contests(
             self,
             user_id: int,
-    ) -> Sequence[ContestShortInfo]:
+    ) -> ArrayContestShortInfo:
         contests: Sequence[Contest] = (
             await self.contest_repo.get_user_contests(
                 user_id=user_id,
             )
         )
-        res = [
-            ContestShortInfo(
-                contest_id=contest.id,
-                name=contest.name,
-                started_at=contest.started_at,
-                closed_at=contest.closed_at,
-            ) for contest in contests
-        ]
+        res = ArrayContestShortInfo(
+            body=[
+                ContestShortInfo(
+                    contest_id=contest.id,
+                    name=contest.name,
+                    started_at=contest.started_at,
+                    closed_at=contest.closed_at,
+                ) for contest in contests
+            ]
+        )
         return res

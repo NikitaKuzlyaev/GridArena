@@ -4,8 +4,10 @@ from core.dependencies.repository import get_repository
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.permission import PermissionCRUDRepository
 from core.repository.crud.problem import ProblemCRUDRepository
+from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.services.domain.contest import ContestService
 from core.services.domain.problem import ProblemService
+from core.services.domain.problem_card import ProblemCardService
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
 from core.services.interfaces.problem import IProblemService

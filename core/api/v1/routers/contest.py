@@ -10,7 +10,7 @@ from starlette.responses import JSONResponse, Response
 from core.dependencies.authorization import get_user
 from core.models import User
 from core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateRequest, ContestShortInfo, \
-    ContestInfoForEditor, ContestInfoForContestant
+    ContestInfoForEditor, ContestInfoForContestant, ArrayContestShortInfo
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
 from core.services.providers.contest import get_contest_service
@@ -77,7 +77,7 @@ async def update_contest(
 
 @router.get(
     path="/",
-    response_model=Sequence[ContestShortInfo],
+    response_model=ArrayContestShortInfo,
     status_code=200,
 )
 @async_http_exception_mapper(
@@ -87,15 +87,14 @@ async def update_contest(
 async def view_contests(
         user: User = Depends(get_user),
         contest_service: IContestService = Depends(get_contest_service),
-) -> JSONResponse:
-    result: Sequence[ContestShortInfo] = (
+) -> ArrayContestShortInfo:
+    result: ArrayContestShortInfo = (
         await contest_service.get_user_contests(
             user_id=user.id,
         )
     )
-    result = [i.model_dump() for i in result]
-
-    return JSONResponse({'body': result})
+    result = result.model_dump()
+    return result
 
 
 @router.get(
@@ -147,7 +146,6 @@ async def contest_info_for_contestant(
         contest_service: IContestService = Depends(get_contest_service),
         permission_service: IPermissionService = Depends(get_permission_service),
 ) -> JSONResponse:
-
     result: ContestInfoForContestant = (
         await contest_service.contest_info_for_contestant(
             user_id=user.id,

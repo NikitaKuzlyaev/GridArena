@@ -5,7 +5,7 @@ from typing import Sequence
 from core.models import Contest
 
 from core.schemas.contest import ContestId, ContestCreateRequest, ContestShortInfo, ContestInfoForEditor, \
-    ContestInfoForContestant
+    ContestInfoForContestant, ArrayContestShortInfo
 
 
 class IContestService(Protocol):
@@ -49,5 +49,5 @@ class IContestService(Protocol):
     async def get_user_contests(
             self,
             user_id: int,
-    ) -> Sequence[ContestShortInfo]:
+    ) -> ArrayContestShortInfo:
         ...
