@@ -6,7 +6,7 @@ from core.models import Contest
 from core.models.permission import PermissionResourceType, PermissionActionType
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.permission import PermissionCRUDRepository
-from core.schemas.contest import ContestId, ContestShortInfo, ArrayContestShortInfo
+from core.schemas.contest import ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor
 
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
@@ -23,6 +23,31 @@ class ContestService(IContestService):
     ):
         self.contest_repo = contest_repo
         self.permission_service = permission_service
+
+    @log_calls
+    async def contest_info_for_editor(
+            self,
+            user_id,
+            contest_id,
+    ) -> ContestInfoForEditor:
+        contest: Contest = (
+            await self.contest_repo.get_contest_by_id(
+                contest_id=contest_id,
+            )
+        )
+        if not contest:
+            raise EntityDoesNotExist("contest not found")
+
+        res = ContestInfoForEditor(
+            contest_id=contest_id,
+            name=contest.name,
+            start_points=contest.start_points,
+            number_of_slots_for_problems=contest.number_of_slots_for_problems,
+            started_at=contest.started_at,
+            closed_at=contest.closed_at,
+        )
+        return res
+
 
     @log_calls
     async def create_contest(

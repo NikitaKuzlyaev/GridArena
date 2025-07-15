@@ -71,7 +71,7 @@ class PermissionService(IPermissionService):
             await self.permission_repo.check_permission(
                 user_id=user_id,
                 resource_type=resource_type,
-                resource_id=resource_id,
+                resource_id=resource_id if resource_id else user_id,
                 permission_type=permission_type,
             )
         )
@@ -93,12 +93,38 @@ class PermissionService(IPermissionService):
         )
         return res
 
+    async def check_permission_for_admin_contest(
+            self,
+            user_id: int,
+            contest_id: int,
+    ) -> PermissionId | None:
+        res: PermissionId = await self.check_permission(
+            user_id=user_id,
+            resource_type=PermissionResourceType.CONTEST.value,
+            permission_type=PermissionActionType.ADMIN.value,
+            resource_id=contest_id,
+        )
+        return res
+
     async def give_permission_for_edit_contest(
             self,
             user_id: int,
             contest_id: int,
     ) -> PermissionId:
         res: PermissionId = await self.create_permission(
+            user_id=user_id,
+            resource_type=PermissionResourceType.CONTEST.value,
+            permission_type=PermissionActionType.EDIT.value,
+            resource_id=contest_id,
+        )
+        return res
+
+    async def check_permission_for_edit_contest(
+            self,
+            user_id: int,
+            contest_id: int,
+    ) -> PermissionId | None:
+        res: PermissionId = await self.check_permission(
             user_id=user_id,
             resource_type=PermissionResourceType.CONTEST.value,
             permission_type=PermissionActionType.EDIT.value,

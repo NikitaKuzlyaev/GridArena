@@ -5,13 +5,15 @@ function Header() {
   const isAuth = Boolean(localStorage.getItem('accessToken'));
   return (
     <header className="header">
-      <h3>Quiz App</h3>
-      {isAuth ? (
-        <a href="/my-contests" className="login-btn">Мои контесты</a>
-      ) : (
-        undefined
-      )}
-      <a href="/login" className="login-btn">Войти</a>
+      <div className="header-left">
+        <a href="/" className="header-title">GridArena</a>
+        {isAuth && (
+          <a href="/my-contests" className="contests-btn">Мои контесты</a>
+        )}
+      </div>
+      <div className="header-right">
+        <a href="/login" className="login-btn">Войти</a>
+      </div>
     </header>
   );
 }

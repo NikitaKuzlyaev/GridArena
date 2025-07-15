@@ -16,7 +16,7 @@ class PermissionCRUDRepository(BaseCRUDRepository):
             user_id: int,
             resource_type: str,
             permission_type: str,
-            resource_id: Optional[int] = None,
+            resource_id: int,
     ) -> Permission | None:
         permission = await self.async_session.execute(
             select(
@@ -36,7 +36,7 @@ class PermissionCRUDRepository(BaseCRUDRepository):
             user_id: int,
             resource_type: str,
             permission_type: str,
-            resource_id: Optional[int] = None,
+            resource_id: int,
     ) -> Permission:
         permission: Permission | None = (
             await self.check_permission(

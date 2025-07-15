@@ -1,6 +1,53 @@
-.login-btn {
-  float: right;
+.header {
+  width: 100%;
+  background: #282c34;
+  color: #fff;
+  padding: 2px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: 32px;
+}
+
+.header-title {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-right: 12px;
+  transition: color 0.2s;
+}
+.header-title:hover {
+  color: #61dafb;
+}
+
+.contests-btn {
+  background: #61dafb;
+  color: #282c34;
+  padding: 4px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.contests-btn:hover {
+  background: #21a1f3;
+  color: #fff;
+}
+
+.header-right {
   margin-right: 32px;
+}
+
+.login-btn {
   background: #61dafb;
   color: #282c34;
   padding: 4px 16px;
@@ -12,13 +59,4 @@
 .login-btn:hover {
   background: #21a1f3;
   color: #fff;
-}
-.header {
-  width: 100%;
-  background: #282c34;
-  color: #fff;
-  padding: 2px 0;
-  text-align: center;
-  font-size: 0.8rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }

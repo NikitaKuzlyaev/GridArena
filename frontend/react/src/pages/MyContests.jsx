@@ -58,18 +58,55 @@ function MyContests() {
         <div style={{ marginTop: 24 }}>
           {contests.body.map(contest => (
             <div key={contest.contestId} style={{
+              position: 'relative',
               border: '1px solid #eee',
-              borderRadius: 6,
-              padding: '16px 20px',
-              marginBottom: 16,
-              boxShadow: '0 1px 6px rgba(0,0,0,0.04)',
-              background: '#fafbfc'
+              borderRadius: 8,
+              padding: '20px 24px 20px 24px',
+              marginBottom: 20,
+              boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
+              background: '#fafbfc',
+              minHeight: 90,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
             }}>
-              <h3 style={{ margin: '0 0 8px 0', color: '#282c34' }}>{contest.name}</h3>
-              <div style={{ fontSize: '0.95rem', color: '#555' }}>
-                <b>ID:</b> {contest.contestId}<br />
-                <b>Начало:</b> {new Date(contest.startedAt).toLocaleString()}<br />
-                <b>Окончание:</b> {new Date(contest.closedAt).toLocaleString()}
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ opacity: 0.4, fontSize: 14, fontWeight: 500, marginRight: 12 }}>
+                  {contest.contestId}
+                </span>
+                <span style={{ fontWeight: 'bold', fontSize: 20, color: '#282c34', flex: 1 }}>
+                  {contest.name}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'stretch', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div style={{ fontSize: '0.97rem', color: '#555', marginBottom: 2 }}>
+                    <b>Начало:</b> {new Date(contest.startedAt).toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: '0.97rem', color: '#555' }}>
+                    <b>Окончание:</b> {new Date(contest.closedAt).toLocaleString()}
+                  </div>
+                </div>
+                <a
+                  href={`/edit-contest/${contest.contestId}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 48,
+                    height: 48,
+                    marginLeft: 16,
+                    background: '#e3e6e8',
+                    borderRadius: 8,
+                    border: 'none',
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    transition: 'background 0.2s',
+                  }}
+                  title="Редактировать контест"
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#282c34" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                </a>
               </div>
             </div>
           ))}
