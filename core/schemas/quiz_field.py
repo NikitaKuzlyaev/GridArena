@@ -5,7 +5,7 @@ from typing import Optional, Sequence
 
 from pydantic import Field, validator, root_validator, model_validator
 
-from core.schemas.problem_card import ProblemCardInfoForEditor, ProblemCardInfoForContestant
+from core.schemas.problem_card import ProblemCardInfoForEditor, ProblemCardInfoForContestant, ProblemCardInfo
 
 
 class QuizFieldId(BaseSchemaModel):
@@ -40,7 +40,7 @@ class QuizFieldInfoForEditor(BaseSchemaModel):
     quiz_field_id: int
     number_of_rows: int
     number_of_columns: int
-    problem_cards: Sequence[ProblemCardInfoForEditor]
+    problem_cards: Sequence[ProblemCardInfo]
 
 
 class QuizFieldInfoForContestant(BaseSchemaModel):

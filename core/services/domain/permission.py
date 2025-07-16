@@ -2,10 +2,12 @@ from datetime import datetime
 from typing import Sequence, Optional, Callable, Awaitable
 
 # from core.dependencies.repository import get_repository, get_repository_manual
-from core.models import Contest
+from core.models import Contest, ProblemCard, QuizField, Problem
 from core.models.permission import PermissionResourceType, PermissionActionType, Permission
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.permission import PermissionCRUDRepository
+from core.repository.crud.problem_card import ProblemCardCRUDRepository
+from core.repository.crud.quiz import QuizFieldCRUDRepository
 from core.schemas.contest import ContestId, ContestShortInfo
 from core.schemas.permission import PermissionId
 
@@ -20,9 +22,12 @@ class PermissionService(IPermissionService):
     def __init__(
             self,
             permission_repo: PermissionCRUDRepository,
-
+            problem_card_repo: ProblemCardCRUDRepository,
+            quiz_field_repo: QuizFieldCRUDRepository,
     ):
         self.permission_repo = permission_repo
+        self.problem_card_repo = problem_card_repo
+        self.quiz_field_repo = quiz_field_repo
 
     async def raise_if_not_all(
             self,
@@ -130,4 +135,70 @@ class PermissionService(IPermissionService):
             permission_type=PermissionActionType.EDIT.value,
             resource_id=contest_id,
         )
+        return res
+
+    async def check_permission_for_edit_quiz_field(
+            self,
+            user_id: int,
+            quiz_field_id: int,
+    ) -> PermissionId | None:
+        quiz_field: QuizField = (
+            await self.quiz_field_repo.get_quiz_field_by_id(
+                quiz_field_id=quiz_field_id,
+            )
+        )
+        if not quiz_field:
+            return None
+
+        res: PermissionId | None = (
+            await self.check_permission_for_edit_contest(
+                user_id=user_id,
+                contest_id=quiz_field.contest_id,
+            )
+        )
+
+        return res
+
+    async def check_permission_for_edit_problem_card(
+            self,
+            user_id: int,
+            problem_card_id: int,
+    ) -> PermissionId | None:
+        problem_card : ProblemCard = (
+            await self.problem_card_repo.get_problem_card_by_id(
+                problem_card_id=problem_card_id,
+            )
+        )
+        if not problem_card:
+            return None
+
+        res: PermissionId | None = (
+            await self.check_permission_for_edit_quiz_field(
+                user_id=user_id,
+                quiz_field_id=problem_card.quiz_field_id,
+            )
+        )
+
+        return res
+
+    async def check_permission_for_edit_problem(
+            self,
+            user_id: int,
+            problem_id: int,
+    ) -> PermissionId | None:
+        problem_card: ProblemCard = (
+            await self.problem_card_repo.get_problem_card_by_problem_id(
+                problem_id=problem_id,
+            )
+        )
+        if not problem_card:
+            return None
+
+        res: PermissionId | None = (
+            await self.check_permission_for_edit_problem_card(
+                user_id=user_id,
+                problem_card_id=problem_card.id,
+            )
+        )
+
         return res

@@ -11,7 +11,8 @@ from core.dependencies.authorization import get_user
 from core.models import User, QuizField
 from core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateRequest, ContestShortInfo, \
     ContestInfoForEditor
-from core.schemas.problem_card import ProblemCardId, ProblemCardUpdateRequest, ProblemCardInfoForEditor
+from core.schemas.problem_card import ProblemCardId, ProblemCardUpdateRequest, ProblemCardInfoForEditor, \
+    ProblemCardWithProblemUpdateRequest, ProblemCardWithProblemCreateRequest
 from core.schemas.quiz_field import QuizFieldId, QuizFieldCreateRequest, QuizFieldUpdateRequest, QuizFieldInfoForEditor, \
     QuizFieldInfoForContestant
 from core.services.interfaces.contest import IContestService
@@ -29,8 +30,6 @@ from core.utilities.exceptions.permission import PermissionDenied
 from core.utilities.loggers.logger import logger
 
 router = fastapi.APIRouter(prefix="/problem-card", tags=["problem-card"])
-
-
 
 
 @router.patch(
@@ -76,25 +75,92 @@ async def update_problem_card(
         EntityDoesNotExist: (404, None),
     }
 )
-async def quiz_field_info_for_editor(
-        contest_id=Query(...),
+async def problem_card_info_for_editor(
+        problem_card_id: int = Query(...),
         user: User = Depends(get_user),
-        quiz_field_service: IQuizFieldService = Depends(get_contest_service),
+        problem_card_service: IProblemCardService = Depends(get_problem_card_service),
         permission_service: IPermissionService = Depends(get_permission_service),
-) -> JSONResponse:
+) -> ProblemCardInfoForEditor:
     await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=contest_id),
+        lambda: permission_service.check_permission_for_edit_problem_card(
+            user_id=user.id, problem_card_id=problem_card_id),
     ])
 
-    result: QuizFieldInfoForEditor = (
-        await quiz_field_service.quiz_field_info_for_editor(
+    result: ProblemCardInfoForEditor = (
+        await problem_card_service.problem_card_info_for_editor(
             user_id=user.id,
-            contest_id=contest_id,
+            problem_card_id=problem_card_id,
         )
     )
     result = result.model_dump()
 
-    return JSONResponse({'body': result})
+    return result
+
+
+@router.patch(
+    path="/with-problem",
+    response_model=ProblemCardId,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def problem_card_info_for_editor(
+        params: ProblemCardWithProblemUpdateRequest = Body(...),
+        user: User = Depends(get_user),
+        problem_card_service: IProblemCardService = Depends(get_problem_card_service),
+        permission_service: IPermissionService = Depends(get_permission_service),
+) -> ProblemCardId:
+    await permission_service.raise_if_not_all([
+        lambda: permission_service.check_permission_for_edit_problem_card(
+            user_id=user.id, problem_card_id=params.problem_card_id),
+        lambda: permission_service.check_permission_for_edit_problem(
+            user_id=user.id, problem_id=params.problem_id),
+    ])
+
+    result: ProblemCardId = (
+        await problem_card_service.update_problem_card_with_problem(
+            **params.model_dump(),
+        )
+    )
+    result = result.model_dump()
+
+    return result
+
+@router.post(
+    path="/with-problem",
+    response_model=ProblemCardId,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def problem_card_info_for_editor(
+        params: ProblemCardWithProblemCreateRequest = Body(...),
+        user: User = Depends(get_user),
+        problem_card_service: IProblemCardService = Depends(get_problem_card_service),
+        permission_service: IPermissionService = Depends(get_permission_service),
+) -> ProblemCardId:
+    await permission_service.raise_if_not_all([
+        lambda: permission_service.check_permission_for_edit_quiz_field(
+            user_id=user.id, quiz_field_id=params.quiz_field_id),
+    ])
+
+    result: ProblemCardId = (
+        await problem_card_service.create_problem_card_with_problem(
+            **params.model_dump(),
+        )
+    )
+    result = result.model_dump()
+
+    return result
+
 #
 #
 # @router.get(

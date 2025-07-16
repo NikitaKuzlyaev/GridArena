@@ -13,7 +13,7 @@ from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.quiz import QuizFieldCRUDRepository
 from core.schemas.contest import ContestId, ContestShortInfo
 from core.schemas.problem import ProblemId
-from core.schemas.problem_card import ProblemCardInfoForEditor
+from core.schemas.problem_card import ProblemCardInfoForEditor, ProblemCardInfo
 from core.schemas.quiz_field import QuizFieldId, QuizFieldInfoForEditor
 
 from core.services.interfaces.contest import IContestService
@@ -64,7 +64,7 @@ class QuizFieldService(IQuizFieldService):
             number_of_rows=quiz_field.number_of_rows,
             number_of_columns=quiz_field.number_of_columns,
             problem_cards=[
-                ProblemCardInfoForEditor(
+                ProblemCardInfo(
                     problem_card_id=problem_card.id,
                     problem=ProblemId(
                         problem_id=problem.id,

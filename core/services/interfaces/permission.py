@@ -73,9 +73,23 @@ class IPermissionService(Protocol):
     ) -> PermissionId | None:
         ...
 
+    async def check_permission_for_edit_quiz_field(
+            self,
+            user_id: int,
+            quiz_field_id: int,
+    ) -> PermissionId | None:
+        ...
+
     async def check_permission_for_edit_problem_card(
             self,
             user_id: int,
             problem_card_id: int,
+    ) -> PermissionId | None:
+        ...
+
+    async def check_permission_for_edit_problem(
+            self,
+            user_id: int,
+            problem_id: int,
     ) -> PermissionId | None:
         ...

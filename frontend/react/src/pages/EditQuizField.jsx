@@ -10,6 +10,13 @@ function EditQuizField() {
   const [rows, setRows] = useState(1);
   const [cols, setCols] = useState(1);
   const [modalCard, setModalCard] = useState(null);
+  const [modalCardInfo, setModalCardInfo] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [editForm, setEditForm] = useState(null);
+  const [editErrors, setEditErrors] = useState({});
+  const [editSaving, setEditSaving] = useState(false);
+  const [createMode, setCreateMode] = useState(false);
+  const [createCell, setCreateCell] = useState(null); // {row, col}
 
   // Получаем contest_id из query-параметров
   const searchParams = new URLSearchParams(location.search);
@@ -65,6 +72,171 @@ function EditQuizField() {
   const getCardAt = (row, col) => {
     if (!data || !data.problemCards) return null;
     return data.problemCards.find(card => card.row === row && card.column === col);
+  };
+
+  // Клик по карточке
+  const handleCardClick = async (card, rowIdx, colIdx) => {
+    if (!card) {
+      // Пустая карточка — открываем форму создания
+      setCreateMode(true);
+      setCreateCell({ row: rowIdx + 1, col: colIdx + 1 });
+      setEditForm({
+        categoryName: '-',
+        categoryPrice: 0,
+        statement: '-',
+        answer: '-',
+      });
+      setEditErrors({});
+      setModalCard(null);
+      setModalCardInfo(null);
+      return;
+    }
+    setModalLoading(true);
+    setModalCard(card); // для совместимости, если нужно оставить старую инфу
+    setModalCardInfo(null);
+    setEditForm(null);
+    setEditErrors({});
+    const token = localStorage.getItem('access_token');
+    try {
+      const res = await fetch(`${config.backendUrl}api/v1/problem-card/info-editor?problem_card_id=${card.problemCardId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        setModalCardInfo({ error: 'Ошибка загрузки информации о карточке' });
+      } else {
+        const info = await res.json();
+        setModalCardInfo(info);
+        setEditForm({
+          categoryName: info.categoryName || '',
+          categoryPrice: info.categoryPrice || 0,
+          statement: (info.problem && info.problem.statement) || '',
+          answer: (info.problem && info.problem.answer) || '',
+        });
+      }
+    } catch {
+      setModalCardInfo({ error: 'Ошибка сети при загрузке карточки' });
+    }
+    setModalLoading(false);
+  };
+
+  // Валидация формы
+  const validateEditForm = (form) => {
+    const errors = {};
+    if (!form.categoryName || form.categoryName.length < 1 || form.categoryName.length > 32) {
+      errors.categoryName = 'Название категории: 1-32 символа';
+    }
+    if (isNaN(form.categoryPrice) || form.categoryPrice < 0 || form.categoryPrice > 10000) {
+      errors.categoryPrice = 'Цена: от 0 до 10000';
+    }
+    if (form.statement.length > 2048) {
+      errors.statement = 'Условие: до 2048 символов';
+    }
+    if (!form.answer || form.answer.length < 1 || form.answer.length > 32) {
+      errors.answer = 'Ответ: 1-32 символа';
+    }
+    return errors;
+  };
+
+  // Сохранение изменений
+  const handleEditSave = async () => {
+    if (!modalCardInfo || !editForm) return;
+    const errors = validateEditForm(editForm);
+    setEditErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    setEditSaving(true);
+    const token = localStorage.getItem('access_token');
+    try {
+      const res = await fetch(`${config.backendUrl}api/v1/problem-card/with-problem`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          problem_card_id: modalCardInfo.problemCardId,
+          category_name: editForm.categoryName,
+          category_price: editForm.categoryPrice,
+          statement: editForm.statement,
+          answer: editForm.answer,
+          problem_id: modalCardInfo.problem?.problemId,
+        }),
+      });
+      if (!res.ok) {
+        let msg = 'Ошибка сохранения';
+        try {
+          const err = await res.json();
+          if (err && err.detail) msg = err.detail;
+        } catch {}
+        setEditErrors({ global: msg });
+        setEditSaving(false);
+        return;
+      }
+      // Успех — закрыть модалку и перезагрузить
+      setModalCard(null);
+      setModalCardInfo(null);
+      setEditForm(null);
+      setEditErrors({});
+      setEditSaving(false);
+      window.location.reload();
+    } catch {
+      setEditErrors({ global: 'Ошибка сети при сохранении' });
+      setEditSaving(false);
+    }
+  };
+
+  // Создание новой карточки
+  const handleCreateSave = async () => {
+    if (!editForm || !createCell || !data) return;
+    const errors = validateEditForm(editForm);
+    setEditErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    setEditSaving(true);
+    const token = localStorage.getItem('access_token');
+    try {
+      const res = await fetch(`${config.backendUrl}api/v1/problem-card/with-problem`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          quiz_field_id: data.quizFieldId,
+          row: createCell.row,
+          column: createCell.col,
+          category_name: editForm.categoryName,
+          category_price: editForm.categoryPrice,
+          statement: editForm.statement,
+          answer: editForm.answer,
+          problem_id: null,
+        }),
+      });
+      if (!res.ok) {
+        let msg = 'Ошибка создания';
+        try {
+          const err = await res.json();
+          if (err && err.detail) msg = err.detail;
+        } catch {}
+        setEditErrors({ global: msg });
+        setEditSaving(false);
+        return;
+      }
+      // Успех — закрыть модалку и перезагрузить
+      setCreateMode(false);
+      setCreateCell(null);
+      setEditForm(null);
+      setEditErrors({});
+      setEditSaving(false);
+      window.location.reload();
+    } catch {
+      setEditErrors({ global: 'Ошибка сети при создании' });
+      setEditSaving(false);
+    }
   };
 
   return (
@@ -151,10 +323,10 @@ function EditQuizField() {
                             textAlign: 'center',
                             verticalAlign: 'middle',
                             background: card ? '#f0f8ff' : '#fafafa',
-                            cursor: card ? 'pointer' : 'default',
+                            cursor: 'pointer',
                             position: 'relative',
                           }}
-                          onClick={() => card && setModalCard(card)}
+                          onClick={() => handleCardClick(card, rowIdx, colIdx)}
                         >
                           {card ? (
                             <div>
@@ -172,7 +344,7 @@ function EditQuizField() {
             </table>
           </div>
           {/* Модальное окно */}
-          {modalCard && (
+          {modalCard !== null && (
             <div style={{
               position: 'fixed',
               top: 0,
@@ -185,12 +357,151 @@ function EditQuizField() {
               justifyContent: 'center',
               zIndex: 1000,
             }}
-              onClick={() => setModalCard(null)}
+              onClick={() => { setModalCard(null); setModalCardInfo(null); setEditForm(null); setEditErrors({}); }}
             >
-              <div style={{ background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, position: 'relative' }} onClick={e => e.stopPropagation()}>
+              <div style={{ background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, position: 'relative', maxWidth: 500 }} onClick={e => e.stopPropagation()}>
                 <h2>Информация о карточке</h2>
-                <pre style={{ background: '#f7f7f7', padding: 12, borderRadius: 4 }}>{JSON.stringify(modalCard, null, 2)}</pre>
-                <button style={{ marginTop: 16 }} onClick={() => setModalCard(null)}>Закрыть</button>
+                {modalLoading && <div>Загрузка...</div>}
+                {!modalLoading && modalCardInfo && (
+                  modalCardInfo.error ? (
+                    <div style={{ color: 'red' }}>{modalCardInfo.error}</div>
+                  ) : (
+                    <form onSubmit={e => { e.preventDefault(); handleEditSave(); }}>
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ display: 'block', fontWeight: 500 }}>Название категории:</label>
+                        <input
+                          type="text"
+                          value={editForm?.categoryName || ''}
+                          maxLength={32}
+                          onChange={e => setEditForm(f => ({ ...f, categoryName: e.target.value }))}
+                          style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                        />
+                        {editErrors.categoryName && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.categoryName}</div>}
+                      </div>
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ display: 'block', fontWeight: 500 }}>Цена:</label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={10000}
+                          value={editForm?.categoryPrice}
+                          onChange={e => setEditForm(f => ({ ...f, categoryPrice: Number(e.target.value) }))}
+                          style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                        />
+                        {editErrors.categoryPrice && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.categoryPrice}</div>}
+                      </div>
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ display: 'block', fontWeight: 500 }}>Условие задачи:</label>
+                        <textarea
+                          value={editForm?.statement || ''}
+                          maxLength={2048}
+                          onChange={e => setEditForm(f => ({ ...f, statement: e.target.value }))}
+                          style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc', minHeight: 60 }}
+                        />
+                        {editErrors.statement && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.statement}</div>}
+                      </div>
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ display: 'block', fontWeight: 500 }}>Ответ:</label>
+                        <input
+                          type="text"
+                          value={editForm?.answer || ''}
+                          maxLength={32}
+                          onChange={e => setEditForm(f => ({ ...f, answer: e.target.value }))}
+                          style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                        />
+                        {editErrors.answer && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.answer}</div>}
+                      </div>
+                      {editErrors.global && <div style={{ color: 'red', marginBottom: 8 }}>{editErrors.global}</div>}
+                      <button
+                        type="submit"
+                        disabled={editSaving}
+                        style={{ padding: '8px 24px', fontSize: 16, borderRadius: 6, background: '#1677ff', color: '#fff', border: 'none', cursor: 'pointer' }}
+                      >
+                        {editSaving ? 'Сохранение...' : 'Сохранить'}
+                      </button>
+                    </form>
+                  )
+                )}
+                {!modalLoading && !modalCardInfo && (
+                  <pre style={{ background: '#f7f7f7', padding: 12, borderRadius: 4 }}>{JSON.stringify(modalCard, null, 2)}</pre>
+                )}
+                <button style={{ marginTop: 16 }} onClick={() => { setModalCard(null); setModalCardInfo(null); setEditForm(null); setEditErrors({}); }}>Закрыть</button>
+              </div>
+            </div>
+          )}
+          {/* Модалка создания новой карточки */}
+          {createMode && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(0,0,0,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+              onClick={() => { setCreateMode(false); setCreateCell(null); setEditForm(null); setEditErrors({}); }}
+            >
+              <div style={{ background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, position: 'relative', maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+                <h2>Создание карточки</h2>
+                <form onSubmit={e => { e.preventDefault(); handleCreateSave(); }}>
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: 'block', fontWeight: 500 }}>Название категории:</label>
+                    <input
+                      type="text"
+                      value={editForm?.categoryName || ''}
+                      maxLength={32}
+                      onChange={e => setEditForm(f => ({ ...f, categoryName: e.target.value }))}
+                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                    />
+                    {editErrors.categoryName && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.categoryName}</div>}
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: 'block', fontWeight: 500 }}>Цена:</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10000}
+                      value={editForm?.categoryPrice}
+                      onChange={e => setEditForm(f => ({ ...f, categoryPrice: Number(e.target.value) }))}
+                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                    />
+                    {editErrors.categoryPrice && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.categoryPrice}</div>}
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: 'block', fontWeight: 500 }}>Условие задачи:</label>
+                    <textarea
+                      value={editForm?.statement || ''}
+                      maxLength={2048}
+                      onChange={e => setEditForm(f => ({ ...f, statement: e.target.value }))}
+                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc', minHeight: 60 }}
+                    />
+                    {editErrors.statement && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.statement}</div>}
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: 'block', fontWeight: 500 }}>Ответ:</label>
+                    <input
+                      type="text"
+                      value={editForm?.answer || ''}
+                      maxLength={32}
+                      onChange={e => setEditForm(f => ({ ...f, answer: e.target.value }))}
+                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                    />
+                    {editErrors.answer && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.answer}</div>}
+                  </div>
+                  {editErrors.global && <div style={{ color: 'red', marginBottom: 8 }}>{editErrors.global}</div>}
+                  <button
+                    type="submit"
+                    disabled={editSaving}
+                    style={{ padding: '8px 24px', fontSize: 16, borderRadius: 6, background: '#1677ff', color: '#fff', border: 'none', cursor: 'pointer' }}
+                  >
+                    {editSaving ? 'Создание...' : 'Создать'}
+                  </button>
+                </form>
+                <button style={{ marginTop: 16 }} onClick={() => { setCreateMode(false); setCreateCell(null); setEditForm(null); setEditErrors({}); }}>Закрыть</button>
               </div>
             </div>
           )}

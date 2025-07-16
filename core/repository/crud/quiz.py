@@ -46,6 +46,20 @@ class QuizFieldCRUDRepository(BaseCRUDRepository):
         )
         return result.scalar_one_or_none()
 
+    async def get_quiz_field_by_id(
+            self,
+            quiz_field_id: int,
+    ) -> QuizField | None:
+        res = await self.async_session.execute(
+            select(
+                QuizField
+            )
+            .where(
+                QuizField.id == quiz_field_id,
+            )
+        )
+        return res.scalar_one_or_none()
+
     async def get_quiz_field_by_contest_id(
             self,
             contest_id: int,

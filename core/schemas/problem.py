@@ -15,11 +15,13 @@ class ProblemUpdateRequest(BaseSchemaModel):
     answer: str = Field(..., max_length=32)
 
 
+# class ProblemInfoForEditor(BaseSchemaModel):
+#     problem_id: int
+
 class ProblemInfoForEditor(BaseSchemaModel):
     problem_id: int
     statement: str
     answer: str
-
 
 class ProblemInfoForContestant(BaseSchemaModel):
     problem_id: int
