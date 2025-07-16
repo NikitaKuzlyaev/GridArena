@@ -9,10 +9,48 @@ from core.models import Contest, Permission, Problem, ProblemCard
 from core.models.permission import PermissionResourceType, PermissionActionType
 from core.repository.crud.base import BaseCRUDRepository
 from core.schemas.contest import ContestId
+from core.schemas.problem import ProblemId
 from core.utilities.loggers.log_decorator import log_calls
 
 
 class ProblemCardCRUDRepository(BaseCRUDRepository):
+
+    @log_calls
+    async def get_tuple_problem_cards_with_problem_by_quiz_field_id(
+            self,
+            quiz_field_id: int,
+    ) -> Sequence[Row[Tuple[ProblemCard, Problem]]]:
+        res = await self.async_session.execute(
+            select(
+                ProblemCard,
+                Problem
+            )
+            .join(
+                Problem,
+                Problem.id == ProblemCard.problem_id
+            )
+            .where(
+                ProblemCard.quiz_field_id == quiz_field_id
+            )
+        )
+        res = res.all()
+        return res
+
+    @log_calls
+    async def get_problem_cards_by_quiz_field_id(
+            self,
+            quiz_field_id: int,
+    ) -> Sequence[ProblemCard]:
+        res = await self.async_session.execute(
+            select(
+                ProblemCard
+            )
+            .where(
+                ProblemCard.quiz_field_id == quiz_field_id
+            )
+        )
+        res = res.scalars().all()
+        return res
 
     @log_calls
     async def create_problem_card(

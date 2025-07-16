@@ -66,7 +66,11 @@ async def update_quiz_field(
         params: QuizFieldUpdateRequest = Body(...),
         user: User = Depends(get_user),
         quiz_service: IQuizFieldService = Depends(get_quiz_field_service),
-) -> JSONResponse:
+) -> QuizFieldId:
+    # await permission_service.raise_if_not_all([
+    #     lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=contest_id),
+    # ])
+
     result: QuizFieldId = (
         await quiz_service.update_quiz_field(
             **params.model_dump(),
@@ -74,7 +78,7 @@ async def update_quiz_field(
     )
     result = result.model_dump()
 
-    return JSONResponse({'body': result})
+    return result
 
 
 @router.get(
@@ -89,9 +93,9 @@ async def update_quiz_field(
     }
 )
 async def quiz_field_info_for_editor(
-        contest_id=Query(...),
+        contest_id: int = Query(...),
         user: User = Depends(get_user),
-        quiz_field_service: IQuizFieldService = Depends(get_contest_service),
+        quiz_field_service: IQuizFieldService = Depends(get_quiz_field_service),
         permission_service: IPermissionService = Depends(get_permission_service),
 ) -> QuizFieldInfoForEditor:
     await permission_service.raise_if_not_all([

@@ -14,6 +14,52 @@ from core.utilities.loggers.log_decorator import log_calls
 
 class QuizFieldCRUDRepository(BaseCRUDRepository):
 
+    async def update_quiz_field(
+            self,
+            quiz_field_id: int,
+            number_of_rows: int,
+            number_of_columns: int,
+    ) -> QuizField | None:
+        await self.async_session.execute(
+            update(
+                QuizField
+            )
+            .where(
+                QuizField.id == quiz_field_id,
+            )
+            .values(
+                number_of_rows=number_of_rows,
+                number_of_columns=number_of_columns,
+            )
+            .execution_options(
+                synchronize_session="fetch"
+            )
+        )
+        await self.async_session.commit()
+
+        result = await self.async_session.execute(
+            select(
+                QuizField
+            ).where(
+                QuizField.id == quiz_field_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_quiz_field_by_contest_id(
+            self,
+            contest_id: int,
+    ) -> QuizField | None:
+        res = await self.async_session.execute(
+            select(
+                QuizField
+            )
+            .where(
+                QuizField.contest_id == contest_id,
+            )
+        )
+        return res.scalar_one_or_none()
+
     async def create_quiz_field(
             self,
             contest_id: int,

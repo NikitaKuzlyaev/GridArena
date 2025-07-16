@@ -18,7 +18,8 @@ class ProblemCard(Base):
 
     problem: Mapped[Optional["Problem"]] = relationship(
         back_populates="problem_cards",
-        passive_deletes=True
+        passive_deletes=True,
+        uselist=False
     )
 
     quiz_field: Mapped["QuizField"] = relationship(

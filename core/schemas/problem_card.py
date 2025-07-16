@@ -31,14 +31,16 @@ class ProblemCardInfoForEditor(BaseSchemaModel):
     problem: ProblemId
     row: int
     column: int
-    price: int
+    category_price: int
+    category_name: str
 
 
 class ProblemCardInfoForContestant(BaseSchemaModel):
     problem_card_id: int
     problem: ProblemId
     status: ProblemCardStatus
-    price: int
     is_open_for_buy: bool = Field(default=False)
     row: int
     column: int
+    category_price: int
+    category_name: str

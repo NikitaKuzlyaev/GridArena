@@ -12,7 +12,9 @@ from core.database.connection import Base
 class QuizField(Base):
     __tablename__ = "quiz_field"
 
-    contest: Mapped["Contest"] = relationship(back_populates="quiz_fields")
+    contest: Mapped["Contest"] = relationship(
+        back_populates="quiz_field"
+    )
 
     problem_cards: Mapped[List["ProblemCard"]] = relationship(
         back_populates="quiz_field",
@@ -26,7 +28,8 @@ class QuizField(Base):
 
     contest_id: Mapped[int] = mapped_column(
         ForeignKey("contest.id", ondelete="CASCADE"),
-        nullable=False
+        nullable=False,
+        unique=True
     )
 
     number_of_rows: Mapped[int] = mapped_column(

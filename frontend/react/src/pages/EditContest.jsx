@@ -134,7 +134,7 @@ function EditContest() {
         <button
           type="button"
           style={{ padding: 10, background: '#eee', color: '#282c34', border: '1px solid #ccc', borderRadius: 4, fontWeight: 500, marginRight: 12 }}
-          onClick={() => window.location.href = '/edit-field'}
+          onClick={() => window.location.href = `/edit-field?contest_id=${contestId}`}
         >
           Редактировать поле
         </button>

@@ -17,10 +17,11 @@ class Contest(Base):
         CheckConstraint("number_of_slots_for_problems BETWEEN 1 AND 5", name="check_number_of_slots"),
     )
 
-    quiz_fields: Mapped[List["QuizField"]] = relationship(
+    quiz_field: Mapped["QuizField"] = relationship(
         back_populates="contest",
+        uselist=False,
         cascade="all, delete-orphan",
-        passive_deletes=True
+        passive_deletes=True,
     )
 
     id: Mapped[int] = mapped_column(
