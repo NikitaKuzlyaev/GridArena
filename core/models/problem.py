@@ -1,7 +1,8 @@
 import datetime
+from typing import List
 
 from sqlalchemy import String, DateTime, Integer, Boolean, ForeignKey
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import functions as sqlalchemy_functions
 
@@ -10,6 +11,10 @@ from core.database.connection import Base
 
 class Problem(Base):
     __tablename__ = "problem"
+
+    problem_cards: Mapped[List["ProblemCard"]] = relationship(
+        back_populates="problem"
+    )
 
     id: Mapped[int] = mapped_column(
         primary_key=True

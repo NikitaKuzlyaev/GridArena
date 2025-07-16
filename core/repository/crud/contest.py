@@ -5,7 +5,7 @@ from mako.testing.helpers import result_lines
 from sqlalchemy import select, update, delete, and_, Row
 
 from core.dependencies.repository import get_repository
-from core.models import Contest, Permission
+from core.models import Contest, Permission, QuizField, ProblemCard, Problem
 from core.models.permission import PermissionResourceType, PermissionActionType
 from core.repository.crud.base import BaseCRUDRepository
 from core.schemas.contest import ContestId
@@ -13,6 +13,19 @@ from core.utilities.loggers.log_decorator import log_calls
 
 
 class ContestCRUDRepository(BaseCRUDRepository):
+
+    async def delete_contest(
+            self,
+            contest_id: int,
+    ) -> None:
+        await self.async_session.execute(
+            delete(
+                Contest
+            ).where(
+                Contest.id == contest_id
+            )
+        )
+        await self.async_session.commit()
 
     async def get_contest_by_id(
             self,
@@ -27,6 +40,53 @@ class ContestCRUDRepository(BaseCRUDRepository):
             )
         )
         return res.scalar_one_or_none()
+
+    @log_calls
+    async def create_full_contest(
+            self,
+            name: str,
+            started_at: datetime,
+            closed_at: datetime,
+            start_points: int,
+            number_of_slots_for_problems: int,
+    ) -> Contest:
+        contest = Contest(
+            name=name,
+            started_at=started_at,
+            closed_at=closed_at,
+            start_points=start_points,
+            number_of_slots_for_problems=number_of_slots_for_problems,
+        )
+        self.async_session.add(contest)
+        await self.async_session.flush()
+
+        quiz_field = QuizField(
+            contest_id=contest.id,
+            number_of_rows=1,
+            number_of_columns=1,
+        )
+        self.async_session.add(quiz_field)
+        await self.async_session.flush()
+
+        problem = Problem(
+            statement="-",
+            answer="-",
+        )
+        self.async_session.add(problem)
+        await self.async_session.flush()
+
+        problem_card = ProblemCard(
+            problem_id=problem.id,
+            category_name="cat",
+            category_price=100,
+            quiz_field_id=quiz_field.id,
+            row=1,
+            column=1,
+        )
+        self.async_session.add(problem_card)
+
+        await self.async_session.refresh(contest)
+        return contest
 
     @log_calls
     async def create_contest(

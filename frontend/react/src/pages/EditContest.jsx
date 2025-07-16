@@ -101,33 +101,81 @@ function EditContest() {
     return <ErrorBlock code={error.code} message={error.message} />;
   }
   return (
-    <div style={{ maxWidth: 600, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.08)' }}>
-      <h1 style={{ textAlign: 'center' }}>Редактирование контеста</h1>
-      <form style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }} onSubmit={handleSubmit}>
-        <label>
-          Название:
-          <input name="name" type="text" maxLength={256} required value={form.name} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
-        </label>
-        <label>
-          Стартовый баланс:
-          <input name="start_points" type="number" min={0} max={10000} required value={form.start_points} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
-        </label>
-        <label>
-          Сколько задач разрешено держать одновременно (1–5):
-          <input name="number_of_slots_for_problems" type="number" min={1} max={5} required value={form.number_of_slots_for_problems} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
-        </label>
-        <label>
-          Начало:
-          <input name="started_at" type="datetime-local" required value={form.started_at} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
-        </label>
-        <label>
-          Окончание:
-          <input name="closed_at" type="datetime-local" required value={form.closed_at} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
-        </label>
-        <button type="submit" style={{ padding: 10, background: '#61dafb', color: '#282c34', border: 'none', borderRadius: 4, fontWeight: 500, marginTop: 12 }} disabled={loading}>
-          {loading ? 'Сохранение...' : 'Сохранить'}
+    <div>
+      <div style={{ maxWidth: 600, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.08)' }}>
+        <h1 style={{ textAlign: 'center' }}>Редактирование контеста</h1>
+        <form style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }} onSubmit={handleSubmit}>
+          <label>
+            Название:
+            <input name="name" type="text" maxLength={256} required value={form.name} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
+          </label>
+          <label>
+            Стартовый баланс:
+            <input name="start_points" type="number" min={0} max={10000} required value={form.start_points} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
+          </label>
+          <label>
+            Сколько задач разрешено держать одновременно (1–5):
+            <input name="number_of_slots_for_problems" type="number" min={1} max={5} required value={form.number_of_slots_for_problems} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
+          </label>
+          <label>
+            Начало:
+            <input name="started_at" type="datetime-local" required value={form.started_at} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
+          </label>
+          <label>
+            Окончание:
+            <input name="closed_at" type="datetime-local" required value={form.closed_at} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
+          </label>
+          <button type="submit" style={{ padding: 10, background: '#61dafb', color: '#282c34', border: 'none', borderRadius: 4, fontWeight: 500, marginTop: 12 }} disabled={loading}>
+            {loading ? 'Сохранение...' : 'Сохранить'}
+          </button>
+        </form>
+      </div>
+      <div style={{ textAlign: 'center', marginTop: 24 }}>
+        <button
+          type="button"
+          style={{ padding: 10, background: '#eee', color: '#282c34', border: '1px solid #ccc', borderRadius: 4, fontWeight: 500, marginRight: 12 }}
+          onClick={() => window.location.href = '/edit-field'}
+        >
+          Редактировать поле
         </button>
-      </form>
+        <button
+          type="button"
+          style={{ padding: 10, background: '#ff4d4f', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 500 }}
+          onClick={async () => {
+            if (window.confirm('Вы уверены, что хотите удалить этот контест? Это действие необратимо.')) {
+              setLoading(true);
+              setError(null);
+              try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch(`${config.backendUrl}api/v1/contest/?contest_id=${contestId}`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': token ? `Bearer ${token}` : '',
+                  },
+                  credentials: 'include',
+                });
+                setLoading(false);
+                if (!response.ok) {
+                  let msg = 'Ошибка удаления';
+                  try {
+                    const data = await response.json();
+                    if (data && data.detail) msg = data.detail;
+                  } catch {}
+                  setError({ code: response.status, message: msg });
+                  return;
+                }
+                alert('Контест успешно удалён!');
+                window.location.href = '/my-contests';
+              } catch (err) {
+                setLoading(false);
+                setError({ code: 'network', message: 'Ошибка сети' });
+              }
+            }
+          }}
+        >
+          Удалить контест
+        </button>
+      </div>
     </div>
   );
 }

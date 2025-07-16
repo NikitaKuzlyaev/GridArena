@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Sequence
 
 # from core.dependencies.repository import get_repository, get_repository_manual
-from core.models import Contest
+from core.models import Contest, QuizField
 from core.models.permission import PermissionResourceType, PermissionActionType
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.permission import PermissionCRUDRepository
@@ -31,7 +31,16 @@ class QuizFieldService(IQuizFieldService):
             number_of_rows: int,
             number_of_columns: int,
     ) -> QuizFieldId:
-        ...
+        quiz_field: QuizField = (
+            await self.quiz_field_repo.create_quiz_field(
+                contest_id=contest_id,
+                number_of_rows=number_of_rows,
+                number_of_columns=number_of_columns,
+            )
+        )
+        res = QuizFieldId(quiz_field_id=quiz_field.id)
+
+        return res
 
     @log_calls
     async def update_quiz_field(

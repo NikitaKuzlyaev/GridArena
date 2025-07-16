@@ -13,12 +13,16 @@ from core.schemas.problem_card import ProblemCardId
 
 class IProblemCardService(Protocol):
 
-    # async def create_problem_card(
-    #         self,
-    #         statement: str,
-    #         answer: str,
-    # ) -> ProblemId:
-    #     ...
+    async def create_problem_card(
+            self,
+            problem_id: int,
+            category_name: str,
+            category_price: int,
+            quiz_field_id: int,
+            row: int,
+            column: int,
+    ) -> ProblemCardId:
+        ...
 
     async def update_problem_card(
             self,

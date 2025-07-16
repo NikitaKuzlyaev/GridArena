@@ -1,7 +1,8 @@
 import datetime
+from typing import Optional
 
 from sqlalchemy import String, DateTime, Integer, Boolean, ForeignKey, CheckConstraint
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import functions as sqlalchemy_functions
 
@@ -11,13 +12,26 @@ from core.database.connection import Base
 class ProblemCard(Base):
     __tablename__ = "problem_card"
 
+    __table_args__ = (
+        CheckConstraint("category_price BETWEEN 0 AND 10000", name="check_category_price"),
+    )
+
+    problem: Mapped[Optional["Problem"]] = relationship(
+        back_populates="problem_cards",
+        passive_deletes=True
+    )
+
+    quiz_field: Mapped["QuizField"] = relationship(
+        back_populates="problem_cards"
+    )
+
     id: Mapped[int] = mapped_column(
         primary_key=True
     )
 
     problem_id: Mapped[int] = mapped_column(
-        ForeignKey("problem.id"),
-        nullable=False
+        ForeignKey("problem.id", ondelete="SET NULL"),
+        nullable=True
     )
 
     category_name: Mapped[str] = mapped_column(
@@ -28,12 +42,11 @@ class ProblemCard(Base):
 
     category_price: Mapped[int] = mapped_column(
         Integer,
-        CheckConstraint("category_price BETWEEN 0 AND 10000"),
         nullable=False,
     )
 
     quiz_field_id: Mapped[int] = mapped_column(
-        ForeignKey("quiz_field.id"),
+        ForeignKey("quiz_field.id", ondelete="CASCADE"),
         nullable=False
     )
 

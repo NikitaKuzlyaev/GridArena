@@ -20,7 +20,9 @@ class PermissionResourceType(enum.Enum):
 
 class Permission(Base):
     __tablename__ = "permission"
-
+    __table_args__ = (
+        Index("ix_permission_scope", "user_id", "resource_type", "resource_id"),
+    )
     id: Mapped[int] = mapped_column(
         primary_key=True,
     )
@@ -39,8 +41,4 @@ class Permission(Base):
 
     permission_type: Mapped[PermissionActionType] = mapped_column(
         Enum(PermissionActionType)
-    )
-
-    __table_args__ = (
-        Index("ix_permission_scope", "user_id", "resource_type", "resource_id"),
     )

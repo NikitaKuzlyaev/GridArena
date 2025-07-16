@@ -1,7 +1,8 @@
 import datetime
+from typing import List
 
 from sqlalchemy import String, DateTime, Integer, Boolean, ForeignKey, CheckConstraint
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import functions as sqlalchemy_functions
 
@@ -11,12 +12,20 @@ from core.database.connection import Base
 class QuizField(Base):
     __tablename__ = "quiz_field"
 
+    contest: Mapped["Contest"] = relationship(back_populates="quiz_fields")
+
+    problem_cards: Mapped[List["ProblemCard"]] = relationship(
+        back_populates="quiz_field",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
     id: Mapped[int] = mapped_column(
         primary_key=True
     )
 
     contest_id: Mapped[int] = mapped_column(
-        ForeignKey("contest.id"),
+        ForeignKey("contest.id", ondelete="CASCADE"),
         nullable=False
     )
 

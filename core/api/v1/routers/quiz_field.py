@@ -28,28 +28,28 @@ from core.utilities.loggers.logger import logger
 router = fastapi.APIRouter(prefix="/quiz-field", tags=["quiz-field"])
 
 
-@router.post(
-    path="/",
-    response_model=QuizFieldId,
-    status_code=201,
-)
-@async_http_exception_mapper(
-    mapping={
-    }
-)
-async def create_quiz_field(
-        params: QuizFieldCreateRequest = Body(...),
-        user: User = Depends(get_user),
-        quiz_service: IQuizFieldService = Depends(get_quiz_field_service),
-) -> JSONResponse:
-    result: QuizFieldId = (
-        await quiz_service.create_quiz_field(
-            **params.model_dump(),
-        )
-    )
-    result = result.model_dump()
-
-    return JSONResponse({'body': result})
+# @router.post(
+#     path="/",
+#     response_model=QuizFieldId,
+#     status_code=201,
+# )
+# @async_http_exception_mapper(
+#     mapping={
+#     }
+# )
+# async def create_quiz_field(
+#         params: QuizFieldCreateRequest = Body(...),
+#         user: User = Depends(get_user),
+#         quiz_service: IQuizFieldService = Depends(get_quiz_field_service),
+# ) -> JSONResponse:
+#     result: QuizFieldId = (
+#         await quiz_service.create_quiz_field(
+#             **params.model_dump(),
+#         )
+#     )
+#     result = result.model_dump()
+#
+#     return JSONResponse({'body': result})
 
 
 @router.patch(
@@ -93,7 +93,7 @@ async def quiz_field_info_for_editor(
         user: User = Depends(get_user),
         quiz_field_service: IQuizFieldService = Depends(get_contest_service),
         permission_service: IPermissionService = Depends(get_permission_service),
-) -> JSONResponse:
+) -> QuizFieldInfoForEditor:
     await permission_service.raise_if_not_all([
         lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=contest_id),
     ])
@@ -106,7 +106,7 @@ async def quiz_field_info_for_editor(
     )
     result = result.model_dump()
 
-    return JSONResponse({'body': result})
+    return result
 
 
 @router.get(

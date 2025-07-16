@@ -25,6 +25,49 @@ class ContestService(IContestService):
         self.permission_service = permission_service
 
     @log_calls
+    async def create_full_contest(
+            self,
+            user_id: int,
+            name: str,
+            started_at: datetime,
+            closed_at: datetime,
+            start_points: int,
+            number_of_slots_for_problems: int,
+    ) -> ContestId:
+        contest = (
+            await self.contest_repo.create_full_contest(
+                name=name,
+                started_at=started_at,
+                closed_at=closed_at,
+                start_points=start_points,
+                number_of_slots_for_problems=number_of_slots_for_problems,
+            )
+        )
+        res = ContestId(contest_id=contest.id)
+
+        return res
+
+    @log_calls
+    async def delete_contest(
+            self,
+            user_id,
+            contest_id,
+    ) -> None:
+        contest: Contest = (
+            await self.contest_repo.get_contest_by_id(
+                contest_id=contest_id,
+            )
+        )
+        if not contest:
+            raise EntityDoesNotExist("contest not found")
+
+        await self.contest_repo.delete_contest(
+            contest_id=contest_id,
+        )
+
+        return None
+
+    @log_calls
     async def contest_info_for_editor(
             self,
             user_id,
@@ -67,12 +110,6 @@ class ContestService(IContestService):
                 start_points=start_points,
                 number_of_slots_for_problems=number_of_slots_for_problems,
             )
-        )
-        await self.permission_service.give_permission_for_admin_contest(
-            user_id=user_id, contest_id=contest.id,
-        )
-        await self.permission_service.give_permission_for_edit_contest(
-            user_id=user_id, contest_id=contest.id,
         )
         res = ContestId(contest_id=contest.id)
 

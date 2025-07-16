@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Sequence
 
 # from core.dependencies.repository import get_repository, get_repository_manual
-from core.models import Contest
+from core.models import Contest, Problem
 from core.models.permission import PermissionResourceType, PermissionActionType
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.permission import PermissionCRUDRepository
@@ -30,7 +30,15 @@ class ProblemService(IProblemService):
             statement: str,
             answer: str,
     ) -> ProblemId:
-        ...
+        problem: Problem = (
+            await self.problem_repo.create_problem(
+                statement=statement,
+                answer=answer,
+            )
+        )
+        res = ProblemId(problem_id=problem.id)
+
+        return res
 
     @log_calls
     async def update_problem(

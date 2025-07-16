@@ -44,7 +44,7 @@ function CreateContest() {
         setError({ code: response.status, message: data.detail || response.statusText });
         return;
       }
-      if (data.body && data.body.contest_id) {
+      if (data.contestId) {
         window.location.href = '/my-contests';
       } else {
         setError({ code: 'unknown', message: 'Некорректный ответ сервера' });
