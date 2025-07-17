@@ -6,25 +6,32 @@ from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import functions as sqlalchemy_functions
 
 from core.database.connection import Base
-
+import uuid
 
 class User(Base):
     __tablename__ = "user"
-    # __table_args__ = (
-    #     UniqueConstraint("domain_number", "username", name="uq_user_domain_username"),
-    # )
+    __table_args__ = (
+        UniqueConstraint("domain_number", "username", name="uq_user_domain_username"),
+    )
 
     id: Mapped[int] = mapped_column(
         primary_key=True
     )
 
-    # domain_number: Mapped[int] = mapped_column(
-    #     Integer,
-    #     nullable=True
-    # )
+    domain_number: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )
 
     username: Mapped[str] = mapped_column(
         String(64),
+        unique=True,
+        nullable=False
+    )
+
+    uuid: Mapped[str] = mapped_column(
+        String(36),
+        default=lambda: str(uuid.uuid4()),
         unique=True,
         nullable=False
     )

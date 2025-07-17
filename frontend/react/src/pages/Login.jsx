@@ -6,6 +6,7 @@ function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [domain, setDomain] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,6 +20,7 @@ function Login() {
         body: new URLSearchParams({
           username,
           password,
+          domain_number: domain,
         }),
         credentials: 'include',
       });
@@ -44,6 +46,17 @@ function Login() {
     <div className="login-page">
       <h2>Авторизация</h2>
       <form className="login-form" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Домен"
+          value={domain}
+          onChange={e => setDomain(e.target.value)}
+          name="domain"
+          required
+        />
+        <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px' }}>
+          0 - для организаторов, для участников номер домена сообщается организаторами
+        </div>
         <input
           type="text"
           placeholder="Логин"

@@ -1,17 +1,31 @@
 from core.models.user import User
 from core.repository.crud.user import UserCRUDRepository
-from core.schemas.user import UserCreate
+from core.schemas.user import SiteUserCreate
 from core.services.security import decode_token
 from core.utilities.exceptions.auth import TokenException
-from core.utilities.exceptions.database import EntityDoesNotExist
+from core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
 
 
-async def register_user(
-        data: UserCreate,
+async def register_site_user(
+        data: SiteUserCreate,
+        user_repo: UserCRUDRepository,
+) -> User:
+    try:
+        user: User = (
+            await user_repo.create_site_user(
+                data=data,
+            )
+        )
+        return user
+    except EntityAlreadyExists:
+        raise EntityAlreadyExists("Пользователь с таким username уже существует в указанном домене")
+
+async def register_contest_user(
+        data: SiteUserCreate,
         user_repo: UserCRUDRepository,
 ) -> User:
     user: User = (
-        await user_repo.create_user(
+        await user_repo.create_site_user(
             data=data,
         )
     )
@@ -24,15 +38,22 @@ async def verify_refresh_token(
 ) -> User | None:
     try:
         payload = decode_token(token=token)
-        username: str = payload.get("sub")
+        #username: str = payload.get("sub")
+        user_uuid: str = payload.get("sub")
         token_type: str = payload.get("token_type")
 
-        if username is None or token_type is None or token != 'refresh':
+        # if username is None or token_type is None or token != 'refresh':
+        #     raise TokenException("Invalid authentication credentials")
+
+        if user_uuid is None or token_type is None or token != 'refresh':
             raise TokenException("Invalid authentication credentials")
 
         user: User = (
-            await user_repo.get_user_by_username(
-                username=username,
+            # await user_repo.get_user_by_username(
+            #     username=username,
+            # )
+            await user_repo.get_user_by_uuid(
+                user_uuid=user_uuid,
             )
         )
 
@@ -47,29 +68,44 @@ async def verify_refresh_token(
 
 
 async def authenticate_user(
+        domain_number: int,
         username: str,
         password: str,
         user_repo: UserCRUDRepository,
 ) -> str:
     token: str = (
         await user_repo.authenticate_user(
+            domain_number=domain_number,
             username=username,
             password=password,
         )
     )
     return token
 
-
-async def get_user_by_username(
-        username: str,
+async def get_user_by_uuid(
+        user_uuid: str,
         user_repo: UserCRUDRepository,
 ) -> User:
     user: User = (
-        await user_repo.get_user_by_username(
-            username=username,
+        await user_repo.get_user_by_uuid(
+            user_uuid=user_uuid,
         )
     )
     if not user:
         raise EntityDoesNotExist
 
     return user
+
+# async def get_user_by_username(
+#         username: str,
+#         user_repo: UserCRUDRepository,
+# ) -> User:
+#     user: User = (
+#         await user_repo.get_user_by_username(
+#             username=username,
+#         )
+#     )
+#     if not user:
+#         raise EntityDoesNotExist
+#
+#     return user

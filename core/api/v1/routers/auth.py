@@ -1,34 +1,54 @@
 from typing import Annotated
 
 import fastapi
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Body
 from fastapi import Security
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, Request, Response
 
-from core.dependencies.authorization import oauth2_scheme
+from core.dependencies.authorization import oauth2_scheme, get_user
 from core.dependencies.repository import get_repository
+from core.forms.authorization import CustomLoginForm
 from core.models.user import User
 from core.repository.crud.user import UserCRUDRepository
-from core.schemas.user import UserCreate, UserOut, Token
+from core.schemas.user import SiteUserCreate, UserOut, Token, RefreshToken
 from core.services.domain import auth as auth_service
 from core.services.domain.auth import verify_refresh_token
 from core.services.security import REFRESH_TOKEN_EXPIRE_MINUTES, create_refresh_token, create_access_token
 from core.utilities.exceptions.auth import UnauthorizedException, TokenException
+from core.utilities.exceptions.database import EntityAlreadyExists
+from core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
 
 router = fastapi.APIRouter(prefix="/auth", tags=["authentication"])
+
+#
+# @router.post(
+#     path="/block-my-token",
+#     status_code=204,
+# )
+# async def push_token_to_blacklist(
+#         params: RefreshToken = Body(...),
+#         user: User = Depends(get_user),
+#         user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
+# ):
+
 
 
 @router.post(
     path="/register",
     response_model=UserOut,
 )
+@async_http_exception_mapper(
+    mapping={
+        EntityAlreadyExists: (409, None),
+    }
+)
 async def register(
-        data: UserCreate,
+        data: SiteUserCreate,
         user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
 ):
     user: User = (
-        await auth_service.register_user(
+        await auth_service.register_site_user(
             data=data,
             user_repo=user_repo,
         )
@@ -43,13 +63,15 @@ async def register(
 )
 async def login_for_access_token(
         response: Response,
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        # form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        form_data: Annotated[CustomLoginForm, Depends()],
         user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
 ) -> dict[str, str]:
     """"""
     try:
         access_token: str = (
             await auth_service.authenticate_user(
+                domain_number=form_data.domain_number,
                 username=form_data.username,
                 password=form_data.password,
                 user_repo=user_repo,

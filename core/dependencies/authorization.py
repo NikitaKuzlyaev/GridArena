@@ -23,15 +23,21 @@ async def get_user(
     print(token)
     try:
         payload = decode_token(token=token)
-        username: str = payload.get("sub")
-        if username is None:
+        #username: str = payload.get("sub")
+        user_uuid: str = payload.get("sub")
+
+        if user_uuid is None:
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
         user: User = (
-            await auth_service.get_user_by_username(
-                username=username,
+            await auth_service.get_user_by_uuid(
+                user_uuid=user_uuid,
                 user_repo=user_repo,
             )
+            # await auth_service.get_user_by_username(
+            #     username=username,
+            #     user_repo=user_repo,
+            # )
         )
 
         return user
