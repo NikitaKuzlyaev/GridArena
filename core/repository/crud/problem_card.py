@@ -1,16 +1,10 @@
-from datetime import datetime
 from typing import Sequence, Tuple
 
-from mako.testing.helpers import result_lines
-from sqlalchemy import select, update, delete, and_, Row
+from sqlalchemy import select, update, Row
 
 from core.dependencies.repository import get_repository
-from core.models import Contest, Permission, Problem, ProblemCard
-from core.models.permission import PermissionResourceType, PermissionActionType
+from core.models import Problem, ProblemCard
 from core.repository.crud.base import BaseCRUDRepository
-from core.schemas.contest import ContestId
-from core.schemas.problem import ProblemId
-from core.schemas.problem_card import ProblemCardId
 from core.utilities.loggers.log_decorator import log_calls
 
 

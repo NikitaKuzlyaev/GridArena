@@ -1,21 +1,13 @@
-from datetime import datetime
-from typing import Sequence, Optional, Callable, Awaitable
+from typing import Optional, Callable, Awaitable
 
-# from core.dependencies.repository import get_repository, get_repository_manual
-from core.models import Contest, ProblemCard, QuizField, Problem
+from core.models import ProblemCard, QuizField
 from core.models.permission import PermissionResourceType, PermissionActionType, Permission
-from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.permission import PermissionCRUDRepository
 from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.quiz import QuizFieldCRUDRepository
-from core.schemas.contest import ContestId, ContestShortInfo
 from core.schemas.permission import PermissionId
-
-from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
-from core.utilities.exceptions.database import EntityDoesNotExist
 from core.utilities.exceptions.permission import PermissionDenied
-from core.utilities.loggers.log_decorator import log_calls
 
 
 class PermissionService(IPermissionService):
@@ -164,7 +156,7 @@ class PermissionService(IPermissionService):
             user_id: int,
             problem_card_id: int,
     ) -> PermissionId | None:
-        problem_card : ProblemCard = (
+        problem_card: ProblemCard = (
             await self.problem_card_repo.get_problem_card_by_id(
                 problem_card_id=problem_card_id,
             )

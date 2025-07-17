@@ -1,13 +1,9 @@
 from datetime import datetime
 from typing import Sequence
 
-# from core.dependencies.repository import get_repository, get_repository_manual
 from core.models import Contest
-from core.models.permission import PermissionResourceType, PermissionActionType
 from core.repository.crud.contest import ContestCRUDRepository
-from core.repository.crud.permission import PermissionCRUDRepository
 from core.schemas.contest import ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor
-
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
 from core.utilities.exceptions.database import EntityDoesNotExist
@@ -90,7 +86,6 @@ class ContestService(IContestService):
             closed_at=contest.closed_at,
         )
         return res
-
 
     @log_calls
     async def create_contest(

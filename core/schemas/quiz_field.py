@@ -1,11 +1,9 @@
-from core.models import ProblemCard
+from typing import Sequence
+
+from pydantic import Field
+
 from core.schemas.base import BaseSchemaModel
-from datetime import datetime
-from typing import Optional, Sequence
-
-from pydantic import Field, validator, root_validator, model_validator
-
-from core.schemas.problem_card import ProblemCardInfoForEditor, ProblemCardInfoForContestant, ProblemCardInfo
+from core.schemas.problem_card import ProblemCardInfoForContestant, ProblemCardInfo
 
 
 class QuizFieldId(BaseSchemaModel):

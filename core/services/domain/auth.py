@@ -20,6 +20,7 @@ async def register_site_user(
     except EntityAlreadyExists:
         raise EntityAlreadyExists("Пользователь с таким username уже существует в указанном домене")
 
+
 async def register_contest_user(
         data: SiteUserCreate,
         user_repo: UserCRUDRepository,
@@ -38,20 +39,13 @@ async def verify_refresh_token(
 ) -> User | None:
     try:
         payload = decode_token(token=token)
-        #username: str = payload.get("sub")
         user_uuid: str = payload.get("sub")
         token_type: str = payload.get("token_type")
-
-        # if username is None or token_type is None or token != 'refresh':
-        #     raise TokenException("Invalid authentication credentials")
 
         if user_uuid is None or token_type is None or token != 'refresh':
             raise TokenException("Invalid authentication credentials")
 
         user: User = (
-            # await user_repo.get_user_by_username(
-            #     username=username,
-            # )
             await user_repo.get_user_by_uuid(
                 user_uuid=user_uuid,
             )
@@ -82,6 +76,7 @@ async def authenticate_user(
     )
     return token
 
+
 async def get_user_by_uuid(
         user_uuid: str,
         user_repo: UserCRUDRepository,
@@ -95,17 +90,3 @@ async def get_user_by_uuid(
         raise EntityDoesNotExist
 
     return user
-
-# async def get_user_by_username(
-#         username: str,
-#         user_repo: UserCRUDRepository,
-# ) -> User:
-#     user: User = (
-#         await user_repo.get_user_by_username(
-#             username=username,
-#         )
-#     )
-#     if not user:
-#         raise EntityDoesNotExist
-#
-#     return user

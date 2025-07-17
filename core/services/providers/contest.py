@@ -2,7 +2,6 @@ from fastapi import Depends
 
 from core.dependencies.repository import get_repository
 from core.repository.crud.contest import ContestCRUDRepository
-from core.repository.crud.permission import PermissionCRUDRepository
 from core.services.domain.contest import ContestService
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService

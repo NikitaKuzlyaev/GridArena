@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import select
 
 from core.dependencies.repository import get_repository

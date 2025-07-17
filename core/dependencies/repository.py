@@ -18,12 +18,6 @@ def get_repository(repo_type: Type[T]) -> Callable[[AsyncSession], T]:
     return _get_repo
 
 
-# def get_repository_manual(repo_type: Type[T]) -> Callable[[AsyncSession], T]:
-#
-#     async_session: AsyncSession = get_async_session()
-#     repo = repo_type(async_session=async_session)
-#     return repo
-
 async def get_repository_manual(repo_type: Type[T]) -> T:
     async_session_generator = get_async_session()
     async for session in async_session_generator:

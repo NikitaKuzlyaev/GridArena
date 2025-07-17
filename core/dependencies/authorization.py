@@ -20,10 +20,8 @@ async def get_user(
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    print(token)
     try:
         payload = decode_token(token=token)
-        #username: str = payload.get("sub")
         user_uuid: str = payload.get("sub")
 
         if user_uuid is None:
@@ -34,10 +32,6 @@ async def get_user(
                 user_uuid=user_uuid,
                 user_repo=user_repo,
             )
-            # await auth_service.get_user_by_username(
-            #     username=username,
-            #     user_repo=user_repo,
-            # )
         )
 
         return user

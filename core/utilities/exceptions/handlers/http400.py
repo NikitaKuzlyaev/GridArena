@@ -3,16 +3,6 @@ from typing import Type
 
 from fastapi import HTTPException
 
-"""
-Для примера mapping
-
-EXCEPTION_MAPPING: dict[Type[Exception], tuple[int, str]] = {
-    PermissionDenied: (403, "Permission denied"),
-    EntityDoesNotExist: (404, "Entity does not exist"),
-    EntityAlreadyExists: (409, "Entity already exists"),
-}
-"""
-
 
 def async_http_exception_mapper(
         mapping: dict[Type[Exception], tuple[int, str | None]] = None,

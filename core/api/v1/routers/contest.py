@@ -1,19 +1,13 @@
-from idlelib.rpc import request_queue
-from typing import Sequence
-
 import fastapi
 from fastapi import Body
-from fastapi import Depends, Request
-from fastapi import Query, HTTPException
-from starlette.responses import JSONResponse, Response
+from fastapi import Depends
+from fastapi import Query
+from starlette.responses import JSONResponse
 
 from core.dependencies.authorization import get_user
 from core.models import User
-from core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateRequest, ContestShortInfo, \
-    ContestInfoForEditor, ContestInfoForContestant, ArrayContestShortInfo
-from core.schemas.problem import ProblemId
-from core.schemas.problem_card import ProblemCardId
-from core.schemas.quiz_field import QuizFieldId
+from core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateRequest, ContestInfoForEditor, \
+    ContestInfoForContestant, ArrayContestShortInfo
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
 from core.services.interfaces.problem import IProblemService
@@ -24,11 +18,9 @@ from core.services.providers.permission import get_permission_service
 from core.services.providers.problem import get_problem_service
 from core.services.providers.problem_card import get_problem_card_service
 from core.services.providers.quiz import get_quiz_field_service
-
-from core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
+from core.utilities.exceptions.database import EntityDoesNotExist
 from core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
 from core.utilities.exceptions.permission import PermissionDenied
-from core.utilities.loggers.logger import logger
 
 router = fastapi.APIRouter(prefix="/contest", tags=["contest"])
 
@@ -46,9 +38,6 @@ async def create_contest(
         params: ContestCreateRequest = Body(...),
         user: User = Depends(get_user),
         contest_service: IContestService = Depends(get_contest_service),
-        quiz_field_service: IQuizFieldService = Depends(get_quiz_field_service),
-        problem_service: IProblemService = Depends(get_problem_service),
-        problem_card_service: IProblemCardService = Depends(get_problem_card_service),
         permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ContestId:
     res: ContestId = (
@@ -140,6 +129,7 @@ async def view_contests(
         )
     )
     result = result.model_dump()
+
     return result
 
 
@@ -190,7 +180,6 @@ async def contest_info_for_contestant(
         contest_id=Query(...),
         user: User = Depends(get_user),
         contest_service: IContestService = Depends(get_contest_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> JSONResponse:
     result: ContestInfoForContestant = (
         await contest_service.contest_info_for_contestant(

@@ -175,6 +175,22 @@ function EditContest() {
         >
           Удалить контест
         </button>
+        <div style={{ marginTop: 24 }}>
+          <button
+            type="button"
+            style={{ padding: 10, background: '#21a1f3', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 500, marginRight: 12 }}
+            onClick={() => window.location.href = `/edit-contestants?contest_id=${contestId}`}
+          >
+            Управление участниками
+          </button>
+          <button
+            type="button"
+            style={{ padding: 10, background: '#21a1f3', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 500 }}
+            onClick={() => window.location.href = `/edit-submissions?contest_id=${contestId}`}
+          >
+            Управление посылками
+          </button>
+        </div>
       </div>
     </div>
   );

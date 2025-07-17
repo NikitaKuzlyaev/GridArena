@@ -1,12 +1,9 @@
 from enum import Enum
 
+from pydantic import Field
+
 from core.schemas.base import BaseSchemaModel
-from datetime import datetime
-from typing import Optional
-
-from pydantic import Field, validator, root_validator, model_validator
-
-from core.schemas.problem import ProblemInfoForEditor, ProblemInfoForContestant, ProblemId
+from core.schemas.problem import ProblemInfoForEditor, ProblemId
 
 
 class ProblemCardId(BaseSchemaModel):
@@ -17,6 +14,7 @@ class ProblemCardUpdateRequest(BaseSchemaModel):
     problem_card_id: int
     category_name: str = Field(..., max_length=32)
     category_price: int = Field(..., ge=0, le=10000)
+
 
 class ProblemCardWithProblemUpdateRequest(BaseSchemaModel):
     problem_card_id: int
@@ -37,7 +35,6 @@ class ProblemCardWithProblemCreateRequest(BaseSchemaModel):
     answer: str = Field(..., max_length=32)
 
 
-
 class ProblemCardStatus(str, Enum):
     CLOSED = "CLOSED"
     SOLVING = "SOLVING"
@@ -47,11 +44,12 @@ class ProblemCardStatus(str, Enum):
 
 class ProblemCardInfo(BaseSchemaModel):
     problem_card_id: int
-    problem: ProblemId #ProblemInfoForEditor
+    problem: ProblemId  # ProblemInfoForEditor
     row: int
     column: int
     category_price: int
     category_name: str
+
 
 class ProblemCardInfoForEditor(BaseSchemaModel):
     problem_card_id: int

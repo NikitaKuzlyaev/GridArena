@@ -1,10 +1,7 @@
 from datetime import datetime
 from typing import Protocol
-from typing import Sequence
 
-from core.models import Contest
-
-from core.schemas.contest import ContestId, ContestCreateRequest, ContestShortInfo, ContestInfoForEditor, \
+from core.schemas.contest import ContestId, ContestInfoForEditor, \
     ContestInfoForContestant, ArrayContestShortInfo
 
 

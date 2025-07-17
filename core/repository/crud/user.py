@@ -1,14 +1,14 @@
-import typing
+import uuid
 
 from sqlalchemy import select
-import uuid
+
 from core.dependencies.repository import get_repository
 from core.models.user import User
 from core.repository.crud.base import BaseCRUDRepository
 from core.schemas.user import SiteUserCreate, ContestUserCreate
 from core.services.security import hash_password, verify_password, create_access_token
 from core.utilities.exceptions.auth import TokenException
-from core.utilities.exceptions.database import EntityAlreadyExists, EntityDoesNotExist
+from core.utilities.exceptions.database import EntityAlreadyExists
 from core.utilities.loggers.log_decorator import log_calls
 
 
@@ -96,24 +96,6 @@ class UserCRUDRepository(BaseCRUDRepository):
         return create_access_token({"sub": user.uuid})
 
     @log_calls
-    async def get_user_by_username(
-            self,
-            username: str,
-    ) -> User | None:
-        ...
-        # res = (
-        #     await self.async_session.execute(
-        #         select(
-        #             User
-        #         ).where(
-        #             User.username == username,
-        #         )
-        #     )
-        # )
-        # user = res.scalar_one_or_none()
-        # return user
-
-    @log_calls
     async def get_user_by_uuid(
             self,
             user_uuid: str,
@@ -149,22 +131,6 @@ class UserCRUDRepository(BaseCRUDRepository):
         )
         res = await self.async_session.execute(stmt)
         return res.scalars().one_or_none()
-
-    # Debug!!!!
-    @log_calls
-    async def get_all_users(
-            self,
-    ) -> typing.Sequence[User]:
-        result = (
-            await self.async_session.execute(
-                select(
-                    User
-                )
-            )
-        )
-        users = result.scalars().all()
-
-        return users
 
 
 user_repo = get_repository(

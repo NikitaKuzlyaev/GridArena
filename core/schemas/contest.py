@@ -1,8 +1,9 @@
-from core.schemas.base import BaseSchemaModel
 from datetime import datetime
-from typing import Optional, Sequence
+from typing import Sequence
 
-from pydantic import Field, validator, root_validator, model_validator
+from pydantic import Field, model_validator
+
+from core.schemas.base import BaseSchemaModel
 
 
 class ContestCreateRequest(BaseSchemaModel):
@@ -61,8 +62,10 @@ class ContestShortInfo(BaseSchemaModel):
     started_at: datetime
     closed_at: datetime
 
+
 class ArrayContestShortInfo(BaseSchemaModel):
     body: Sequence[ContestShortInfo]
+
 
 class ContestInfoForEditor(BaseSchemaModel):
     contest_id: int

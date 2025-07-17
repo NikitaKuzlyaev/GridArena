@@ -1,8 +1,6 @@
-from core.schemas.base import BaseSchemaModel
-from datetime import datetime
-from typing import Optional
+from pydantic import Field
 
-from pydantic import Field, validator, root_validator, model_validator
+from core.schemas.base import BaseSchemaModel
 
 
 class ProblemId(BaseSchemaModel):
@@ -15,13 +13,11 @@ class ProblemUpdateRequest(BaseSchemaModel):
     answer: str = Field(..., max_length=32)
 
 
-# class ProblemInfoForEditor(BaseSchemaModel):
-#     problem_id: int
-
 class ProblemInfoForEditor(BaseSchemaModel):
     problem_id: int
     statement: str
     answer: str
+
 
 class ProblemInfoForContestant(BaseSchemaModel):
     problem_id: int

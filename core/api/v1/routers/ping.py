@@ -1,5 +1,4 @@
 import fastapi
-from fastapi import Depends
 from starlette.responses import JSONResponse
 
 router = fastapi.APIRouter(prefix="/ping", tags=["ping"])

@@ -1,23 +1,13 @@
-from datetime import datetime
 from typing import Sequence, Tuple
 
 from sqlalchemy import Row
 
-# from core.dependencies.repository import get_repository, get_repository_manual
-from core.models import Contest, QuizField, ProblemCard, Problem
-from core.models.permission import PermissionResourceType, PermissionActionType
-from core.repository.crud.contest import ContestCRUDRepository
-from core.repository.crud.permission import PermissionCRUDRepository
-from core.repository.crud.problem import ProblemCRUDRepository
+from core.models import QuizField, ProblemCard, Problem
 from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.quiz import QuizFieldCRUDRepository
-from core.schemas.contest import ContestId, ContestShortInfo
 from core.schemas.problem import ProblemId
-from core.schemas.problem_card import ProblemCardInfoForEditor, ProblemCardInfo
+from core.schemas.problem_card import ProblemCardInfo
 from core.schemas.quiz_field import QuizFieldId, QuizFieldInfoForEditor
-
-from core.services.interfaces.contest import IContestService
-from core.services.interfaces.permission import IPermissionService
 from core.services.interfaces.quiz import IQuizFieldService
 from core.utilities.exceptions.database import EntityDoesNotExist
 from core.utilities.loggers.log_decorator import log_calls
@@ -77,7 +67,6 @@ class QuizFieldService(IQuizFieldService):
             ],
         )
         return res
-
 
     @log_calls
     async def create_quiz_field(

@@ -1,10 +1,5 @@
-from datetime import datetime
 from typing import Protocol
-from typing import Sequence
 
-from core.models import Contest
-
-from core.schemas.contest import ContestId, ContestCreateRequest, ContestShortInfo
 from core.schemas.quiz_field import QuizFieldId, QuizFieldInfoForEditor, QuizFieldInfoForContestant
 
 

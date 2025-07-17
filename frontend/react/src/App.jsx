@@ -9,6 +9,8 @@ import CreateContest from './pages/CreateContest.jsx';
 import Home from './pages/Home.jsx';
 import EditContest from './pages/EditContest.jsx';
 import EditQuizField from './pages/EditQuizField.jsx';
+import EditContestants from './pages/EditContestants.jsx';
+import EditSubmissions from './pages/EditSubmissions.jsx';
 import './App.css';
 
 function App() {
@@ -24,6 +26,8 @@ function App() {
           <Route path="/create-contest" element={<CreateContest />} />
           <Route path="/edit-contest/:contestId" element={<EditContest />} />
           <Route path="/edit-field" element={<EditQuizField />} />
+          <Route path="/edit-contestants" element={<EditContestants />} />
+          <Route path="/edit-submissions" element={<EditSubmissions />} />
         </Routes>
       </div>
     </BrowserRouter>

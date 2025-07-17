@@ -1,24 +1,11 @@
-from datetime import datetime
-from typing import Sequence, Tuple
+from typing import Tuple
 
-from sqlalchemy import Row
-
-# from core.dependencies.repository import get_repository, get_repository_manual
-from core.models import Contest, ProblemCard, Problem, QuizField
-from core.models.permission import PermissionResourceType, PermissionActionType
-from core.repository.crud.contest import ContestCRUDRepository
-from core.repository.crud.permission import PermissionCRUDRepository
-from core.repository.crud.problem_card import ProblemCardCRUDRepository, problem_card_repo
+from core.models import ProblemCard, Problem, QuizField
+from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.quiz import QuizFieldCRUDRepository
-from core.schemas.contest import ContestId, ContestShortInfo
-from core.schemas.problem import ProblemId, ProblemInfoForEditor
+from core.schemas.problem import ProblemInfoForEditor
 from core.schemas.problem_card import ProblemCardId, ProblemCardInfoForEditor
-from core.schemas.quiz_field import QuizFieldId
-
-from core.services.interfaces.contest import IContestService
-from core.services.interfaces.permission import IPermissionService
 from core.services.interfaces.problem_card import IProblemCardService
-from core.services.interfaces.quiz import IQuizFieldService
 from core.utilities.exceptions.database import EntityDoesNotExist
 from core.utilities.loggers.log_decorator import log_calls
 
@@ -53,7 +40,7 @@ class ProblemCardService(IProblemCardService):
 
         problem_card_with_problem: Tuple[ProblemCard, Problem] = (
             await self.problem_card_repo.create_problem_card_with_problem(
-                quiz_field_id= quiz_field_id,
+                quiz_field_id=quiz_field_id,
                 row=row,
                 column=column,
                 category_name=category_name,

@@ -1,5 +1,4 @@
 import datetime
-from typing import List
 
 from sqlalchemy import String, DateTime, Integer, CheckConstraint
 from sqlalchemy.orm import Mapped, relationship

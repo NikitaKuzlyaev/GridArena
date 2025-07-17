@@ -28,28 +28,6 @@ from core.utilities.loggers.logger import logger
 router = fastapi.APIRouter(prefix="/quiz-field", tags=["quiz-field"])
 
 
-# @router.post(
-#     path="/",
-#     response_model=QuizFieldId,
-#     status_code=201,
-# )
-# @async_http_exception_mapper(
-#     mapping={
-#     }
-# )
-# async def create_quiz_field(
-#         params: QuizFieldCreateRequest = Body(...),
-#         user: User = Depends(get_user),
-#         quiz_service: IQuizFieldService = Depends(get_quiz_field_service),
-# ) -> JSONResponse:
-#     result: QuizFieldId = (
-#         await quiz_service.create_quiz_field(
-#             **params.model_dump(),
-#         )
-#     )
-#     result = result.model_dump()
-#
-#     return JSONResponse({'body': result})
 
 
 @router.patch(

@@ -1,13 +1,6 @@
-from datetime import datetime
 from typing import Protocol, Optional, Callable, Awaitable
-from typing import Sequence
 
-from core.models import Contest, Permission
-from core.models.permission import PermissionActionType, PermissionResourceType
-
-from core.schemas.contest import ContestId, ContestCreateRequest, ContestShortInfo
 from core.schemas.permission import PermissionId
-from core.utilities.exceptions.permission import PermissionDenied
 
 
 class IPermissionService(Protocol):
