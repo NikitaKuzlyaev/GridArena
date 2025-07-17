@@ -1,29 +1,21 @@
-from idlelib.rpc import request_queue
-from typing import Sequence
-
 import fastapi
 from fastapi import Body
-from fastapi import Depends, Request
-from fastapi import Query, HTTPException
-from starlette.responses import JSONResponse, Response
+from fastapi import Depends
+from fastapi import Query
+from starlette.responses import JSONResponse
 
 from core.dependencies.authorization import get_user
-from core.models import User, QuizField
-from core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateRequest, ContestShortInfo, \
-    ContestInfoForEditor
-from core.schemas.quiz_field import QuizFieldId, QuizFieldCreateRequest, QuizFieldUpdateRequest, QuizFieldInfoForEditor, \
+from core.models import User
+from core.schemas.quiz_field import QuizFieldId, QuizFieldUpdateRequest, QuizFieldInfoForEditor, \
     QuizFieldInfoForContestant
-from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
 from core.services.interfaces.quiz import IQuizFieldService
 from core.services.providers.contest import get_contest_service
 from core.services.providers.permission import get_permission_service
 from core.services.providers.quiz import get_quiz_field_service
-
-from core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
+from core.utilities.exceptions.database import EntityDoesNotExist
 from core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
 from core.utilities.exceptions.permission import PermissionDenied
-from core.utilities.loggers.logger import logger
 
 router = fastapi.APIRouter(prefix="/quiz-field", tags=["quiz-field"])
 

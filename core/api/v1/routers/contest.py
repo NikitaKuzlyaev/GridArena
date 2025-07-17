@@ -10,14 +10,8 @@ from core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateR
     ContestInfoForContestant, ArrayContestShortInfo
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.permission import IPermissionService
-from core.services.interfaces.problem import IProblemService
-from core.services.interfaces.problem_card import IProblemCardService
-from core.services.interfaces.quiz import IQuizFieldService
 from core.services.providers.contest import get_contest_service
 from core.services.providers.permission import get_permission_service
-from core.services.providers.problem import get_problem_service
-from core.services.providers.problem_card import get_problem_card_service
-from core.services.providers.quiz import get_quiz_field_service
 from core.utilities.exceptions.database import EntityDoesNotExist
 from core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
 from core.utilities.exceptions.permission import PermissionDenied
