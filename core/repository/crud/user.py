@@ -16,14 +16,15 @@ class UserCRUDRepository(BaseCRUDRepository):
     @log_calls
     async def create_site_user(
             self,
-            data: SiteUserCreate
+            username: str,
+            password: str,
     ) -> User:
         user_exists = (
             await self.async_session.scalar(
                 select(
                     User
                 ).where(
-                    User.username == data.username,
+                    User.username == username,
                     User.domain_number == 0,
                 )
             )
@@ -33,8 +34,8 @@ class UserCRUDRepository(BaseCRUDRepository):
 
         user = User(
             domain_number=0,
-            username=data.username,
-            hashed_password=hash_password(data.password),
+            username=username,
+            hashed_password=hash_password(password),
             uuid=str(uuid.uuid4())
         )
         self.async_session.add(user)
@@ -46,15 +47,17 @@ class UserCRUDRepository(BaseCRUDRepository):
     @log_calls
     async def create_contest_user(
             self,
-            data: ContestUserCreate
+            domain_number: int,
+            username: str,
+            password: str,
     ) -> User:
         user_exists = (
             await self.async_session.scalar(
                 select(
                     User
                 ).where(
-                    User.username == data.username,
-                    User.domain_number == data.domain_number,
+                    User.username == username,
+                    User.domain_number == domain_number,
                 )
             )
         )
@@ -62,9 +65,9 @@ class UserCRUDRepository(BaseCRUDRepository):
             raise EntityAlreadyExists("Account with id `{id}` already exist!")
 
         user = User(
-            domain_number=data.domain_number,
-            username=data.username,
-            hashed_password=hash_password(data.password),
+            domain_number=domain_number,
+            username=username,
+            hashed_password=hash_password(password),
             uuid=str(uuid.uuid4())
         )
         self.async_session.add(user)
@@ -94,6 +97,25 @@ class UserCRUDRepository(BaseCRUDRepository):
             raise TokenException("Invalid credentials")
 
         return create_access_token({"sub": user.uuid})
+
+    @log_calls
+    async def get_user_by_username_and_domain(
+            self,
+            username: str,
+            domain_number: int,
+    ) -> User | None:
+        res = (
+            await self.async_session.execute(
+                select(
+                    User
+                ).where(
+                    User.username == username,
+                    User.domain_number == domain_number,
+                )
+            )
+        )
+        user = res.scalar_one_or_none()
+        return user
 
     @log_calls
     async def get_user_by_uuid(

@@ -13,7 +13,8 @@ async def register_site_user(
     try:
         user: User = (
             await user_repo.create_site_user(
-                data=data,
+                username=data.username,
+                password=data.password,
             )
         )
         return user
@@ -27,7 +28,8 @@ async def register_contest_user(
 ) -> User:
     user: User = (
         await user_repo.create_site_user(
-            data=data,
+            username=data.username,
+            password=data.password,
         )
     )
     return user
