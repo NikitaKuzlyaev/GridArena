@@ -8,7 +8,8 @@ from core.dependencies.authorization import get_user
 from core.models import User
 from core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateRequest, ContestInfoForEditor, \
     ContestInfoForContestant, ArrayContestShortInfo
-from core.schemas.contestant import ArrayContestantInfoForEditor, ContestantId, ContestantInCreate
+from core.schemas.contestant import ArrayContestantInfoForEditor, ContestantId, ContestantInCreate, \
+    ContestantPreviewInfo
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.contestant import IContestantService
 from core.services.interfaces.permission import IPermissionService
@@ -51,6 +52,32 @@ async def create_contestant(
     result = result.model_dump()
 
     return result
+
+
+@router.get(
+    path="/preview",
+    response_model=ContestantPreviewInfo,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def preview_contestant_info(
+        user: User = Depends(get_user),
+        contestant_service: IContestantService = Depends(get_contestant_service),
+        permission_service: IPermissionService = Depends(get_permission_service),
+) -> ContestantPreviewInfo:
+    res: ContestantPreviewInfo = (
+        await contestant_service.get_contestant_preview(
+            user_id=user.id,
+        )
+    )
+    res = res.model_dump()
+
+    return res
 
 
 @router.get(

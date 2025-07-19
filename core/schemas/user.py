@@ -1,3 +1,5 @@
+from enum import Enum
+
 from core.schemas.base import BaseSchemaModel
 
 
@@ -19,10 +21,15 @@ class UserOut(BaseSchemaModel):
     class Config:
         orm_mode = True
 
+class UserType(str, Enum):
+    SITE = "SITE"
+    CONTEST = "CONTEST"
+
 
 class Token(BaseSchemaModel):
     access_token: str
     token_type: str
+    user_type: UserType
 
 
 class RefreshToken(BaseSchemaModel):

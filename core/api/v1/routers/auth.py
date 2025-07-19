@@ -8,7 +8,7 @@ from core.dependencies.repository import get_repository
 from core.forms.authorization import CustomLoginForm
 from core.models.user import User
 from core.repository.crud.user import UserCRUDRepository
-from core.schemas.user import SiteUserCreate, UserOut, Token
+from core.schemas.user import SiteUserCreate, UserOut, Token, UserType
 from core.services.domain import auth as auth_service
 from core.services.domain.auth import verify_refresh_token
 from core.services.security import REFRESH_TOKEN_EXPIRE_MINUTES, create_refresh_token, create_access_token
@@ -55,13 +55,19 @@ async def login_for_access_token(
         response: Response,
         form_data: Annotated[CustomLoginForm, Depends()],
         user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
-) -> dict[str, str]:
+) -> Token:
     access_token: str = (
         await auth_service.authenticate_user(
             domain_number=form_data.domain_number,
             username=form_data.username,
             password=form_data.password,
             user_repo=user_repo,
+        )
+    )
+    user: User = (
+        await user_repo.get_user_by_username_and_domain(
+            username=form_data.username,
+            domain_number=form_data.domain_number,
         )
     )
     refresh_token: str = (
@@ -88,7 +94,13 @@ async def login_for_access_token(
         path='/',
     )
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    res = Token(
+        access_token=access_token,
+        token_type="bearer",
+        user_type=UserType.SITE if user.domain_number == 0 else UserType.CONTEST,
+    )
+
+    return res
 
 
 @router.post(

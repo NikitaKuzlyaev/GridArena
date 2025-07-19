@@ -95,14 +95,12 @@ async def quiz_field_info_for_editor(
     }
 )
 async def contest_info_for_contestant(
-        contest_id=Query(...),
         user: User = Depends(get_user),
         quiz_field_service: IQuizFieldService = Depends(get_contest_service),
 ) -> JSONResponse:
     result: QuizFieldInfoForContestant = (
         await quiz_field_service.quiz_field_info_for_contestant(
             user_id=user.id,
-            contest_id=contest_id,
         )
     )
     result = result.model_dump()

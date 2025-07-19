@@ -14,6 +14,16 @@ class ContestantInfo(BaseSchemaModel):
     name: str
     points: int
 
+class ContestantPreviewInfo(BaseSchemaModel):
+    contestant_id: int
+    contestant_name: str
+    contest_id: int
+    contest_name: str
+    started_at: datetime
+    closed_at: datetime
+    is_contest_open: bool
+
+
 class ContestantInCreate(BaseSchemaModel):
     username: str
     password: str

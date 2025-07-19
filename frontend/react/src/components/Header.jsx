@@ -8,6 +8,8 @@ function deleteCookie(name) {
 
 function Header() {
   const isAuth = Boolean(localStorage.getItem('access_token'));
+  const userType = localStorage.getItem('user_type');
+  const isSiteUser = userType === 'SITE';
 
   const handleLogout = async () => {
     console.log('Нажата кнопка Выйти');
@@ -35,7 +37,9 @@ function Header() {
       // Можно обработать ошибку, если нужно
     }
     localStorage.removeItem('access_token');
+    localStorage.removeItem('user_type');
     deleteCookie('refresh_token');
+    
     console.log('access_token:', localStorage.getItem('access_token'));
     console.log('refresh_token cookie:', document.cookie);
     window.location.href = '/login';
@@ -45,7 +49,7 @@ function Header() {
     <header className="header">
       <div className="header-left">
         <a href="/" className="header-title">GridArena</a>
-        {isAuth && (
+        {isAuth && isSiteUser && (
           <a href="/my-contests" className="contests-btn">Мои контесты</a>
         )}
       </div>

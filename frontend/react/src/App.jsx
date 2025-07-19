@@ -11,6 +11,7 @@ import EditContest from './pages/EditContest.jsx';
 import EditQuizField from './pages/EditQuizField.jsx';
 import EditContestants from './pages/EditContestants.jsx';
 import EditSubmissions from './pages/EditSubmissions.jsx';
+import SolveContest from './pages/SolveContest.jsx';
 import './App.css';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/edit-field" element={<EditQuizField />} />
           <Route path="/edit-contestants" element={<EditContestants />} />
           <Route path="/edit-submissions" element={<EditSubmissions />} />
+          <Route path="/contest" element={<SolveContest />} />
         </Routes>
       </div>
     </BrowserRouter>

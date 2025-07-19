@@ -7,7 +7,7 @@ from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.quiz import QuizFieldCRUDRepository
 from core.schemas.problem import ProblemId
 from core.schemas.problem_card import ProblemCardInfo
-from core.schemas.quiz_field import QuizFieldId, QuizFieldInfoForEditor
+from core.schemas.quiz_field import QuizFieldId, QuizFieldInfoForEditor, QuizFieldInfoForContestant
 from core.services.interfaces.quiz import IQuizFieldService
 from core.utilities.exceptions.database import EntityDoesNotExist
 from core.utilities.loggers.log_decorator import log_calls
@@ -21,6 +21,15 @@ class QuizFieldService(IQuizFieldService):
     ):
         self.quiz_field_repo = quiz_field_repo
         self.problem_card_repo = problem_card_repo
+
+    @log_calls
+    async def quiz_field_info_for_contestant(
+            self,
+            user_id,
+    ) -> QuizFieldInfoForContestant:
+
+
+
 
     @log_calls
     async def quiz_field_info_for_editor(

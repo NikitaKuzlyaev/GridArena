@@ -8,7 +8,6 @@ class IQuizFieldService(Protocol):
     async def quiz_field_info_for_contestant(
             self,
             user_id,
-            contest_id,
     ) -> QuizFieldInfoForContestant:
         ...
 

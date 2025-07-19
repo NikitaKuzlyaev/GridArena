@@ -30,10 +30,12 @@ function Login() {
         return;
       }
       const data = await response.json();
-      if (data.accessToken) {
+      if (data.accessToken && data.userType) {
         localStorage.setItem('access_token', data.accessToken);
-        // TODO: переход на главную или обновление состояния
-        alert('Успешная авторизация!');
+        localStorage.setItem('user_type', data.userType);
+        
+        // Редирект на главную страницу с перезагрузкой
+        window.location.href = '/';
       } else {
         setError('Токен не получен');
       }

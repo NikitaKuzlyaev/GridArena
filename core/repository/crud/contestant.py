@@ -16,13 +16,31 @@ from core.utilities.loggers.log_decorator import log_calls
 class ContestantCRUDRepository(BaseCRUDRepository):
 
     @log_calls
+    async def get_contestant_by_user_id(
+            self,
+            user_id: int
+    ) -> Contestant | None:
+        res = await self.async_session.execute(
+            select(
+                Contestant,
+            )
+            .join(
+                User, User.id == Contestant.user_id
+            )
+            .where(
+                User.id == user_id,
+            )
+        )
+        res = res.scalar_one_or_none()
+        return res
+
+    @log_calls
     async def create_contestant(
             self,
             user_id: int,
             name: str,
             points: int,
     ) -> Contestant:
-
         contestant: Contestant = (
             Contestant(
                 user_id=user_id,
