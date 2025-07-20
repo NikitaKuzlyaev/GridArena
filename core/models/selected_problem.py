@@ -20,6 +20,11 @@ class SelectedProblem(Base):
         nullable=False
     )
 
+    contestant_id: Mapped[int] = mapped_column(
+        ForeignKey("contestant.id"),
+        nullable=False
+    )
+
     reward_rule: Mapped[int] = mapped_column(
         Integer,
         nullable=False
