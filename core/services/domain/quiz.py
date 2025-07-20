@@ -3,6 +3,7 @@ from typing import Sequence, Tuple
 from sqlalchemy import Row
 
 from core.models import QuizField, ProblemCard, Problem
+from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.quiz import QuizFieldCRUDRepository
 from core.schemas.problem import ProblemId
@@ -18,18 +19,18 @@ class QuizFieldService(IQuizFieldService):
             self,
             quiz_field_repo: QuizFieldCRUDRepository,
             problem_card_repo: ProblemCardCRUDRepository,
+            contestant_repo: ContestantCRUDRepository,
     ):
         self.quiz_field_repo = quiz_field_repo
         self.problem_card_repo = problem_card_repo
+        self.contestant_repo = contestant_repo
 
     @log_calls
     async def quiz_field_info_for_contestant(
             self,
             user_id,
     ) -> QuizFieldInfoForContestant:
-
-
-
+        ...
 
     @log_calls
     async def quiz_field_info_for_editor(
