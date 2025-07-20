@@ -13,7 +13,7 @@ function SolveContest() {
     // Имитация загрузки
     setTimeout(() => {
       setLoading(false);
-    }, 1000);
+    }, 1);
 
     // Запрос к API для получения информации о поле для участника
     const token = localStorage.getItem('access_token');
