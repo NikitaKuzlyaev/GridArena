@@ -4,6 +4,7 @@ from typing import Sequence
 from core.models import Contest, Contestant, User
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.contestant import ContestantCRUDRepository
+from core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from core.repository.crud.user import UserCRUDRepository
 from core.schemas.contest import ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor
 from core.schemas.contestant import ArrayContestantInfoForEditor, ContestantInfo, ContestantId, ContestantPreviewInfo
@@ -20,12 +21,14 @@ class ContestantService(IContestantService):
             contest_repo: ContestCRUDRepository,
             contestant_repo: ContestantCRUDRepository,
             permission_service: IPermissionService,
+            selected_problem_repo: SelectedProblemCRUDRepository,
             user_repo: UserCRUDRepository,
 
     ):
         self.contest_repo = contest_repo
         self.contestant_repo = contestant_repo
         self.permission_service = permission_service
+        self.selected_problem_repo = selected_problem_repo
         self.user_repo = user_repo
 
     @log_calls
