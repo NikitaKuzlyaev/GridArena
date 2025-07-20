@@ -1,13 +1,15 @@
 from datetime import datetime, timezone, timedelta
-from typing import Sequence
+from typing import Sequence, Tuple
 
-from core.models import Contest, Contestant, User
+from core.models import Contest, Contestant, User, SelectedProblem
+from core.models.selected_problem import SelectedProblemStatusType
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from core.repository.crud.user import UserCRUDRepository
 from core.schemas.contest import ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor
-from core.schemas.contestant import ArrayContestantInfoForEditor, ContestantInfo, ContestantId, ContestantPreviewInfo
+from core.schemas.contestant import ArrayContestantInfoForEditor, ContestantInfo, ContestantId, ContestantPreviewInfo, \
+    ContestantInfoInContest
 from core.services.interfaces.contest import IContestService
 from core.services.interfaces.contestant import IContestantService
 from core.services.interfaces.permission import IPermissionService
@@ -61,6 +63,35 @@ class ContestantService(IContestantService):
             raise EntityDoesNotExist("contest was not found")
 
         return user, contestant, contest
+
+    @log_calls
+    async def get_contestant_info_in_contest(
+            self,
+            user_id: int,
+    ) -> ContestantInfoInContest:
+        try:
+            user, contestant, contest = (
+                await self.get_user_contestant_and_contest(
+                    user_id=user_id,
+                )
+            )
+            selected_problems: Sequence[SelectedProblem] = (
+                await self.selected_problem_repo.get_selected_problem_of_contestant_by_id(
+                    contestant_id=contestant.id,
+                    filter_by_status=[SelectedProblemStatusType.ACTIVE.value],
+                )
+            )
+            res = ContestantInfoInContest(
+                contestant_id=contestant.id,
+                contestant_name=contestant.name,
+                points=contestant.points,
+                problems_current=len(selected_problems),
+                problems_max=contest.number_of_slots_for_problems,
+            )
+            return res
+
+        except EntityDoesNotExist as e:
+            raise EntityDoesNotExist(e.args[0])
 
     @log_calls
     async def get_contestant_preview(
