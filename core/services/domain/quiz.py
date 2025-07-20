@@ -2,12 +2,13 @@ from typing import Sequence, Tuple
 
 from sqlalchemy import Row
 
-from core.models import QuizField, ProblemCard, Problem
+from core.models import QuizField, ProblemCard, Problem, User, Contestant
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.quiz import QuizFieldCRUDRepository
+from core.repository.crud.user import UserCRUDRepository
 from core.schemas.problem import ProblemId
-from core.schemas.problem_card import ProblemCardInfo
+from core.schemas.problem_card import ProblemCardInfo, ProblemCardInfoForContestant, ProblemCardStatus
 from core.schemas.quiz_field import QuizFieldId, QuizFieldInfoForEditor, QuizFieldInfoForContestant
 from core.services.interfaces.quiz import IQuizFieldService
 from core.utilities.exceptions.database import EntityDoesNotExist
@@ -32,7 +33,43 @@ class QuizFieldService(IQuizFieldService):
             self,
             user_id,
     ) -> QuizFieldInfoForContestant:
-        ...
+        user: User = (
+            await self.user_repo.get_user_by_id(
+                user_id=user_id,
+            )
+        )
+        contest_id = user.domain_number
+
+        quiz_field: QuizField = (
+            await self.quiz_field_repo.get_quiz_field_by_contest_id(
+                contest_id=contest_id,
+            )
+        )
+        problem_cards_with_problem: Sequence[Row[Tuple[ProblemCard, Problem]]] = (
+            await self.problem_card_repo.get_tuple_problem_cards_with_problem_by_quiz_field_id(
+                quiz_field_id=quiz_field.id,
+            )
+        )
+        res = QuizFieldInfoForContestant(
+            quiz_field_id=quiz_field.id,
+            number_of_rows=quiz_field.number_of_rows,
+            number_of_columns=quiz_field.number_of_columns,
+            problem_cards=[
+                ProblemCardInfoForContestant(
+                    problem_card_id=problem_card.id,
+                    problem=ProblemId(
+                        problem_id=problem.id
+                    ),
+                    status=ProblemCardStatus.CLOSED,
+                    is_open_for_buy=True,  # ЗАГЛУШКА
+                    row=problem_card.row,
+                    column=problem_card.column,
+                    category_price=problem_card.category_price,
+                    category_name=problem_card.category_name,
+                ) for problem_card, problem in problem_cards_with_problem
+            ],
+        )
+        return res
 
     @log_calls
     async def quiz_field_info_for_editor(

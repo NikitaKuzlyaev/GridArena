@@ -4,6 +4,7 @@ from core.dependencies.repository import get_repository
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.quiz import QuizFieldCRUDRepository
+from core.repository.crud.user import UserCRUDRepository
 from core.services.domain.quiz import QuizFieldService
 from core.services.interfaces.quiz import IQuizFieldService
 
