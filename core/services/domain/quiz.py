@@ -20,6 +20,7 @@ class QuizFieldService(IQuizFieldService):
             quiz_field_repo: QuizFieldCRUDRepository,
             problem_card_repo: ProblemCardCRUDRepository,
             contestant_repo: ContestantCRUDRepository,
+            user_repo: UserCRUDRepository,
     ):
         self.quiz_field_repo = quiz_field_repo
         self.problem_card_repo = problem_card_repo
