@@ -92,9 +92,9 @@ async def quiz_field_info_for_editor(
         EntityDoesNotExist: (404, None),
     }
 )
-async def contest_info_for_contestant(
+async def quiz_field_info_for_contestant(
         user: User = Depends(get_user),
-        quiz_field_service: IQuizFieldService = Depends(get_contest_service),
+        quiz_field_service: IQuizFieldService = Depends(get_quiz_field_service),
 ) -> QuizFieldInfoForContestant:
     result: QuizFieldInfoForContestant = (
         await quiz_field_service.quiz_field_info_for_contestant(
