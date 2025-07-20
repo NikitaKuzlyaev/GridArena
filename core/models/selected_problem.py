@@ -8,6 +8,12 @@ from sqlalchemy.sql import functions as sqlalchemy_functions
 from core.database.connection import Base
 
 
+class SelectedProblemStatusType(enum.Enum):
+    ACTIVE = "ACTIVE"
+    SOLVED = "SOLVED"
+    REJECTED = "REJECTED"
+
+
 class SelectedProblem(Base):
     __tablename__ = "selected_problem"
 
@@ -23,6 +29,10 @@ class SelectedProblem(Base):
     contestant_id: Mapped[int] = mapped_column(
         ForeignKey("contestant.id"),
         nullable=False
+    )
+
+    status: Mapped[SelectedProblemStatusType] = mapped_column(
+        Enum(SelectedProblemStatusType)
     )
 
     reward_rule: Mapped[int] = mapped_column(
