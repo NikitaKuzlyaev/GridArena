@@ -46,12 +46,6 @@ class QuizFieldService(IQuizFieldService):
         if not quiz_field:
             raise EntityDoesNotExist("quiz_field with such contest_id not found")
 
-        problem_cards: Sequence[ProblemCard] = (
-            await self.problem_card_repo.get_problem_cards_by_quiz_field_id(
-                quiz_field_id=quiz_field.id,
-            )
-        )
-
         problem_cards_with_problem: Sequence[Row[Tuple[ProblemCard, Problem]]] = (
             await self.problem_card_repo.get_tuple_problem_cards_with_problem_by_quiz_field_id(
                 quiz_field_id=quiz_field.id,
