@@ -4,10 +4,17 @@ from typing import Protocol
 from core.models import Contestant
 from core.schemas.contest import ContestId, ContestInfoForEditor, \
     ContestInfoForContestant, ArrayContestShortInfo
-from core.schemas.contestant import ArrayContestantInfoForEditor, ContestantId, ContestantPreviewInfo
+from core.schemas.contestant import ArrayContestantInfoForEditor, ContestantId, ContestantPreviewInfo, \
+    ContestantInfoInContest
 
 
 class IContestantService(Protocol):
+
+    async def get_contestant_info_in_contest(
+            self,
+            user_id: int,
+    ) -> ContestantInfoInContest:
+        ...
 
     async def get_contestant_preview(
             self,
