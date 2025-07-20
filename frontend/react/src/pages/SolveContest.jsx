@@ -31,6 +31,17 @@ function SolveContest() {
         }
       })
       .catch(() => {});
+
+    // Новый запрос к API для получения информации об участнике
+    fetch(`${config.backendUrl}api/v1/contestant/info`, {
+      method: 'GET',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      credentials: 'include',
+    })
+      .then(() => {})
+      .catch(() => {});
   }, [contestId]);
 
   const getCardAt = (row, col) => {
