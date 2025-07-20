@@ -26,6 +26,14 @@ class ContestantPreviewInfo(BaseSchemaModel):
     is_contest_open: bool
 
 
+class ContestantInfoInContest(BaseSchemaModel):
+    contestant_id: int
+    contestant_name: str
+    points: int
+    problems_current: int
+    problems_max: int
+
+
 class ContestantInCreate(BaseSchemaModel):
     username: str
     password: str
