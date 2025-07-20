@@ -64,43 +64,28 @@ class ContestantService(IContestantService):
             self,
             user_id: int,
     ) -> ContestantPreviewInfo:
-        user: User | None = (
-            await self.user_repo.get_user_by_id(
-                user_id=user_id,
+        try:
+            user, contestant, contest = (
+                await self.get_user_contestant_and_contest(
+                    user_id=user_id,
+                )
             )
-        )
-        if not user:
-            raise EntityDoesNotExist("user not found")
 
-        contestant: Contestant | None = (
-            await self.contestant_repo.get_contestant_by_user_id(
-                user_id=user_id,
+            utc_plus_7 = timezone(timedelta(hours=7))
+            current_time = datetime.now(utc_plus_7)
+
+            res = ContestantPreviewInfo(
+                contestant_id=contestant.id,
+                contestant_name=contestant.name,
+                contest_id=contest.id,
+                contest_name=contest.name,
+                started_at=contest.started_at,
+                closed_at=contest.closed_at,
+                is_contest_open=contest.started_at < current_time < contest.closed_at,
             )
-        )
-        if not contestant:
-            raise EntityDoesNotExist("contestant was not found")
-
-        contest: Contest | None = (
-            await self.contest_repo.get_contest_by_id(
-                contest_id=user.domain_number,
-            )
-        )
-        if not contest:
-            raise EntityDoesNotExist("contest was not found")
-
-        utc_plus_7 = timezone(timedelta(hours=7))
-        current_time = datetime.now(utc_plus_7)
-
-        res = ContestantPreviewInfo(
-            contestant_id=contestant.id,
-            contestant_name=contestant.name,
-            contest_id=contest.id,
-            contest_name=contest.name,
-            started_at=contest.started_at,
-            closed_at=contest.closed_at,
-            is_contest_open=contest.started_at < current_time < contest.closed_at,
-        )
-        return res
+            return res
+        except EntityDoesNotExist as e:
+            raise EntityDoesNotExist(e.args[0])
 
     @log_calls
     async def get_contestants_in_contest(
