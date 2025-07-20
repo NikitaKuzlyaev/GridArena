@@ -20,8 +20,6 @@ from core.utilities.exceptions.permission import PermissionDenied
 router = fastapi.APIRouter(prefix="/quiz-field", tags=["quiz-field"])
 
 
-
-
 @router.patch(
     path="/",
     response_model=QuizFieldId,
@@ -97,7 +95,7 @@ async def quiz_field_info_for_editor(
 async def contest_info_for_contestant(
         user: User = Depends(get_user),
         quiz_field_service: IQuizFieldService = Depends(get_contest_service),
-) -> JSONResponse:
+) -> QuizFieldInfoForContestant:
     result: QuizFieldInfoForContestant = (
         await quiz_field_service.quiz_field_info_for_contestant(
             user_id=user.id,
@@ -105,4 +103,4 @@ async def contest_info_for_contestant(
     )
     result = result.model_dump()
 
-    return JSONResponse({'body': result})
+    return result
