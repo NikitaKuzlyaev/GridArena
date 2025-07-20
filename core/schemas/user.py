@@ -21,6 +21,7 @@ class UserOut(BaseSchemaModel):
     class Config:
         orm_mode = True
 
+
 class UserType(str, Enum):
     SITE = "SITE"
     CONTEST = "CONTEST"

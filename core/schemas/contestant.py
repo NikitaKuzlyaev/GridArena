@@ -9,10 +9,12 @@ from core.schemas.base import BaseSchemaModel
 class ContestantId(BaseSchemaModel):
     contestant_id: int
 
+
 class ContestantInfo(BaseSchemaModel):
     contestant_id: int
     name: str
     points: int
+
 
 class ContestantPreviewInfo(BaseSchemaModel):
     contestant_id: int
@@ -30,6 +32,7 @@ class ContestantInCreate(BaseSchemaModel):
     name: str
     contest_id: int
     points: int
+
 
 class ArrayContestantInfoForEditor(BaseSchemaModel):
     body: Sequence[ContestantInfo]
