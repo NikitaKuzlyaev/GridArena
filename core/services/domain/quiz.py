@@ -25,6 +25,7 @@ class QuizFieldService(IQuizFieldService):
         self.quiz_field_repo = quiz_field_repo
         self.problem_card_repo = problem_card_repo
         self.contestant_repo = contestant_repo
+        self.user_repo = user_repo
 
     @log_calls
     async def quiz_field_info_for_contestant(

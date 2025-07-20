@@ -12,9 +12,11 @@ def get_quiz_field_service(
         quiz_repo: QuizFieldCRUDRepository = Depends(get_repository(QuizFieldCRUDRepository)),
         problem_card_repo: ProblemCardCRUDRepository = Depends(get_repository(ProblemCardCRUDRepository)),
         contestant_repo: ContestantCRUDRepository = Depends(get_repository(ContestantCRUDRepository)),
+        user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
 ) -> IQuizFieldService:
     return QuizFieldService(
         quiz_field_repo=quiz_repo,
         problem_card_repo=problem_card_repo,
         contestant_repo=contestant_repo,
+        user_repo=user_repo,
     )
