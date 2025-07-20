@@ -29,6 +29,37 @@ class ContestantService(IContestantService):
         self.user_repo = user_repo
 
     @log_calls
+    async def get_user_contestant_and_contest(
+            self,
+            user_id: int
+    ) -> Tuple[User, Contestant, Contest]:
+        user: User | None = (
+            await self.user_repo.get_user_by_id(
+                user_id=user_id,
+            )
+        )
+        if not user:
+            raise EntityDoesNotExist("user not found")
+
+        contestant: Contestant | None = (
+            await self.contestant_repo.get_contestant_by_user_id(
+                user_id=user_id,
+            )
+        )
+        if not contestant:
+            raise EntityDoesNotExist("contestant was not found")
+
+        contest: Contest | None = (
+            await self.contest_repo.get_contest_by_id(
+                contest_id=user.domain_number,
+            )
+        )
+        if not contest:
+            raise EntityDoesNotExist("contest was not found")
+
+        return user, contestant, contest
+
+    @log_calls
     async def get_contestant_preview(
             self,
             user_id: int,
