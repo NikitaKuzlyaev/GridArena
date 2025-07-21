@@ -5,7 +5,8 @@ from fastapi import Depends
 from core.dependencies.authorization import get_user
 from core.models import User
 from core.schemas.contestant import ContestantId, ContestantInCreate
-from core.schemas.selected_problem import SelectedProblemId, SelectedProblemBuyRequest
+from core.schemas.selected_problem import SelectedProblemId, SelectedProblemBuyRequest, \
+    SelectedProblemInfoForContestant, ArraySelectedProblemInfoForContestant
 from core.services.interfaces.contestant import IContestantService
 from core.services.interfaces.permission import IPermissionService
 from core.services.interfaces.selected_problem import ISelectedProblemService
@@ -40,6 +41,32 @@ async def buy_problem(
         await selected_problem_service.buy_selected_problem(
             user_id=user.id,
             **params.model_dump(),
+        )
+    )
+    result = result.model_dump()
+
+    return result
+
+
+@router.get(
+    path="/my",
+    response_model=ArraySelectedProblemInfoForContestant,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def get_contestant_selected_problems(
+        user: User = Depends(get_user),
+        contestant_service: IContestantService = Depends(get_contestant_service),
+        selected_problem_service: ISelectedProblemService = Depends(get_selected_problem_service)
+) -> ArraySelectedProblemInfoForContestant:
+    result: ArraySelectedProblemInfoForContestant = (
+        await selected_problem_service.get_contestant_selected_problems(
+            user_id=user.id,
         )
     )
     result = result.model_dump()

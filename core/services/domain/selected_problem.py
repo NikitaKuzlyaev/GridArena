@@ -1,9 +1,16 @@
-from core.models import Contestant, User, SelectedProblem, ProblemCard
+from typing import Sequence, Tuple
+
+from sqlalchemy import Row
+
+from core.models import Contestant, User, SelectedProblem, ProblemCard, Problem
+from core.models.selected_problem import SelectedProblemStatusType
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from core.repository.crud.user import UserCRUDRepository
-from core.schemas.selected_problem import SelectedProblemId
+from core.schemas.problem import ProblemInfoForContestant
+from core.schemas.selected_problem import SelectedProblemId, SelectedProblemInfoForContestant, \
+    ArraySelectedProblemInfoForContestant
 
 from core.services.interfaces.selected_problem import ISelectedProblemService
 from core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
@@ -22,6 +29,41 @@ class SelectedProblemService(ISelectedProblemService):
         self.problem_card_repo = problem_card_repo
         self.contestant_repo = contestant_repo
         self.user_repo = user_repo
+
+    @log_calls
+    async def get_contestant_selected_problems(
+            self,
+            user_id: int,
+    ) -> ArraySelectedProblemInfoForContestant:
+        contestant: Contestant | None = (
+            await self.contestant_repo.get_contestant_by_user_id(
+                user_id=user_id,
+            )
+        )
+        if not contestant:
+            raise EntityDoesNotExist("contestant not found")
+
+        rows: Sequence[Tuple[SelectedProblem, ProblemCard, Problem]] = (
+            await self.selected_problem_repo.get_selected_problem_with_problem_card_and_problem_of_contestant_by_id(
+                contestant_id=contestant.id,
+            )
+        )
+
+        res = ArraySelectedProblemInfoForContestant(
+            body=[
+                SelectedProblemInfoForContestant(
+                    selected_problem_id=selected_problem.id,
+                    problem_card_id=problem_card.id,
+                    problem=ProblemInfoForContestant(
+                        problem_id=problem.id,
+                        statement=problem.statement,
+                    ),
+                    created_at=selected_problem.created_at,
+                ) for selected_problem, problem_card, problem in rows
+            ]
+        )
+
+        return res
 
     @log_calls
     async def buy_selected_problem(

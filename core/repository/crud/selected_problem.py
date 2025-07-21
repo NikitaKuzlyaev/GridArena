@@ -1,9 +1,9 @@
-from typing import Sequence, List
+from typing import Sequence, List, Tuple
 
-from sqlalchemy import select
+from sqlalchemy import select, Row
 
 from core.dependencies.repository import get_repository
-from core.models import SelectedProblem
+from core.models import SelectedProblem, ProblemCard, Problem
 from core.models.selected_problem import SelectedProblemStatusType
 from core.repository.crud.base import BaseCRUDRepository
 
@@ -24,6 +24,30 @@ class SelectedProblemCRUDRepository(BaseCRUDRepository):
 
         res = await self.async_session.execute(stmt)
         return res.scalars().all()
+
+    async def get_selected_problem_with_problem_card_and_problem_of_contestant_by_id(
+            self,
+            contestant_id: int,
+    ) -> Sequence[Tuple[SelectedProblem, ProblemCard, Problem]]:
+        res = await self.async_session.execute(
+            select(
+                SelectedProblem,
+                ProblemCard,
+                Problem
+            )
+            .join(
+                ProblemCard,
+                ProblemCard.id == SelectedProblem.problem_card_id
+            )
+            .join(
+                Problem,
+                Problem.id == ProblemCard.problem_id
+            )
+            .where(
+                SelectedProblem.contestant_id == contestant_id
+            )
+        )
+        return res.all()
 
     async def create_selected_problem(
             self,

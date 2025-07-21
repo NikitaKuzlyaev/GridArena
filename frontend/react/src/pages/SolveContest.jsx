@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import config from '../config';
+import ReactMarkdown from 'react-markdown';
 
 function SolveContest() {
   const [searchParams] = useSearchParams();
@@ -10,6 +11,8 @@ function SolveContest() {
   const [modalCard, setModalCard] = useState(null);
   const [buying, setBuying] = useState(false);
   const [buyError, setBuyError] = useState(null);
+  const [myProblems, setMyProblems] = useState([]);
+  const [answers, setAnswers] = useState({});
 
   useEffect(() => {
     // Имитация загрузки
@@ -43,6 +46,24 @@ function SolveContest() {
       credentials: 'include',
     })
       .then(() => {})
+      .catch(() => {});
+
+    // Новый запрос к API для получения своих выбранных задач
+    fetch(`${config.backendUrl}api/v1/selected-problem/my`, {
+      method: 'GET',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      credentials: 'include',
+    })
+      .then(async res => {
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.body)) {
+            setMyProblems(data.body.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+          }
+        }
+      })
       .catch(() => {});
   }, [contestId]);
 
@@ -188,6 +209,7 @@ function SolveContest() {
                     setModalCard(null);
                     setBuying(false);
                     // Можно добавить обновление поля или уведомление об успехе
+                    window.location.reload();
                   } catch {
                     setBuyError('Ошибка сети');
                     setBuying(false);
@@ -204,6 +226,49 @@ function SolveContest() {
                 Отмена
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Купленные задачи */}
+      {myProblems.length > 0 && (
+        <div style={{ marginTop: 32 }}>
+          <h2 style={{ fontSize: 22, marginBottom: 16 }}>Мои купленные задачи</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {myProblems.map(problem => (
+              <div key={problem.selectedProblemId} style={{
+                background: '#f9f9f9',
+                border: '1px solid #e0e0e0',
+                borderRadius: 8,
+                padding: 24,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                maxWidth: 700,
+                margin: '0 auto',
+              }}>
+                <div style={{ marginBottom: 12, fontWeight: 500, color: '#333' }}>
+                  <span style={{ opacity: 0.7, fontSize: 13 }}>ID: {problem.selectedProblemId}</span>
+                  <span style={{ float: 'right', opacity: 0.5, fontSize: 13 }}>{new Date(problem.createdAt).toLocaleString()}</span>
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <ReactMarkdown>{problem.problem?.statement || 'Нет условия'}</ReactMarkdown>
+                </div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <input
+                    type="text"
+                    placeholder="Ваш ответ"
+                    value={answers[problem.selectedProblemId] || ''}
+                    onChange={e => setAnswers(a => ({ ...a, [problem.selectedProblemId]: e.target.value }))}
+                    style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #bbb', fontSize: 16 }}
+                  />
+                  <button
+                    style={{ padding: '8px 20px', fontSize: 16, borderRadius: 6, background: '#1677ff', color: '#fff', border: 'none', cursor: 'pointer' }}
+                    disabled
+                  >
+                    Отправить ответ
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

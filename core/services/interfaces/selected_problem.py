@@ -1,9 +1,16 @@
 from typing import Protocol
 
-from core.schemas.selected_problem import SelectedProblemId
+from core.schemas.selected_problem import SelectedProblemId, SelectedProblemInfoForContestant, \
+    ArraySelectedProblemInfoForContestant
 
 
 class ISelectedProblemService(Protocol):
+
+    async def get_contestant_selected_problems(
+            self,
+            user_id: int,
+    ) -> ArraySelectedProblemInfoForContestant:
+        ...
 
     async def buy_selected_problem(
             self,
