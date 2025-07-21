@@ -1,9 +1,10 @@
 from typing import Sequence, List
 
-from sqlalchemy import select, update
+from sqlalchemy import select
 
 from core.dependencies.repository import get_repository
-from core.models import QuizField, SelectedProblem
+from core.models import SelectedProblem
+from core.models.selected_problem import SelectedProblemStatusType
 from core.repository.crud.base import BaseCRUDRepository
 
 
@@ -23,6 +24,41 @@ class SelectedProblemCRUDRepository(BaseCRUDRepository):
 
         res = await self.async_session.execute(stmt)
         return res.scalars().all()
+
+    async def create_selected_problem(
+            self,
+            contestant_id: int,
+            problem_card_id: int,
+    ) -> SelectedProblem:
+        selected_problem: SelectedProblem = (
+            SelectedProblem(
+                problem_card_id=problem_card_id,
+                contestant_id=contestant_id,
+                status=SelectedProblemStatusType.ACTIVE,
+                reward_rule=0,  # ЗАГЛУШКА
+            )
+        )
+        self.async_session.add(instance=selected_problem)
+        await self.async_session.commit()
+        await self.async_session.refresh(instance=selected_problem)
+        return selected_problem
+
+    async def get_selected_problem_by_contestant_and_problem_card(
+            self,
+            contestant_id: int,
+            problem_card_id: int,
+    ) -> SelectedProblem | None:
+        res = await self.async_session.execute(
+            select(
+                SelectedProblem,
+            )
+            .where(
+                SelectedProblem.contestant_id == contestant_id,
+                SelectedProblem.problem_card_id == problem_card_id,
+            )
+        )
+        res = res.scalar_one_or_none()
+        return res
 
 
 selected_problem_repo = get_repository(

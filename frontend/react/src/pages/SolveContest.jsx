@@ -8,6 +8,8 @@ function SolveContest() {
   const [loading, setLoading] = useState(true);
   const [fieldData, setFieldData] = useState(null);
   const [modalCard, setModalCard] = useState(null);
+  const [buying, setBuying] = useState(false);
+  const [buyError, setBuyError] = useState(null);
 
   useEffect(() => {
     // Имитация загрузки
@@ -144,7 +146,7 @@ function SolveContest() {
           justifyContent: 'center',
           zIndex: 1000,
         }}
-          onClick={() => setModalCard(null)}
+          onClick={() => { if (!buying) setModalCard(null); }}
         >
           <div style={{ background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, position: 'relative', maxWidth: 500 }} onClick={e => e.stopPropagation()}>
             <h2>Покупка задачи</h2>
@@ -154,16 +156,50 @@ function SolveContest() {
               <b>Категория:</b> {modalCard.categoryName}
             </div>
             <div style={{ marginBottom: 24 }}>Вы уверены, что хотите купить эту задачу?</div>
+            {buyError && <div style={{ color: 'red', marginBottom: 12 }}>{buyError}</div>}
             <div style={{ display: 'flex', gap: 16 }}>
               <button
-                style={{ padding: '8px 24px', fontSize: 16, borderRadius: 6, background: '#1677ff', color: '#fff', border: 'none', cursor: 'pointer' }}
-                onClick={() => setModalCard(null)}
+                style={{ padding: '8px 24px', fontSize: 16, borderRadius: 6, background: buying ? '#90caf9' : '#1677ff', color: '#fff', border: 'none', cursor: buying ? 'not-allowed' : 'pointer' }}
+                disabled={buying}
+                onClick={async () => {
+                  setBuying(true);
+                  setBuyError(null);
+                  const token = localStorage.getItem('access_token');
+                  try {
+                    const res = await fetch(`${config.backendUrl}api/v1/selected-problem/buy`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : '',
+                      },
+                      credentials: 'include',
+                      body: JSON.stringify({ problem_card_id: modalCard.problemCardId }),
+                    });
+                    if (!res.ok) {
+                      let msg = 'Ошибка покупки';
+                      try {
+                        const data = await res.json();
+                        if (data && data.detail) msg = data.detail;
+                      } catch {}
+                      setBuyError(msg);
+                      setBuying(false);
+                      return;
+                    }
+                    setModalCard(null);
+                    setBuying(false);
+                    // Можно добавить обновление поля или уведомление об успехе
+                  } catch {
+                    setBuyError('Ошибка сети');
+                    setBuying(false);
+                  }
+                }}
               >
-                Да, купить (заглушка)
+                {buying ? 'Покупка...' : 'Да, купить'}
               </button>
               <button
-                style={{ padding: '8px 24px', fontSize: 16, borderRadius: 6, background: '#eee', color: '#282c34', border: '1px solid #ccc', cursor: 'pointer' }}
-                onClick={() => setModalCard(null)}
+                style={{ padding: '8px 24px', fontSize: 16, borderRadius: 6, background: '#eee', color: '#282c34', border: '1px solid #ccc', cursor: buying ? 'not-allowed' : 'pointer' }}
+                disabled={buying}
+                onClick={() => { if (!buying) setModalCard(null); }}
               >
                 Отмена
               </button>
