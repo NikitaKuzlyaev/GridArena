@@ -36,11 +36,6 @@ class SelectedProblem(Base):
         Enum(SelectedProblemStatusType)
     )
 
-    reward_rule: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False
-    )
-
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

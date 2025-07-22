@@ -7,6 +7,7 @@ from core.models.selected_problem import SelectedProblemStatusType
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.selected_problem import SelectedProblemCRUDRepository
+from core.repository.crud.transaction import TransactionCRUDRepository
 from core.repository.crud.user import UserCRUDRepository
 from core.schemas.problem import ProblemInfoForContestant
 from core.schemas.selected_problem import SelectedProblemId, SelectedProblemInfoForContestant, \
@@ -24,11 +25,13 @@ class SelectedProblemService(ISelectedProblemService):
             problem_card_repo: ProblemCardCRUDRepository,
             contestant_repo: ContestantCRUDRepository,
             user_repo: UserCRUDRepository,
+            transaction_repo: TransactionCRUDRepository,
     ):
         self.selected_problem_repo = selected_problem_repo
         self.problem_card_repo = problem_card_repo
         self.contestant_repo = contestant_repo
         self.user_repo = user_repo
+        self.transaction_repo = transaction_repo
 
     @log_calls
     async def get_contestant_selected_problems(
@@ -96,14 +99,17 @@ class SelectedProblemService(ISelectedProblemService):
         if selected_problem:
             raise EntityAlreadyExists("selected problem already exists")
 
-        selected_problem: SelectedProblem = (
-            await self.selected_problem_repo.create_selected_problem(
-                contestant_id=contestant.id,
-                problem_card_id=problem_card_id,
+        try:
+            selected_problem: SelectedProblem = (
+                await self.transaction_repo.buy_problem(
+                    contestant_id=contestant.id,
+                    problem_card_id=problem_card.id,
+                )
             )
-        )
-        res = SelectedProblemId(
-            selected_problem_id=selected_problem.id,
-        )
+            res = SelectedProblemId(
+                selected_problem_id=selected_problem.id,
+            )
+            return res
 
-        return res
+        except Exception as e:
+            raise e

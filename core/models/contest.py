@@ -1,11 +1,18 @@
 import datetime
+import enum
 
-from sqlalchemy import String, DateTime, Integer, CheckConstraint
+from sqlalchemy import String, DateTime, Integer, CheckConstraint, Enum, Boolean
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import functions as sqlalchemy_functions
 
 from core.database.connection import Base
+
+
+class ContestRuleType(enum.Enum):
+    DEFAULT = "DEFAULT"
+    BURNING_ALL = "BURNING_ALL"
+    BURNING_SELECTED = "BURNING_SELECTED"
 
 
 class Contest(Base):
@@ -52,6 +59,16 @@ class Contest(Base):
     number_of_slots_for_problems: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
+    )
+
+    rule_type: Mapped["ContestRuleType"] = mapped_column(
+        Enum(ContestRuleType),
+        default=ContestRuleType.DEFAULT,
+    )
+
+    flag_user_can_have_negative_points: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
     )
 
     created_at: Mapped[datetime.datetime] = mapped_column(

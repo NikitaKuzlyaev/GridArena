@@ -59,7 +59,6 @@ class SelectedProblemCRUDRepository(BaseCRUDRepository):
                 problem_card_id=problem_card_id,
                 contestant_id=contestant_id,
                 status=SelectedProblemStatusType.ACTIVE,
-                reward_rule=0,  # ЗАГЛУШКА
             )
         )
         self.async_session.add(instance=selected_problem)

@@ -1,6 +1,6 @@
 .header {
   width: 100%;
-  background: #282c34;
+  background: #a2d2ff;
   color: #fff;
   padding: 2px 0;
   display: flex;
@@ -18,7 +18,7 @@
 }
 
 .header-title {
-  color: #fff;
+  color: #023047;
   text-decoration: none;
   font-size: 1.2rem;
   font-weight: bold;
@@ -26,14 +26,14 @@
   transition: color 0.2s;
 }
 .header-title:hover {
-  color: #61dafb;
+  color: #e63946;
 }
 
 .contests-btn {
   background: #61dafb;
   color: #282c34;
   padding: 4px 16px;
-  border-radius: 4px;
+  border-radius: 1px;
   text-decoration: none;
   font-weight: 500;
   transition: background 0.2s;
@@ -51,7 +51,7 @@
   background: #61dafb;
   color: #282c34;
   padding: 4px 16px;
-  border-radius: 4px;
+  border-radius: 1px;
   text-decoration: none;
   font-weight: 500;
   transition: background 0.2s;
