@@ -8,6 +8,17 @@
   justify-content: space-between;
   font-size: 0.8rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transition: background 0.2s;
+}
+
+/* Отступ для основного контента, чтобы не перекрывался хедером */
+.header-spacer {
+  height: 32px; /* подбери под фактическую высоту хедера */
+  width: 100%;
 }
 
 .header-left {
@@ -59,4 +70,21 @@
 .login-btn:hover {
   background: #21a1f3;
   color: #fff;
+}
+
+.theme-light .header {
+  background: #000000;
+  color: #222;
+}
+.theme-dark .header {
+  background: #181818;
+  color: #eee;
+}
+.theme-green .header {
+  background: #b9fbc0;
+  color: #222;
+}
+.theme-pink .header {
+  background: #f8bbd0;
+  color: #222;
 }
