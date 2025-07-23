@@ -1,7 +1,7 @@
 import datetime
 
-from sqlalchemy import String, DateTime, Integer, CheckConstraint, ForeignKey
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy import String, DateTime, Integer, ForeignKey
+from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import functions as sqlalchemy_functions
 

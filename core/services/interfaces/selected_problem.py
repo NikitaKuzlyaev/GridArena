@@ -1,7 +1,6 @@
 from typing import Protocol
 
-from core.schemas.selected_problem import SelectedProblemId, SelectedProblemInfoForContestant, \
-    ArraySelectedProblemInfoForContestant
+from core.schemas.selected_problem import SelectedProblemId, ArraySelectedProblemInfoForContestant
 
 
 class ISelectedProblemService(Protocol):

@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import Sequence
 
-from pydantic import Field, model_validator
-
 from core.schemas.base import BaseSchemaModel
 
 

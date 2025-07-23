@@ -1,7 +1,5 @@
 from typing import Sequence, Tuple
 
-from sqlalchemy import Row
-
 from core.models import Contestant, User, SelectedProblem, ProblemCard, Problem, Contest
 from core.models.selected_problem import SelectedProblemStatusType
 from core.repository.crud.contest import ContestCRUDRepository
@@ -13,7 +11,6 @@ from core.repository.crud.user import UserCRUDRepository
 from core.schemas.problem import ProblemInfoForContestant
 from core.schemas.selected_problem import SelectedProblemId, SelectedProblemInfoForContestant, \
     ArraySelectedProblemInfoForContestant
-
 from core.services.interfaces.selected_problem import ISelectedProblemService
 from core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
 from core.utilities.exceptions.logic import PossibleLimitOverflow

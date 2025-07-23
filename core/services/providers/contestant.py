@@ -5,9 +5,7 @@ from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from core.repository.crud.user import UserCRUDRepository
-from core.services.domain.contest import ContestService
 from core.services.domain.contestant import ContestantService
-from core.services.interfaces.contest import IContestService
 from core.services.interfaces.contestant import IContestantService
 from core.services.interfaces.permission import IPermissionService
 from core.services.providers.permission import get_permission_service

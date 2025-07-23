@@ -1,6 +1,6 @@
 from typing import Sequence, List, Tuple
 
-from sqlalchemy import select, Row
+from sqlalchemy import select
 
 from core.dependencies.repository import get_repository
 from core.models import SelectedProblem, ProblemCard, Problem

@@ -1,15 +1,10 @@
-import uuid
-from datetime import datetime
 from typing import Sequence
 
-from sqlalchemy import select, update, delete, and_
+from sqlalchemy import select
 
 from core.dependencies.repository import get_repository
-from core.models import Contest, Permission, QuizField, ProblemCard, Problem, Contestant, User
-from core.models.permission import PermissionResourceType, PermissionActionType
+from core.models import Contestant, User
 from core.repository.crud.base import BaseCRUDRepository
-from core.services.security import hash_password
-from core.utilities.exceptions.database import EntityAlreadyExists
 from core.utilities.loggers.log_decorator import log_calls
 
 

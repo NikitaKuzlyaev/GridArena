@@ -2,7 +2,6 @@ import fastapi
 from fastapi import Body
 from fastapi import Depends
 from fastapi import Query
-from starlette.responses import JSONResponse
 
 from core.dependencies.authorization import get_user
 from core.models import User
@@ -10,7 +9,6 @@ from core.schemas.quiz_field import QuizFieldId, QuizFieldUpdateRequest, QuizFie
     QuizFieldInfoForContestant
 from core.services.interfaces.permission import IPermissionService
 from core.services.interfaces.quiz import IQuizFieldService
-from core.services.providers.contest import get_contest_service
 from core.services.providers.permission import get_permission_service
 from core.services.providers.quiz import get_quiz_field_service
 from core.utilities.exceptions.database import EntityDoesNotExist

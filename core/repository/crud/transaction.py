@@ -1,7 +1,7 @@
 from sqlalchemy import update, select
 
 from core.dependencies.repository import get_repository
-from core.models import SelectedProblem, Contestant, Problem, ProblemCard, Contest, User
+from core.models import SelectedProblem, Contestant, ProblemCard, Contest, User
 from core.models.selected_problem import SelectedProblemStatusType
 from core.models.submission import Submission
 from core.repository.crud.base import BaseCRUDRepository

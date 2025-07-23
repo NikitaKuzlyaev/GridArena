@@ -1,9 +1,5 @@
-from datetime import datetime
 from typing import Protocol
 
-from core.models import Contestant
-from core.schemas.contest import ContestId, ContestInfoForEditor, \
-    ContestInfoForContestant, ArrayContestShortInfo
 from core.schemas.contestant import ArrayContestantInfoForEditor, ContestantId, ContestantPreviewInfo, \
     ContestantInfoInContest
 

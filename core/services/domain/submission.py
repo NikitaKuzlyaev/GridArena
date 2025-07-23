@@ -1,8 +1,6 @@
 from typing import cast
 
-from click import clear
-
-from core.models import User, Contestant, ProblemCard, SelectedProblem, Contest, Problem
+from core.models import User, Contestant, ProblemCard, SelectedProblem, Problem
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.problem import ProblemCRUDRepository
@@ -12,7 +10,6 @@ from core.repository.crud.submission import SubmissionCRUDRepository
 from core.repository.crud.transaction import TransactionCRUDRepository
 from core.repository.crud.user import UserCRUDRepository
 from core.schemas.submission import SubmissionId
-
 from core.services.interfaces.submission import ISubmissionService
 from core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
 from core.utilities.exceptions.permission import PermissionDenied

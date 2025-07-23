@@ -2,18 +2,13 @@ import fastapi
 from fastapi import Body
 from fastapi import Depends
 from fastapi import Query
-from starlette.responses import JSONResponse
 
 from core.dependencies.authorization import get_user
 from core.models import User
-from core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateRequest, ContestInfoForEditor, \
-    ContestInfoForContestant, ArrayContestShortInfo
 from core.schemas.contestant import ArrayContestantInfoForEditor, ContestantId, ContestantInCreate, \
     ContestantPreviewInfo, ContestantInfoInContest
-from core.services.interfaces.contest import IContestService
 from core.services.interfaces.contestant import IContestantService
 from core.services.interfaces.permission import IPermissionService
-from core.services.providers.contest import get_contest_service
 from core.services.providers.contestant import get_contestant_service
 from core.services.providers.permission import get_permission_service
 from core.utilities.exceptions.database import EntityDoesNotExist

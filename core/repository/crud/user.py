@@ -5,7 +5,6 @@ from sqlalchemy import select
 from core.dependencies.repository import get_repository
 from core.models.user import User
 from core.repository.crud.base import BaseCRUDRepository
-from core.schemas.user import SiteUserCreate, ContestUserCreate
 from core.services.security import hash_password, verify_password, create_access_token
 from core.utilities.exceptions.auth import TokenException
 from core.utilities.exceptions.database import EntityAlreadyExists

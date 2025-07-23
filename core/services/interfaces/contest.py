@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Protocol
 
-from core.models.contest import ContestRuleType
 from core.schemas.contest import ContestId, ContestInfoForEditor, \
     ContestInfoForContestant, ArrayContestShortInfo
 

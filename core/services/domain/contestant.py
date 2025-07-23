@@ -7,10 +7,8 @@ from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from core.repository.crud.user import UserCRUDRepository
-from core.schemas.contest import ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor
 from core.schemas.contestant import ArrayContestantInfoForEditor, ContestantInfo, ContestantId, ContestantPreviewInfo, \
     ContestantInfoInContest
-from core.services.interfaces.contest import IContestService
 from core.services.interfaces.contestant import IContestantService
 from core.services.interfaces.permission import IPermissionService
 from core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
