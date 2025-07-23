@@ -84,6 +84,8 @@ class ContestService(IContestService):
             number_of_slots_for_problems=contest.number_of_slots_for_problems,
             started_at=contest.started_at,
             closed_at=contest.closed_at,
+            rule_type=contest.rule_type,
+            flag_user_can_have_negative_points=contest.flag_user_can_have_negative_points,
         )
         return res
 
@@ -120,6 +122,8 @@ class ContestService(IContestService):
             closed_at: datetime,
             start_points: int,
             number_of_slots_for_problems: int,
+            rule_type: str,
+            flag_user_can_have_negative_points: bool,
     ) -> ContestId:
         contest: Contest | None = (
             await self.contest_repo.update_contest(
@@ -129,6 +133,8 @@ class ContestService(IContestService):
                 closed_at=closed_at,
                 start_points=start_points,
                 number_of_slots_for_problems=number_of_slots_for_problems,
+                rule_type=rule_type,
+                flag_user_can_have_negative_points=flag_user_can_have_negative_points,
             )
         )
         if not contest:

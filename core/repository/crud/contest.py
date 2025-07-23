@@ -118,6 +118,8 @@ class ContestCRUDRepository(BaseCRUDRepository):
             closed_at: datetime,
             start_points: int,
             number_of_slots_for_problems: int,
+            rule_type: str,
+            flag_user_can_have_negative_points: bool,
     ) -> Contest | None:
         await self.async_session.execute(
             update(
@@ -132,6 +134,8 @@ class ContestCRUDRepository(BaseCRUDRepository):
                 closed_at=closed_at,
                 start_points=start_points,
                 number_of_slots_for_problems=number_of_slots_for_problems,
+                rule_type=rule_type,
+                flag_user_can_have_negative_points=flag_user_can_have_negative_points,
             )
             .execution_options(
                 synchronize_session="fetch"

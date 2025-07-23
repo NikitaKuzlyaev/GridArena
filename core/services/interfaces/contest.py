@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Protocol
 
+from core.models.contest import ContestRuleType
 from core.schemas.contest import ContestId, ContestInfoForEditor, \
     ContestInfoForContestant, ArrayContestShortInfo
 
@@ -59,6 +60,8 @@ class IContestService(Protocol):
             closed_at: datetime,
             start_points: int,
             number_of_slots_for_problems: int,
+            rule_type: str,
+            flag_user_can_have_negative_points: bool,
     ) -> ContestId:
         ...
 

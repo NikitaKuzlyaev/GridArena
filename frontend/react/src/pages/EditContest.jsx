@@ -11,6 +11,8 @@ function EditContest() {
     number_of_slots_for_problems: '',
     started_at: '',
     closed_at: '',
+    rule_type: 'DEFAULT',
+    flag_user_can_have_negative_points: false,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -43,6 +45,8 @@ function EditContest() {
             number_of_slots_for_problems: data.numberOfSlotsForProblems?.toString() || '',
             started_at: data.startedAt ? data.startedAt.slice(0, 16) : '',
             closed_at: data.closedAt ? data.closedAt.slice(0, 16) : '',
+            rule_type: data.ruleType || 'DEFAULT',
+            flag_user_can_have_negative_points: !!data.flagUserCanHaveNegativePoints,
           });
         }
         setLoading(false);
@@ -54,7 +58,11 @@ function EditContest() {
   }, [contestId]);
 
   const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setForm(form => ({
+      ...form,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleSubmit = async e => {
@@ -76,6 +84,8 @@ function EditContest() {
           numberOfSlotsForProblems: Number(form.number_of_slots_for_problems),
           startedAt: form.started_at,
           closedAt: form.closed_at,
+          ruleType: form.rule_type,
+          flagUserCanHaveNegativePoints: form.flag_user_can_have_negative_points,
         }),
         credentials: 'include',
       });
@@ -124,6 +134,21 @@ function EditContest() {
           <label>
             Окончание:
             <input name="closed_at" type="datetime-local" required value={form.closed_at} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
+          </label>
+          <label>
+            Тип правил:
+            <select name="rule_type" value={form.rule_type} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }}>
+              <option value="DEFAULT">DEFAULT</option>
+            </select>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input
+              name="flag_user_can_have_negative_points"
+              type="checkbox"
+              checked={form.flag_user_can_have_negative_points}
+              onChange={handleChange}
+            />
+            Разрешить отрицательный баланс у участника
           </label>
           <button type="submit" style={{ padding: 10, background: '#61dafb', color: '#282c34', border: 'none', borderRadius: 4, fontWeight: 500, marginTop: 12 }} disabled={loading}>
             {loading ? 'Сохранение...' : 'Сохранить'}

@@ -3,6 +3,7 @@ from typing import Sequence
 
 from pydantic import Field, model_validator
 
+from core.models.contest import ContestRuleType
 from core.schemas.base import BaseSchemaModel
 
 
@@ -45,6 +46,9 @@ class ContestUpdateRequest(BaseSchemaModel):
         description="Сколько задач разрешено держать одновременно (1–5)",
     )
 
+    rule_type: ContestRuleType
+    flag_user_can_have_negative_points: bool
+
     @model_validator(mode='after')
     def check_dates(self) -> 'ContestUpdateRequest':
         if self.started_at and self.closed_at and self.closed_at < self.started_at:
@@ -74,6 +78,8 @@ class ContestInfoForEditor(BaseSchemaModel):
     number_of_slots_for_problems: int
     started_at: datetime
     closed_at: datetime
+    rule_type: ContestRuleType = Field(default=ContestRuleType.DEFAULT)
+    flag_user_can_have_negative_points: bool = Field(default=False)
 
 
 class ContestInfoForContestant(BaseSchemaModel):
