@@ -1,6 +1,7 @@
 from fastapi import Depends
 
 from core.dependencies.repository import get_repository
+from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.selected_problem import SelectedProblemCRUDRepository
@@ -16,6 +17,7 @@ def get_selected_problem_service(
         contestant_repo: ContestantCRUDRepository = Depends(get_repository(ContestantCRUDRepository)),
         user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
         transaction_repo: TransactionCRUDRepository = Depends(get_repository(TransactionCRUDRepository)),
+        contest_repo: ContestCRUDRepository = Depends(get_repository(ContestCRUDRepository)),
 ) -> ISelectedProblemService:
     return SelectedProblemService(
         selected_problem_repo=selected_problem_repo,
@@ -23,4 +25,5 @@ def get_selected_problem_service(
         contestant_repo=contestant_repo,
         user_repo=user_repo,
         transaction_repo=transaction_repo,
+        contest_repo=contest_repo,
     )

@@ -23,13 +23,13 @@ router = fastapi.APIRouter(prefix="/submission", tags=["submission"])
     mapping={
     }
 )
-async def create_submission(
+async def check_submission(
         params: SubmissionCreateRequest = Body(...),
         user: User = Depends(get_user),
         submission_service: ISubmissionService = Depends(get_submission_service),
 ) -> JSONResponse:
     result: SubmissionId = (
-        await submission_service.create_submission(
+        await submission_service.check_submission(
             user_id=user.id,
             **params.model_dump(),
         )

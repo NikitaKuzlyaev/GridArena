@@ -11,9 +11,12 @@ from core.utilities.loggers.log_decorator import log_calls
 class TransactionCRUDRepository(BaseCRUDRepository):
 
     @log_calls
-    async def accept_submission(
+    async def create_submission(
             self,
-            submission_id: int,
+            contestant_id: int,
+            selected_problem_id: int,
+            verdict: str,
+            points_delta: int,
     ) -> Submission:
         ...
 

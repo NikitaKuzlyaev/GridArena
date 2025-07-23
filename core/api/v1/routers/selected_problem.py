@@ -15,6 +15,7 @@ from core.services.providers.permission import get_permission_service
 from core.services.providers.selected_problem import get_selected_problem_service
 from core.utilities.exceptions.database import EntityDoesNotExist
 from core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
+from core.utilities.exceptions.logic import PossibleLimitOverflow
 from core.utilities.exceptions.permission import PermissionDenied
 
 router = fastapi.APIRouter(prefix="/selected-problem", tags=["selected-problem"])
@@ -29,6 +30,7 @@ router = fastapi.APIRouter(prefix="/selected-problem", tags=["selected-problem"]
     mapping={
         PermissionDenied: (403, None),
         EntityDoesNotExist: (404, None),
+        PossibleLimitOverflow: (403, None),
     }
 )
 async def buy_problem(

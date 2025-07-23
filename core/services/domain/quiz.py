@@ -2,15 +2,19 @@ from typing import Sequence, Tuple
 
 from sqlalchemy import Row
 
-from core.models import QuizField, ProblemCard, Problem, User, Contestant
+from core.models import QuizField, ProblemCard, Problem, User, Contestant, SelectedProblem, Contest
+from core.models.selected_problem import SelectedProblemStatusType
+from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.problem_card import ProblemCardCRUDRepository
 from core.repository.crud.quiz import QuizFieldCRUDRepository
+from core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from core.repository.crud.user import UserCRUDRepository
 from core.schemas.problem import ProblemId
 from core.schemas.problem_card import ProblemCardInfo, ProblemCardInfoForContestant, ProblemCardStatus
 from core.schemas.quiz_field import QuizFieldId, QuizFieldInfoForEditor, QuizFieldInfoForContestant
 from core.services.interfaces.quiz import IQuizFieldService
+from core.utilities.exceptions.data_structures import UndefinedMapping
 from core.utilities.exceptions.database import EntityDoesNotExist
 from core.utilities.loggers.log_decorator import log_calls
 
@@ -22,11 +26,15 @@ class QuizFieldService(IQuizFieldService):
             problem_card_repo: ProblemCardCRUDRepository,
             contestant_repo: ContestantCRUDRepository,
             user_repo: UserCRUDRepository,
+            selected_problem_repo: SelectedProblemCRUDRepository,
+            contest_repo: ContestCRUDRepository
     ):
         self.quiz_field_repo = quiz_field_repo
         self.problem_card_repo = problem_card_repo
         self.contestant_repo = contestant_repo
         self.user_repo = user_repo
+        self.selected_problem_repo = selected_problem_repo
+        self.contest_repo = contest_repo
 
     @log_calls
     async def quiz_field_info_for_contestant(
@@ -40,6 +48,12 @@ class QuizFieldService(IQuizFieldService):
         )
         contest_id = user.domain_number
 
+        contest: Contest = (
+            await self.contest_repo.get_contest_by_id(
+                contest_id=contest_id,
+            )
+        )
+
         quiz_field: QuizField = (
             await self.quiz_field_repo.get_quiz_field_by_contest_id(
                 contest_id=contest_id,
@@ -50,24 +64,75 @@ class QuizFieldService(IQuizFieldService):
                 quiz_field_id=quiz_field.id,
             )
         )
+
+        contestant: Contestant = (
+            await self.contestant_repo.get_contestant_by_user_id(
+                user_id=user_id,
+            )
+        )
+
+        selected_problems: Sequence[SelectedProblem] = (
+            await self.selected_problem_repo.get_selected_problem_of_contestant_by_id(
+                contestant_id=contestant.id,
+            )
+        )
+        selected_problems_statuses = {
+            sp.problem_card_id: sp.status for sp in selected_problems
+        }
+
+        problem_cards = []
+
+        number_of_active_selected_problems = sum(
+            sp.status == SelectedProblemStatusType.ACTIVE for sp in selected_problems
+        )
+
+        for problem_card, problem in problem_cards_with_problem:
+            status = ProblemCardStatus.CLOSED
+
+            if problem_card.id in selected_problems_statuses:
+                st = selected_problems_statuses[problem_card.id]
+
+                if st == SelectedProblemStatusType.ACTIVE:
+                    status = ProblemCardStatus.SOLVING
+                elif st == SelectedProblemStatusType.REJECTED:
+                    status = ProblemCardStatus.REJECTED
+                elif st == SelectedProblemStatusType.SOLVED:
+                    status = ProblemCardStatus.SOLVED
+                elif st == SelectedProblemStatusType.FAILED:
+                    status = ProblemCardStatus.FAILED
+                else:
+                    raise UndefinedMapping("Не определен маппинг SelectedProblemStatusType -> ProblemCardStatus")
+            else:
+                pass
+
+            is_open_for_buy: bool = all([
+                number_of_active_selected_problems < contest.number_of_slots_for_problems,
+                status == ProblemCardStatus.CLOSED,
+                problem_card.category_price <= contestant.points,
+            ])
+
+            if status == ProblemCardStatus.CLOSED and is_open_for_buy:
+                status = ProblemCardStatus.OPEN
+
+            upd = ProblemCardInfoForContestant(
+                problem_card_id=problem_card.id,
+                problem=ProblemId(
+                    problem_id=problem.id
+                ),
+                status=status,
+                is_open_for_buy=is_open_for_buy,
+                row=problem_card.row,
+                column=problem_card.column,
+                category_price=problem_card.category_price,
+                category_name=problem_card.category_name,
+            )
+            problem_cards.append(upd)
+
         res = QuizFieldInfoForContestant(
             quiz_field_id=quiz_field.id,
             number_of_rows=quiz_field.number_of_rows,
             number_of_columns=quiz_field.number_of_columns,
-            problem_cards=[
-                ProblemCardInfoForContestant(
-                    problem_card_id=problem_card.id,
-                    problem=ProblemId(
-                        problem_id=problem.id
-                    ),
-                    status=ProblemCardStatus.CLOSED,
-                    is_open_for_buy=True,  # ЗАГЛУШКА
-                    row=problem_card.row,
-                    column=problem_card.column,
-                    category_price=problem_card.category_price,
-                    category_name=problem_card.category_name,
-                ) for problem_card, problem in problem_cards_with_problem
-            ],
+            problem_cards=problem_cards,
         )
         return res
 

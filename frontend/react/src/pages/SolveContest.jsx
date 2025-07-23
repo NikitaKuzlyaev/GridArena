@@ -132,10 +132,10 @@ function SolveContest() {
 
   useEffect(() => {
     // Имитация загрузки
-    setTimeout(() => {
-      setLoading(false);
-    }, 1);
-
+    // setTimeout(() => {
+    //   setLoading(false);
+    // }, 1);
+    setLoading(false);
     // Запрос к API для получения информации о поле для участника
     const token = localStorage.getItem('access_token');
     fetch(`${config.backendUrl}api/v1/quiz-field/info-contestant`, {
@@ -195,71 +195,72 @@ function SolveContest() {
 
   if (loading) {
     return (
-      <div className={bgClass} style={{ minHeight: '100vh', width: '100vw', position: 'relative' }}>
-        {theme === 'pink' && <FallingFlowers />}
-        {theme === 'pink' && (
-          <img
-            ref={stickerRef}
-            src={pinkGif}
-            alt="pink sticker"
-            style={{
-              position: 'fixed',
-              width: stickerSize,
-              height: stickerSize,
-              zIndex: 10,
-              cursor: 'grab',
-              bottom: stickerPos.bottom,
-              left: stickerPos.left,
-              top: stickerPos.top,
-              ...(stickerPos.left !== undefined && stickerPos.top !== undefined
-                ? { right: undefined, bottom: undefined }
-                : {}),
-              userSelect: 'none',
-              touchAction: 'none',
-            }}
-            onMouseDown={startDrag}
-            onTouchStart={startDrag}
-            draggable={false}
-          />
-        )}
-        {theme === 'pink' && (
-          <img
-            ref={sticker2Ref}
-            src={pinkGif2}
-            alt="pink sticker 2"
-            style={{
-              position: 'fixed',
-              width: sticker2Size,
-              height: sticker2Size,
-              zIndex: 10,
-              cursor: 'grab',
-              bottom: sticker2Pos.bottom,
-              right: sticker2Pos.right,
-              top: sticker2Pos.top,
-              ...(sticker2Pos.right !== undefined && sticker2Pos.top !== undefined
-                ? { left: undefined, bottom: undefined }
-                : {}),
-              userSelect: 'none',
-              touchAction: 'none',
-            }}
-            onMouseDown={startDrag2}
-            onTouchStart={startDrag2}
-            draggable={false}
-          />
-        )}
-        <div style={{
-          maxWidth: 800,
-          margin: '40px auto',
-          padding: '40px',
-          textAlign: 'center',
-          background: '#fff',
-          borderRadius: '12px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ fontSize: '24px', marginBottom: '16px' }}>⏳</div>
-          <div style={{ fontSize: '18px' }}>Загрузка соревнования...</div>
-        </div>
-      </div>
+      <p>загрузка</p>
+      // <div className={bgClass} style={{ minHeight: '100vh', width: '100vw', position: 'relative' }}>
+      //   {theme === 'pink' && <FallingFlowers />}
+      //   {theme === 'pink' && (
+      //     <img
+      //       ref={stickerRef}
+      //       src={pinkGif}
+      //       alt="pink sticker"
+      //       style={{
+      //         position: 'fixed',
+      //         width: stickerSize,
+      //         height: stickerSize,
+      //         zIndex: 10,
+      //         cursor: 'grab',
+      //         bottom: stickerPos.bottom,
+      //         left: stickerPos.left,
+      //         top: stickerPos.top,
+      //         ...(stickerPos.left !== undefined && stickerPos.top !== undefined
+      //           ? { right: undefined, bottom: undefined }
+      //           : {}),
+      //         userSelect: 'none',
+      //         touchAction: 'none',
+      //       }}
+      //       onMouseDown={startDrag}
+      //       onTouchStart={startDrag}
+      //       draggable={false}
+      //     />
+      //   )}
+      //   {theme === 'pink' && (
+      //     <img
+      //       ref={sticker2Ref}
+      //       src={pinkGif2}
+      //       alt="pink sticker 2"
+      //       style={{
+      //         position: 'fixed',
+      //         width: sticker2Size,
+      //         height: sticker2Size,
+      //         zIndex: 10,
+      //         cursor: 'grab',
+      //         bottom: sticker2Pos.bottom,
+      //         right: sticker2Pos.right,
+      //         top: sticker2Pos.top,
+      //         ...(sticker2Pos.right !== undefined && sticker2Pos.top !== undefined
+      //           ? { left: undefined, bottom: undefined }
+      //           : {}),
+      //         userSelect: 'none',
+      //         touchAction: 'none',
+      //       }}
+      //       onMouseDown={startDrag2}
+      //       onTouchStart={startDrag2}
+      //       draggable={false}
+      //     />
+      //   )}
+      //   <div style={{
+      //     maxWidth: 800,
+      //     margin: '40px auto',
+      //     padding: '40px',
+      //     textAlign: 'center',
+      //     background: '#fff',
+      //     borderRadius: '12px',
+      //     boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+      //   }}>
+      //     <div style={{ fontSize: '24px', marginBottom: '16px' }}>⏳</div>
+      //     <div style={{ fontSize: '18px' }}>Загрузка соревнования...</div>
+      //   </div>
+      // </div>
     );
   }
 
@@ -344,10 +345,11 @@ function SolveContest() {
                       {[...Array(fieldData.numberOfColumns)].map((_, colIdx) => {
                         const card = getCardAt(rowIdx + 1, colIdx + 1);
                         const clickable = card && card.isOpenForBuy;
+                        const is_closed_card = card && card.status=='CLOSED';
                         return (
                           <td
                             key={colIdx}
-                            className={`problem-card${card ? (card.isActive ? ' problem-card--active' : card.isSolved ? ' problem-card--solved' : card.isError ? ' problem-card--error' : '') : ''}`}
+                            className={`problem-card${card ? ` problem-card--${card.status}` : ''}`}
                             style={{
                               border: '3px solid #fff',
                               width: 120,
@@ -357,7 +359,7 @@ function SolveContest() {
                               textAlign: 'center',
                               verticalAlign: 'middle',
                               cursor: clickable ? 'pointer' : 'default',
-                              opacity: clickable ? 1 : 0.6,
+                              opacity: is_closed_card? 0.5 : 1,
                               position: 'relative',
                               overflow: 'hidden',
                               whiteSpace: 'nowrap',
@@ -469,13 +471,12 @@ function SolveContest() {
           {myProblems.length > 0 && (
             <div style={{ marginTop: 16 }}>
               <h2 style={{ fontSize: 22, marginBottom: 16, textAlign: 'left', }}>Купленные задачи</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {myProblems.map(problem => (
                   <div key={problem.selectedProblemId}
-                    className={`problem-card${problem.status === 'solved' ? ' problem-card--solved' : problem.status === 'error' ? ' problem-card--error' : ''}`}
+                    className={`bought-problem-card bought-problem-card--${problem.status}`}
                     style={{
-                      borderBottom: '1px solid rgba(0, 0, 0, 0.25)',
-                      borderRadius: 1,
+                      borderRadius: 10,
                       padding: 24,
                       maxWidth: 700,
                       margin: '0 auto',
@@ -524,7 +525,10 @@ function SolveContest() {
                               'Content-Type': 'application/json',
                             },
                             credentials: 'include',
-                            body: JSON.stringify({}), // пока пустой
+                            body: JSON.stringify({
+                              selected_problem_id: problem.selectedProblemId,
+                              answer: answers[problem.selectedProblemId] || ''
+                            }),
                           });
                         }}
                         title="Отправить ответ"

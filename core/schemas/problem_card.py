@@ -36,10 +36,12 @@ class ProblemCardWithProblemCreateRequest(BaseSchemaModel):
 
 
 class ProblemCardStatus(str, Enum):
+    OPEN = "OPEN"
     CLOSED = "CLOSED"
     SOLVING = "SOLVING"
     SOLVED = "SOLVED"
     FAILED = "FAILED"
+    REJECTED = "REJECTED"
 
 
 class ProblemCardInfo(BaseSchemaModel):

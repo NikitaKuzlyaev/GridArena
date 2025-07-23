@@ -12,6 +12,7 @@ from core.database.connection import Base
 class SelectedProblemStatusType(enum.Enum):
     ACTIVE = "ACTIVE"
     SOLVED = "SOLVED"
+    FAILED = "FAILED"
     REJECTED = "REJECTED"
 
 

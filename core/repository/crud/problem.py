@@ -9,6 +9,22 @@ from core.utilities.loggers.log_decorator import log_calls
 class ProblemCRUDRepository(BaseCRUDRepository):
 
     @log_calls
+    async def get_problem_by_id(
+            self,
+            problem_id: int,
+    ) -> Problem | None:
+        res = await self.async_session.execute(
+            select(
+                Problem
+            )
+            .where(
+                Problem.id == problem_id
+            )
+        )
+        res = res.scalar_one_or_none()
+        return res
+
+    @log_calls
     async def create_problem(
             self,
             statement: str,

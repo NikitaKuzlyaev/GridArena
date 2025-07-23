@@ -10,6 +10,21 @@ from core.repository.crud.base import BaseCRUDRepository
 
 class SelectedProblemCRUDRepository(BaseCRUDRepository):
 
+    async def get_selected_problem_by_id(
+            self,
+            selected_problem_id: int,
+    ) -> SelectedProblem | None:
+        res = await self.async_session.execute(
+            select(
+                SelectedProblem,
+            )
+            .where(
+                SelectedProblem.id == selected_problem_id,
+            )
+        )
+        res = res.scalar_one_or_none()
+        return res
+
     async def get_selected_problem_of_contestant_by_id(
             self,
             contestant_id: int,

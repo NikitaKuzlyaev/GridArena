@@ -1,11 +1,18 @@
 import datetime
+import enum
 
-from sqlalchemy import String, DateTime, ForeignKey
+from sqlalchemy import String, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import functions as sqlalchemy_functions
 
 from core.database.connection import Base
+
+
+class SubmissionVerdict(enum.Enum):
+    ACCEPTED = "ACCEPTED"
+    WRONG = "WRONG"
+    REJECTED = "REJECTED"
 
 
 class Submission(Base):
@@ -22,6 +29,11 @@ class Submission(Base):
 
     answer: Mapped[str] = mapped_column(
         String(length=32),
+        nullable=False
+    )
+
+    verdict: Mapped["SubmissionVerdict"] = mapped_column(
+        Enum(SubmissionVerdict),
         nullable=False
     )
 
