@@ -60,7 +60,6 @@ async def buy_problem(
 )
 async def get_contestant_selected_problems(
         user: User = Depends(get_user),
-        contestant_service: IContestantService = Depends(get_contestant_service),
         selected_problem_service: ISelectedProblemService = Depends(get_selected_problem_service)
 ) -> ArraySelectedProblemInfoForContestant:
     result: ArraySelectedProblemInfoForContestant = (

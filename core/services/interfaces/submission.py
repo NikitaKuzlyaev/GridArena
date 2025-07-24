@@ -14,14 +14,6 @@ class ISubmissionService(Protocol):
     ) -> SubmissionId:
         ...
 
-    async def create_submission(
-            self,
-            selected_problem_id: int,
-            answer: str,
-
-    ) -> Submission:
-        ...
-
     async def get_possible_reward(
             self,
             selected_problem_id: int,

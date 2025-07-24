@@ -480,7 +480,24 @@ function SolveContest() {
                       padding: 24,
                       maxWidth: 800,
                       margin: '0 auto',
+                      position: 'relative',
                     }}>
+                    {/* Категория и цена */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 12,
+                      left: 18,
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: '#7b2ff2',
+                      background: 'rgba(245,245,255,0.85)',
+                      borderRadius: 0,
+                      padding: '2px 10px',
+                      zIndex: 2,
+                      boxShadow: '0 1px 2px #e0e0ff',
+                    }}>
+                      {problem.categoryName ? `${problem.categoryName} за ${problem.categoryPrice}` : ''}
+                    </div>
                     <div style={{ marginBottom: 36, fontWeight: 500 }}>
                       {/* <span style={{ opacity: 0.7, fontSize: 13 }}>ID: {problem.selectedProblemId}</span> */}
                       <span style={{ float: 'right', opacity: 0.5, fontSize: 13 }}>{new Date(problem.createdAt).toLocaleString()}</span>

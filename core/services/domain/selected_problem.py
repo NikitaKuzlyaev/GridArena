@@ -53,6 +53,10 @@ class SelectedProblemService(ISelectedProblemService):
             )
         )
 
+        contest: Contest = await self.contest_repo.get_contest_by_user_id(
+            user_id=user_id,
+        )
+
         res = ArraySelectedProblemInfoForContestant(
             body=[
                 SelectedProblemInfoForContestant(
@@ -62,10 +66,13 @@ class SelectedProblemService(ISelectedProblemService):
                         problem_id=problem.id,
                         statement=problem.statement,
                     ),
+                    category_name=problem_card.category_name,
+                    category_price=problem_card.category_price,
                     created_at=selected_problem.created_at,
                 ) for selected_problem, problem_card, problem in rows if
                 selected_problem.status == SelectedProblemStatusType.ACTIVE
-            ]
+            ],
+            rule_type=contest.rule_type
         )
 
         return res

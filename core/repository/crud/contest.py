@@ -4,7 +4,7 @@ from typing import Sequence
 from sqlalchemy import select, update, delete, and_
 
 from core.dependencies.repository import get_repository
-from core.models import Contest, Permission, QuizField, ProblemCard, Problem
+from core.models import Contest, Permission, QuizField, ProblemCard, Problem, User
 from core.models.permission import PermissionResourceType, PermissionActionType
 from core.repository.crud.base import BaseCRUDRepository
 from core.utilities.loggers.log_decorator import log_calls
@@ -24,6 +24,23 @@ class ContestCRUDRepository(BaseCRUDRepository):
             )
         )
         await self.async_session.commit()
+
+    async def get_contest_by_user_id(
+            self,
+            user_id: int,
+    ) -> Contest | None:
+        res = await self.async_session.execute(
+            select(
+                Contest
+            )
+            .join(
+                User, User.domain_number == Contest.id
+            )
+            .where(
+                User.id == user_id
+            )
+        )
+        return res.scalar_one_or_none()
 
     async def get_contest_by_id(
             self,

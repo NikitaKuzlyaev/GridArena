@@ -83,7 +83,7 @@ class SubmissionService(ISubmissionService):
 
         # Участник не может отправлять посылки не по своим купленным задачам
         if contestant.id != selected_problem.contestant_id:
-            raise PermissionDenied()
+            raise PermissionDenied("Участник не может отправлять посылки не по своим купленным задачам")
 
         is_answer_correct = self.get_verdict(
             contestant_answer=answer,

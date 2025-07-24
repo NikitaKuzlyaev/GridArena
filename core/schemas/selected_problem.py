@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Sequence
 
+from core.models.contest import ContestRuleType
 from core.schemas.base import BaseSchemaModel
 from core.schemas.problem import ProblemInfoForContestant
 
@@ -17,7 +18,12 @@ class SelectedProblemInfoForContestant(BaseSchemaModel):
     selected_problem_id: int
     problem_card_id: int
     problem: ProblemInfoForContestant
+    category_name: str
+    category_price: int
     created_at: datetime
+    attempts_remaining: int | None = None
+
 
 class ArraySelectedProblemInfoForContestant(BaseSchemaModel):
     body: Sequence[SelectedProblemInfoForContestant]
+    rule_type: ContestRuleType

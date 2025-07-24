@@ -1,0 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap&subset=cyrillic');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap&subset=cyrillic');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap&subset=cyrillic');
+
+/* Стили для страницы SolveContest с поддержкой тем */
+
+.theme-light body, .theme-light html {
+  background: #f6f8fa;
+}
+.theme-dark body, .theme-dark html {
+  background: #181c22;
+}
+.theme-green body, .theme-green html {
+  background: #e3ffe6;
+}
+.theme-pink body, .theme-pink html {
+  background: #ffe3f3;
+}
+
+.theme-light .solve-contest-root {
+  color: #222;
+}
+.theme-dark .solve-contest-root {
+  color: #00ff00;
+}
+.theme-green .solve-contest-root {
+  color: #222;
+}
+.theme-pink .solve-contest-root {
+  color: #222;
+}
+
+/* Фон для всей страницы в зависимости от темы */
+.solve-bg {
+  min-height: 100vh;
+  width: 100vw;
+}
+.solve-bg--light {
+  background: #f6f8fa;
+  --border-color: #bde0fe;
+  --main-text: #222;
+  --send-btn-bg: #1677ff;
+  --send-btn-icon: #fff;
+  --input-placeholder: #888;
+}
+.solve-bg--dark {
+  background: #181c22;
+  --border-color: #00ff00;
+  --main-text: #00ff00;
+  --send-btn-bg: #90caf9;
+  --send-btn-icon: #23272f;
+  --input-placeholder: #aaa;
+}
+.solve-bg--green {
+  background: #e3ffe6;
+  --border-color: #2baf90;
+  --main-text: #222;
+  --send-btn-bg: #2baf90;
+  --send-btn-icon: #fff;
+  --input-placeholder: #4e7c6c;
+}
+.solve-bg--pink {
+  background: #ffe3f3;
+  --border-color: #f48fb1;
+  --main-text: #222;
+  --send-btn-bg: #f48fb1;
+  --send-btn-icon: #fff;
+  --input-placeholder: #b06b8b;
+}
+
+.solve-contest-root {
+  color: var(--main-text);
+}
+
+/* Стили для таблицы с карточками */
+.solve-contest-root table {
+  border-collapse: collapse;
+  color: var(--main-text);
+}
+.solve-contest-root td, .solve-contest-root th {
+  border: 1px solid var(--border-color) !important;
+  color: var(--main-text);
+}
+
+/* Стили для input и placeholder */
+.solve-contest-root input::placeholder {
+  color: var(--input-placeholder);
+  opacity: 1;
+}
+
+/* Карточки задач игрового поля */
+.theme-light .problem-card {
+  background: #fff;
+  border: 1px solid #bde0fe;
+}
+.theme-light .problem-card--OPEN {
+  opacity: 0.6;
+}
+/* Новый стиль для CLOSED */
+.theme-light .problem-card--CLOSED {
+  background: #e0e0e0;
+  border-color: #bdbdbd;
+  color: #888;
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.theme-light .problem-card--SOLVING {
+  /* box-shadow: 0 0 0 3px #1677ff44; */
+  background-color: #ffb703;
+  /* border-color: #1677ff; */
+}
+.theme-light .problem-card--SOLVED {
+  background: #e0ffe0;
+  border-color: #4caf50;
+}
+.theme-light .problem-card--FAILED {
+  background: #fff0f0;
+  border-color: #e57373;
+}
+.theme-light .problem-card--REJECTED {
+  background: #fff0f0;
+  border-color: #e57373;
+}
+
+/* Купленные задачи */
+.theme-light .bought-problem-card {
+  background: #ffffff;
+  border: 1px solid #bde0fe;
+  color: #222;
+}
+.theme-light .bought-problem-card--OPEN {
+  opacity: 0.6;
+}
+.theme-light .bought-problem-card--CLOSED {
+  background: #e0e0e0;
+  border-color: #bdbdbd;
+  color: #888;
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.theme-light .bought-problem-card--SOLVING {
+  border-color: #1677ff;
+}
+.theme-light .bought-problem-card--SOLVED {
+  background: #e0ffe0;
+  border-color: #4caf50;
+}
+.theme-light .bought-problem-card--FAILED {
+  background: #fff0f0;
+  border-color: #e57373;
+}
+.theme-light .bought-problem-card--REJECTED {
+  background: #fff0f0;
+  border-color: #e57373;
+}
+
+/* Активная карточка */
+.theme-light .problem-card--active {
+  box-shadow: 0 0 0 3px #1677ff44;
+  border-color: #1677ff;
+}
+.theme-dark .problem-card--active {
+  box-shadow: 0 0 0 3px #90caf944;
+  border-color: #90caf9;
+}
+.theme-green .problem-card--active {
+  box-shadow: 0 0 0 3px #2baf9044;
+  border-color: #2baf90;
+}
+.theme-pink .problem-card--active {
+  box-shadow: 0 0 0 3px #f48fb144;
+  border-color: #f48fb1;
+}
+
+/* Решённая карточка */
+.theme-light .problem-card--solved {
+  background: #e0ffe0;
+  border-color: #4caf50;
+}
+.theme-dark .problem-card--solved {
+  background: #294032;
+  border-color: #81c784;
+}
+.theme-green .problem-card--solved {
+  background: #b9fbc0;
+  border-color: #388e3c;
+}
+.theme-pink .problem-card--solved {
+  background: #f8bbd0;
+  border-color: #ad1457;
+}
+
+/* Карточка с ошибкой */
+.theme-light .problem-card--error {
+  background: #fff0f0;
+  border-color: #e57373;
+}
+.theme-dark .problem-card--error {
+  background: #3a2323;
+  border-color: #ef9a9a;
+}
+.theme-green .problem-card--error {
+  background: #ffeaea;
+  border-color: #e57373;
+}
+.theme-pink .problem-card--error {
+  background: #ffd6e0;
+  border-color: #e57373;
+}
+
+/* Кнопка отправки ответа */
+.solve-contest-root .send-answer-btn {
+  background: var(--send-btn-bg) !important;
+  color: var(--send-btn-icon) !important;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.solve-contest-root .send-answer-btn svg {
+  fill: var(--send-btn-icon);
+}
+
+.font-arial {
+  font-family: Arial, sans-serif;
+}
+.font-times {
+  font-family: 'Times New Roman', Times, serif;
+}
+.font-courier {
+  font-family: 'Courier New', Courier, monospace;
+}
+.font-segoe {
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+.font-varela {
+  font-family: 'Varela Round', Arial, sans-serif;
+}
+.font-jetbrains {
+  font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+}
+.font-inter {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+} 
