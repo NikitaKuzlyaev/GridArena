@@ -1,6 +1,8 @@
-from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
+import os
 
+from fastapi import FastAPI, Request
+from starlette.middleware.cors import CORSMiddleware
+from pyinstrument import Profiler
 from core.api.v1.routers import routers as routers_v1
 
 app = FastAPI()
@@ -17,6 +19,33 @@ app.add_middleware(
     allow_methods=["*"],  # или ['GET', 'POST', ...]
     allow_headers=["*"],  # или ['Content-Type', 'Authorization']
 )
+
+
+# @app.middleware("http")
+# Для профилирования
+async def profile_request(request: Request, call_next):
+    profiler = Profiler()
+    profiler.start()
+
+    response = await call_next(request)
+
+    profiler.stop()
+
+    # Папка для профилей
+    profiles_dir = "profiles"
+    os.makedirs(profiles_dir, exist_ok=True)
+
+    safe_path = request.url.path.strip("/").replace("/", "_") or "root"
+    filename = f"profile_{safe_path}.html"
+    filepath = os.path.join(profiles_dir, filename)
+
+    with open(filepath, "w") as f:
+        f.write(profiler.output_html())
+
+    print(f"[PyInstrument] Профиль сохранён: {filepath}")
+
+    return response
+
 
 for router in routers_v1:
     app.include_router(router=router, prefix="/api/v1")

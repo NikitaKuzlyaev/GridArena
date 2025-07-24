@@ -530,6 +530,7 @@ function SolveContest() {
                               answer: answers[problem.selectedProblemId] || ''
                             }),
                           });
+                          window.location.reload();
                         }}
                         title="Отправить ответ"
                       >

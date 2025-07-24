@@ -63,7 +63,8 @@ class SelectedProblemService(ISelectedProblemService):
                         statement=problem.statement,
                     ),
                     created_at=selected_problem.created_at,
-                ) for selected_problem, problem_card, problem in rows
+                ) for selected_problem, problem_card, problem in rows if
+                selected_problem.status == SelectedProblemStatusType.ACTIVE
             ]
         )
 

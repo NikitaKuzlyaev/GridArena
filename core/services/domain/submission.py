@@ -1,7 +1,6 @@
-from dataclasses import dataclass
-from typing import cast, Sequence
+from typing import Sequence
 
-from core.models import User, Contestant, ProblemCard, SelectedProblem, Problem, QuizField, Contest
+from core.models import Contestant, ProblemCard, SelectedProblem, Problem
 from core.models.selected_problem import SelectedProblemStatusType
 from core.models.submission import SubmissionVerdict, Submission
 from core.repository.crud.contest import ContestCRUDRepository
@@ -17,7 +16,6 @@ from core.schemas.submission import SubmissionId
 from core.services.context.context import ContextService, ContextModel, RepositoryUnit
 from core.services.interfaces.submission import ISubmissionService
 from core.services.rules.submission_reward import calculate_max_submission_reward
-from core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
 from core.utilities.exceptions.permission import PermissionDenied
 from core.utilities.formatters.string import make_string_clear
 from core.utilities.loggers.log_decorator import log_calls
@@ -92,12 +90,17 @@ class SubmissionService(ISubmissionService):
             problem_answer=problem.answer,
         )
         verdict = (SubmissionVerdict.ACCEPTED.value if is_answer_correct
-                   else SubmissionVerdict.REJECTED.value)
+                   else SubmissionVerdict.WRONG.value)
         possible_reward = 0
         if verdict == SubmissionVerdict.ACCEPTED.value:
             possible_reward: int = (
                 await self.get_possible_reward(
                     selected_problem_id=selected_problem.id, ))
+
+        next_status = await self.get_next_selected_problem_status(
+            selected_problem_id=selected_problem.id,
+            is_next_answer_correct=is_answer_correct,
+        )
 
         submission: Submission = (
             await self.transaction_repo.create_submission(
@@ -106,7 +109,7 @@ class SubmissionService(ISubmissionService):
                 answer=answer,
                 verdict=verdict,
                 points_delta=possible_reward,
-                selected_problem_change_status=
+                selected_problem_change_status=next_status.value,
             )
         )
         res = SubmissionId(
@@ -120,8 +123,14 @@ class SubmissionService(ISubmissionService):
             selected_problem_id: int,
     ) -> int:
 
-        selected_problem = await self.context_service.context.get_problem_card_from_selected_problem()
-        problem_card = await self.context_service.context.get_problem_card_from_selected_problem()
+        selected_problem = await self.context_service.context.get_selected_problem(
+            selected_problem_id=selected_problem_id, )
+        problem_card = await self.context_service.context.get_problem_card_from_selected_problem(
+            selected_problem_id=selected_problem.id, )
+        quiz_field = await self.context_service.context.get_quiz_field_from_problem_card(
+            problem_card=problem_card, )
+        contest = await self.context_service.context.get_contest_from_quiz_field(
+            quiz_field=quiz_field, )
 
         # Награда за решение доступна только если задача активна (доступна для решения)
         if selected_problem.status != SelectedProblemStatusType.ACTIVE:
@@ -139,3 +148,28 @@ class SubmissionService(ISubmissionService):
         )
 
         return max_reward
+
+    async def get_next_selected_problem_status(
+            self,
+            selected_problem_id: int,
+            is_next_answer_correct: bool,
+    ) -> SelectedProblemStatusType:
+
+        if is_next_answer_correct:
+            return SelectedProblemStatusType.SOLVED
+
+        selected_problem = await self.context_service.context.get_selected_problem(
+            selected_problem_id=selected_problem_id, )
+
+        submissions: Sequence[Submission] | None = (
+            await self.submission_repo.get_submissions_of_selected_problem_by_id(
+                selected_problem_id=selected_problem.id,
+                filter_by_verdict=[SubmissionVerdict.WRONG.value], ))
+
+        # Логика пока тут, лучше потом перенести
+        # опять же: есть разные стратегии начисления баллов и правил игры
+        # поэтому это костыль очень серьезный
+        if len(submissions) < 2:
+            return SelectedProblemStatusType.ACTIVE
+
+        return SelectedProblemStatusType.FAILED

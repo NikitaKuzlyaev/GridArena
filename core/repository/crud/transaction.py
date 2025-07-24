@@ -3,7 +3,7 @@ from sqlalchemy import update, select
 from core.dependencies.repository import get_repository
 from core.models import SelectedProblem, Contestant, ProblemCard, Contest, User
 from core.models.selected_problem import SelectedProblemStatusType
-from core.models.submission import Submission
+from core.models.submission import Submission, SubmissionVerdict
 from core.repository.crud.base import BaseCRUDRepository
 from core.utilities.loggers.log_decorator import log_calls
 
@@ -18,9 +18,41 @@ class TransactionCRUDRepository(BaseCRUDRepository):
             answer: str,
             verdict: str,
             points_delta: int,
-            selected_problem_change_status: str | None = None,
+            selected_problem_change_status: str,
     ) -> Submission:
-        ...
+        try:
+            await self.async_session.execute(
+                update(SelectedProblem)
+                .where(SelectedProblem.id == selected_problem_id)
+                .values(status=selected_problem_change_status)
+                .execution_options(synchronize_session="fetch")
+            )
+            res = await self.async_session.execute(
+                select(Contestant).where(Contestant.id == contestant_id)
+            )
+            contestant = res.scalar_one_or_none()
+
+            await self.async_session.execute(
+                update(Contestant)
+                .where(Contestant.id == contestant_id)
+                .values(points=contestant.points + points_delta)
+                .execution_options(synchronize_session="fetch")
+            )
+
+            submission = Submission(
+                selected_problem_id=selected_problem_id,
+                answer=answer,
+                verdict=SubmissionVerdict(verdict),
+            )
+            self.async_session.add(submission)
+
+            await self.async_session.commit()
+            await self.async_session.refresh(submission)
+            return submission
+
+        except Exception as e:
+            await self.async_session.rollback()
+            raise
 
     @log_calls
     async def buy_problem(

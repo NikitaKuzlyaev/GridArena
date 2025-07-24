@@ -7,3 +7,4 @@ from .problem_card import ProblemCard
 from .quiz_field import QuizField
 from .selected_problem import SelectedProblem
 from .user import User
+from .submission import Submission

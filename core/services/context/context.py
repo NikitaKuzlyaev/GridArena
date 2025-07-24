@@ -1,22 +1,19 @@
 from dataclasses import dataclass
-from typing import cast, Protocol
 
 from core.models import QuizField, User, Contestant, SelectedProblem, ProblemCard, Problem, Contest
 from core.repository.crud.contest import ContestCRUDRepository
 from core.repository.crud.contestant import ContestantCRUDRepository
 from core.repository.crud.problem import ProblemCRUDRepository
 from core.repository.crud.problem_card import ProblemCardCRUDRepository
-from core.repository.crud.quiz import quiz_field_repo, QuizFieldCRUDRepository
+from core.repository.crud.quiz import QuizFieldCRUDRepository
 from core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from core.repository.crud.submission import SubmissionCRUDRepository
 from core.repository.crud.transaction import TransactionCRUDRepository
 from core.repository.crud.user import UserCRUDRepository
-from core.schemas.context import BaseQuizContext, UserContestantContext, SelectedProblemContext
-from core.services.domain.submission import RepositoryUnit
+# from core.schemas.context import BaseQuizContext, UserContestantContext, SelectedProblemContext
 from core.services.interfaces.context import IContextService
 from core.utilities.exceptions.data_structures import NotEnoughParameters
 from core.utilities.exceptions.database import EntityDoesNotExist
-from core.utilities.exceptions.permission import PermissionDenied
 from core.utilities.loggers.log_decorator import log_calls
 
 
