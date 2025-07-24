@@ -11,6 +11,22 @@ from core.utilities.loggers.log_decorator import log_calls
 class ContestantCRUDRepository(BaseCRUDRepository):
 
     @log_calls
+    async def get_contestant_by_id(
+            self,
+            contestant_id: int,
+    ) -> Contestant | None:
+        res = await self.async_session.execute(
+            select(
+                Contestant,
+            )
+            .where(
+                Contestant.id == contestant_id,
+            )
+        )
+        res = res.scalar_one_or_none()
+        return res
+
+    @log_calls
     async def get_contestant_by_user_id(
             self,
             user_id: int

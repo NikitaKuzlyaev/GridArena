@@ -470,22 +470,22 @@ function SolveContest() {
           {/* Купленные задачи */}
           {myProblems.length > 0 && (
             <div style={{ marginTop: 16 }}>
-              <h2 style={{ fontSize: 22, marginBottom: 16, textAlign: 'left', }}>Купленные задачи</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <h2 style={{ fontSize: 20, marginBottom: 16, textAlign: 'left', }}>Купленные задачи</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 64, }}>
                 {myProblems.map(problem => (
                   <div key={problem.selectedProblemId}
                     className={`bought-problem-card bought-problem-card--${problem.status}`}
                     style={{
                       borderRadius: 10,
                       padding: 24,
-                      maxWidth: 700,
+                      maxWidth: 800,
                       margin: '0 auto',
                     }}>
                     <div style={{ marginBottom: 36, fontWeight: 500 }}>
                       {/* <span style={{ opacity: 0.7, fontSize: 13 }}>ID: {problem.selectedProblemId}</span> */}
                       <span style={{ float: 'right', opacity: 0.5, fontSize: 13 }}>{new Date(problem.createdAt).toLocaleString()}</span>
                     </div>
-                    <div style={{ marginBottom: 16, textAlign: 'left', fontSize: 15 }}>
+                    <div style={{ marginBottom: 16, textAlign: 'left', fontSize: 14, lineHeight: 1.6 }}>
                       <ReactMarkdown
                         remarkPlugins={[remarkMath]}
                         rehypePlugins={[rehypeKatex]}

@@ -15,8 +15,10 @@ class TransactionCRUDRepository(BaseCRUDRepository):
             self,
             contestant_id: int,
             selected_problem_id: int,
+            answer: str,
             verdict: str,
             points_delta: int,
+            selected_problem_change_status: str | None = None,
     ) -> Submission:
         ...
 
