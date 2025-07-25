@@ -1,0 +1,132 @@
+import fastapi
+from fastapi import Body
+from fastapi import Depends
+from fastapi import Query
+
+from backend.core.dependencies.authorization import get_user
+from backend.core.models import User
+from backend.core.schemas.contestant import ArrayContestantInfoForEditor, ContestantId, ContestantInCreate, \
+    ContestantPreviewInfo, ContestantInfoInContest
+from backend.core.services.interfaces.contestant import IContestantService
+from backend.core.services.interfaces.permission import IPermissionService
+from backend.core.services.providers.contestant import get_contestant_service
+from backend.core.services.providers.permission import get_permission_service
+from backend.core.utilities.exceptions.database import EntityDoesNotExist
+from backend.core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
+from backend.core.utilities.exceptions.permission import PermissionDenied
+
+router = fastapi.APIRouter(prefix="/contestant", tags=["contestant"])
+
+
+@router.post(
+    path="/",
+    response_model=ContestantId,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def create_contestant(
+        params: ContestantInCreate = Body(...),
+        user: User = Depends(get_user),
+        contestant_service: IContestantService = Depends(get_contestant_service),
+        permission_service: IPermissionService = Depends(get_permission_service),
+) -> ContestantId:
+    await permission_service.raise_if_not_all([
+        lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=params.contest_id),
+    ])
+
+    result: ContestantId = (
+        await contestant_service.create_contestant(
+            **params.model_dump(),
+        )
+    )
+    result = result.model_dump()
+
+    return result
+
+
+@router.get(
+    path="/preview",
+    response_model=ContestantPreviewInfo,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def preview_contestant_info(
+        user: User = Depends(get_user),
+        contestant_service: IContestantService = Depends(get_contestant_service),
+        permission_service: IPermissionService = Depends(get_permission_service),
+) -> ContestantPreviewInfo:
+    res: ContestantPreviewInfo = (
+        await contestant_service.get_contestant_preview(
+            user_id=user.id,
+        )
+    )
+    res = res.model_dump()
+
+    return res
+
+
+@router.get(
+    path="/info",
+    response_model=ContestantInfoInContest,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def preview_contestant_info(
+        user: User = Depends(get_user),
+        contestant_service: IContestantService = Depends(get_contestant_service),
+) -> ContestantInfoInContest:
+    res: ContestantInfoInContest = (
+        await contestant_service.get_contestant_info_in_contest(
+            user_id=user.id,
+        )
+    )
+    res = res.model_dump()
+
+    return res
+
+
+@router.get(
+    path="/",
+    response_model=ArrayContestantInfoForEditor,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def view_contestants(
+        contest_id: int = Query(...),
+        user: User = Depends(get_user),
+        contestant_service: IContestantService = Depends(get_contestant_service),
+        permission_service: IPermissionService = Depends(get_permission_service),
+) -> ArrayContestantInfoForEditor:
+    await permission_service.raise_if_not_all([
+        lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=contest_id),
+    ])
+
+    result: ArrayContestantInfoForEditor = (
+        await contestant_service.get_contestants_in_contest(
+            user_id=user.id,
+            contest_id=contest_id,
+        )
+    )
+    result = result.model_dump()
+
+    return result

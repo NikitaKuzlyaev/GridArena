@@ -1,0 +1,24 @@
+from pydantic import Field
+
+from backend.core.schemas.base import BaseSchemaModel
+
+
+class ProblemId(BaseSchemaModel):
+    problem_id: int
+
+
+class ProblemUpdateRequest(BaseSchemaModel):
+    problem_id: int
+    statement: str = Field(..., max_length=2048)
+    answer: str = Field(..., max_length=32)
+
+
+class ProblemInfoForEditor(BaseSchemaModel):
+    problem_id: int
+    statement: str
+    answer: str
+
+
+class ProblemInfoForContestant(BaseSchemaModel):
+    problem_id: int
+    statement: str
