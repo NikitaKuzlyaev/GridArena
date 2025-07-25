@@ -17,13 +17,12 @@ class PermissionCRUDRepository(BaseCRUDRepository):
             resource_id: int,
     ) -> Permission | None:
         permission = await self.async_session.execute(
-            select(
-                Permission
-            ).where(
+            select(Permission)
+            .where(
                 Permission.user_id == user_id,
                 Permission.resource_type == resource_type,
                 Permission.resource_id == resource_id,
-                Permission.permission_type == permission_type,
+                Permission.permission_type == permission_type
             )
         )
         return permission.scalar_one_or_none()

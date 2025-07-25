@@ -18,14 +18,11 @@ class UserCRUDRepository(BaseCRUDRepository):
             username: str,
             password: str,
     ) -> User:
-        user_exists = (
-            await self.async_session.scalar(
-                select(
-                    User
-                ).where(
-                    User.username == username,
-                    User.domain_number == 0,
-                )
+        user_exists: User = await self.async_session.scalar(
+            select(User)
+            .where(
+                User.username == username,
+                User.domain_number == 0
             )
         )
         if user_exists:
@@ -50,14 +47,11 @@ class UserCRUDRepository(BaseCRUDRepository):
             username: str,
             password: str,
     ) -> User:
-        user_exists = (
-            await self.async_session.scalar(
-                select(
-                    User
-                ).where(
-                    User.username == username,
-                    User.domain_number == domain_number,
-                )
+        user_exists: User = await self.async_session.scalar(
+            select(User)
+            .where(
+                User.username == username,
+                User.domain_number == domain_number
             )
         )
         if user_exists:
@@ -82,14 +76,11 @@ class UserCRUDRepository(BaseCRUDRepository):
             username: str,
             password: str,
     ):
-        user: User = (
-            await self.async_session.scalar(
-                select(
-                    User
-                ).where(
-                    User.username == username,
-                    User.domain_number == domain_number,
-                )
+        user: User = await self.async_session.scalar(
+            select(User)
+            .where(
+                User.username == username,
+                User.domain_number == domain_number
             )
         )
         if not user or not verify_password(password, user.hashed_password):
@@ -103,14 +94,11 @@ class UserCRUDRepository(BaseCRUDRepository):
             username: str,
             domain_number: int,
     ) -> User | None:
-        res = (
-            await self.async_session.execute(
-                select(
-                    User
-                ).where(
-                    User.username == username,
-                    User.domain_number == domain_number,
-                )
+        res = await self.async_session.execute(
+            select(User)
+            .where(
+                User.username == username,
+                User.domain_number == domain_number
             )
         )
         user = res.scalar_one_or_none()
@@ -121,14 +109,9 @@ class UserCRUDRepository(BaseCRUDRepository):
             self,
             user_uuid: str,
     ) -> User | None:
-        res = (
-            await self.async_session.execute(
-                select(
-                    User
-                ).where(
-                    User.uuid == user_uuid,
-                )
-            )
+        res = await self.async_session.execute(
+            select(User)
+            .where(User.uuid == user_uuid)
         )
         user = res.scalar_one_or_none()
         return user
@@ -143,14 +126,10 @@ class UserCRUDRepository(BaseCRUDRepository):
         :param user_id: id объекта User
         :return: объект User c указанным user_id или None
         """
-        stmt = (
-            select(
-                User
-            ).where(
-                User.id == user_id,
-            )
+        res = await self.async_session.execute(
+            select(User)
+            .where(User.id == user_id)
         )
-        res = await self.async_session.execute(stmt)
         return res.scalars().one_or_none()
 
 

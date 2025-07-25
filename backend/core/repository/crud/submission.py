@@ -33,8 +33,9 @@ class SubmissionCRUDRepository(BaseCRUDRepository):
             selected_problem_id: int,
             filter_by_verdict: List[str] = None,
     ) -> Sequence[Submission]:
-        stmt = select(Submission).where(
-            Submission.selected_problem_id == selected_problem_id
+        stmt = (
+            select(Submission)
+            .where(Submission.selected_problem_id == selected_problem_id)
         )
 
         if filter_by_verdict:

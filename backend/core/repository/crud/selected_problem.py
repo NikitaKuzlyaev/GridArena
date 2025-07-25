@@ -15,12 +15,8 @@ class SelectedProblemCRUDRepository(BaseCRUDRepository):
             selected_problem_id: int,
     ) -> SelectedProblem | None:
         res = await self.async_session.execute(
-            select(
-                SelectedProblem,
-            )
-            .where(
-                SelectedProblem.id == selected_problem_id,
-            )
+            select(SelectedProblem)
+            .where(SelectedProblem.id == selected_problem_id)
         )
         res = res.scalar_one_or_none()
         return res
@@ -30,8 +26,9 @@ class SelectedProblemCRUDRepository(BaseCRUDRepository):
             contestant_id: int,
             filter_by_status: List[str] = None,
     ) -> Sequence[SelectedProblem]:
-        stmt = select(SelectedProblem).where(
-            SelectedProblem.contestant_id == contestant_id
+        stmt = (
+            select(SelectedProblem)
+            .where(SelectedProblem.contestant_id == contestant_id)
         )
 
         if filter_by_status:
@@ -58,9 +55,7 @@ class SelectedProblemCRUDRepository(BaseCRUDRepository):
                 Problem,
                 Problem.id == ProblemCard.problem_id
             )
-            .where(
-                SelectedProblem.contestant_id == contestant_id
-            )
+            .where(SelectedProblem.contestant_id == contestant_id)
         )
         return res.all()
 
@@ -87,9 +82,7 @@ class SelectedProblemCRUDRepository(BaseCRUDRepository):
             problem_card_id: int,
     ) -> SelectedProblem | None:
         res = await self.async_session.execute(
-            select(
-                SelectedProblem,
-            )
+            select(SelectedProblem)
             .where(
                 SelectedProblem.contestant_id == contestant_id,
                 SelectedProblem.problem_card_id == problem_card_id,

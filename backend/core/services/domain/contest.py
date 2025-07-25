@@ -3,7 +3,8 @@ from typing import Sequence
 
 from backend.core.models import Contest
 from backend.core.repository.crud.contest import ContestCRUDRepository
-from backend.core.schemas.contest import ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor
+from backend.core.schemas.contest import (
+    ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor)
 from backend.core.services.interfaces.contest import IContestService
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
@@ -15,7 +16,6 @@ class ContestService(IContestService):
             self,
             contest_repo: ContestCRUDRepository,
             permission_service: IPermissionService,
-
     ):
         self.contest_repo = contest_repo
         self.permission_service = permission_service
@@ -39,15 +39,16 @@ class ContestService(IContestService):
                 number_of_slots_for_problems=number_of_slots_for_problems,
             )
         )
-        res = ContestId(contest_id=contest.id)
-
+        res = ContestId(
+            contest_id=contest.id,
+        )
         return res
 
     @log_calls
     async def delete_contest(
             self,
-            user_id,
-            contest_id,
+            user_id: int,
+            contest_id: int,
     ) -> None:
         contest: Contest = (
             await self.contest_repo.get_contest_by_id(
@@ -60,14 +61,13 @@ class ContestService(IContestService):
         await self.contest_repo.delete_contest(
             contest_id=contest_id,
         )
-
         return None
 
     @log_calls
     async def contest_info_for_editor(
             self,
-            user_id,
-            contest_id,
+            user_id: int,
+            contest_id: int,
     ) -> ContestInfoForEditor:
         contest: Contest = (
             await self.contest_repo.get_contest_by_id(
@@ -108,8 +108,9 @@ class ContestService(IContestService):
                 number_of_slots_for_problems=number_of_slots_for_problems,
             )
         )
-        res = ContestId(contest_id=contest.id)
-
+        res = ContestId(
+            contest_id=contest.id,
+        )
         return res
 
     @log_calls
@@ -140,7 +141,9 @@ class ContestService(IContestService):
         if not contest:
             raise EntityDoesNotExist("")
 
-        res = ContestId(contest_id=contest.id)
+        res = ContestId(
+            contest_id=contest.id,
+        )
         return res
 
     @log_calls

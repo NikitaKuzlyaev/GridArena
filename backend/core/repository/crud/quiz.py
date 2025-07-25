@@ -14,28 +14,19 @@ class QuizFieldCRUDRepository(BaseCRUDRepository):
             number_of_columns: int,
     ) -> QuizField | None:
         await self.async_session.execute(
-            update(
-                QuizField
-            )
-            .where(
-                QuizField.id == quiz_field_id,
-            )
+            update(QuizField)
+            .where(QuizField.id == quiz_field_id)
             .values(
                 number_of_rows=number_of_rows,
                 number_of_columns=number_of_columns,
             )
-            .execution_options(
-                synchronize_session="fetch"
-            )
+            .execution_options(synchronize_session="fetch")
         )
         await self.async_session.commit()
 
         result = await self.async_session.execute(
-            select(
-                QuizField
-            ).where(
-                QuizField.id == quiz_field_id,
-            )
+            select(QuizField)
+            .where(QuizField.id == quiz_field_id)
         )
         return result.scalar_one_or_none()
 
@@ -44,12 +35,8 @@ class QuizFieldCRUDRepository(BaseCRUDRepository):
             quiz_field_id: int,
     ) -> QuizField | None:
         res = await self.async_session.execute(
-            select(
-                QuizField
-            )
-            .where(
-                QuizField.id == quiz_field_id,
-            )
+            select(QuizField)
+            .where(QuizField.id == quiz_field_id)
         )
         return res.scalar_one_or_none()
 
@@ -58,12 +45,8 @@ class QuizFieldCRUDRepository(BaseCRUDRepository):
             contest_id: int,
     ) -> QuizField | None:
         res = await self.async_session.execute(
-            select(
-                QuizField
-            )
-            .where(
-                QuizField.contest_id == contest_id,
-            )
+            select(QuizField)
+            .where(QuizField.contest_id == contest_id)
         )
         return res.scalar_one_or_none()
 

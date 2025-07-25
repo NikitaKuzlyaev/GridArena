@@ -6,8 +6,9 @@ from starlette.responses import JSONResponse
 
 from backend.core.dependencies.authorization import get_user
 from backend.core.models import User
-from backend.core.schemas.contest import ContestId, ContestCreateRequest, ContestUpdateRequest, ContestInfoForEditor, \
-    ContestInfoForContestant, ArrayContestShortInfo
+from backend.core.schemas.contest import (
+    ContestId, ContestCreateRequest, ContestUpdateRequest, ContestInfoForEditor, ContestInfoForContestant,
+    ArrayContestShortInfo)
 from backend.core.services.interfaces.contest import IContestService
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.providers.contest import get_contest_service

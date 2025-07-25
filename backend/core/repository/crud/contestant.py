@@ -16,12 +16,8 @@ class ContestantCRUDRepository(BaseCRUDRepository):
             contestant_id: int,
     ) -> Contestant | None:
         res = await self.async_session.execute(
-            select(
-                Contestant,
-            )
-            .where(
-                Contestant.id == contestant_id,
-            )
+            select(Contestant)
+            .where(Contestant.id == contestant_id)
         )
         res = res.scalar_one_or_none()
         return res
@@ -32,15 +28,9 @@ class ContestantCRUDRepository(BaseCRUDRepository):
             user_id: int
     ) -> Contestant | None:
         res = await self.async_session.execute(
-            select(
-                Contestant,
-            )
-            .join(
-                User, User.id == Contestant.user_id
-            )
-            .where(
-                User.id == user_id,
-            )
+            select(Contestant)
+            .join(User, User.id == Contestant.user_id)
+            .where(User.id == user_id)
         )
         res = res.scalar_one_or_none()
         return res
@@ -70,15 +60,9 @@ class ContestantCRUDRepository(BaseCRUDRepository):
             contest_id: int,
     ) -> Sequence[Contestant]:
         rows = await self.async_session.execute(
-            select(
-                Contestant,
-            )
-            .join(
-                User, User.id == Contestant.user_id
-            )
-            .where(
-                User.domain_number == contest_id,
-            )
+            select(Contestant)
+            .join(User, User.id == Contestant.user_id)
+            .where(User.domain_number == contest_id)
         )
         result = rows.scalars().all()
         return result

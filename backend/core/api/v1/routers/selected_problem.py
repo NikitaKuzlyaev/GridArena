@@ -4,8 +4,8 @@ from fastapi import Depends
 
 from backend.core.dependencies.authorization import get_user
 from backend.core.models import User
-from backend.core.schemas.selected_problem import SelectedProblemId, SelectedProblemBuyRequest, \
-    ArraySelectedProblemInfoForContestant
+from backend.core.schemas.selected_problem import (
+    SelectedProblemId, SelectedProblemBuyRequest, ArraySelectedProblemInfoForContestant)
 from backend.core.services.interfaces.contestant import IContestantService
 from backend.core.services.interfaces.selected_problem import ISelectedProblemService
 from backend.core.services.providers.contestant import get_contestant_service

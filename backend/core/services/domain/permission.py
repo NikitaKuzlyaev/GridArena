@@ -45,7 +45,9 @@ class PermissionService(IPermissionService):
                 permission_type=permission_type,
             )
         )
-        res = PermissionId(permission_id=permission.id)
+        res = PermissionId(
+            permission_id=permission.id,
+        )
         return res
 
     async def delete_permission(
@@ -55,7 +57,7 @@ class PermissionService(IPermissionService):
             permission_type: str,
             resource_id: Optional[int] = None,
     ) -> None:
-        ...
+        raise NotImplementedError('method not implemented')
 
     async def check_permission(
             self,
@@ -74,7 +76,10 @@ class PermissionService(IPermissionService):
         )
         if not permission:
             return None
-        res = PermissionId(permission_id=permission.id)
+
+        res = PermissionId(
+            permission_id=permission.id,
+        )
         return res
 
     async def give_permission_for_admin_contest(
@@ -82,11 +87,13 @@ class PermissionService(IPermissionService):
             user_id: int,
             contest_id: int,
     ) -> PermissionId:
-        res: PermissionId = await self.create_permission(
-            user_id=user_id,
-            resource_type=PermissionResourceType.CONTEST.value,
-            permission_type=PermissionActionType.ADMIN.value,
-            resource_id=contest_id,
+        res: PermissionId = (
+            await self.create_permission(
+                user_id=user_id,
+                resource_type=PermissionResourceType.CONTEST.value,
+                permission_type=PermissionActionType.ADMIN.value,
+                resource_id=contest_id,
+            )
         )
         return res
 
@@ -108,11 +115,13 @@ class PermissionService(IPermissionService):
             user_id: int,
             contest_id: int,
     ) -> PermissionId:
-        res: PermissionId = await self.create_permission(
-            user_id=user_id,
-            resource_type=PermissionResourceType.CONTEST.value,
-            permission_type=PermissionActionType.EDIT.value,
-            resource_id=contest_id,
+        res: PermissionId = (
+            await self.create_permission(
+                user_id=user_id,
+                resource_type=PermissionResourceType.CONTEST.value,
+                permission_type=PermissionActionType.EDIT.value,
+                resource_id=contest_id,
+            )
         )
         return res
 
@@ -121,11 +130,13 @@ class PermissionService(IPermissionService):
             user_id: int,
             contest_id: int,
     ) -> PermissionId | None:
-        res: PermissionId = await self.check_permission(
-            user_id=user_id,
-            resource_type=PermissionResourceType.CONTEST.value,
-            permission_type=PermissionActionType.EDIT.value,
-            resource_id=contest_id,
+        res: PermissionId = (
+            await self.check_permission(
+                user_id=user_id,
+                resource_type=PermissionResourceType.CONTEST.value,
+                permission_type=PermissionActionType.EDIT.value,
+                resource_id=contest_id,
+            )
         )
         return res
 
@@ -148,7 +159,6 @@ class PermissionService(IPermissionService):
                 contest_id=quiz_field.contest_id,
             )
         )
-
         return res
 
     async def check_permission_for_edit_problem_card(
@@ -170,7 +180,6 @@ class PermissionService(IPermissionService):
                 quiz_field_id=problem_card.quiz_field_id,
             )
         )
-
         return res
 
     async def check_permission_for_edit_problem(
@@ -192,6 +201,4 @@ class PermissionService(IPermissionService):
                 problem_card_id=problem_card.id,
             )
         )
-
         return res
-

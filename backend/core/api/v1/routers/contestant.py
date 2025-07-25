@@ -5,8 +5,8 @@ from fastapi import Query
 
 from backend.core.dependencies.authorization import get_user
 from backend.core.models import User
-from backend.core.schemas.contestant import ArrayContestantInfoForEditor, ContestantId, ContestantInCreate, \
-    ContestantPreviewInfo, ContestantInfoInContest
+from backend.core.schemas.contestant import (
+    ArrayContestantInfoForEditor, ContestantId, ContestantInCreate, ContestantPreviewInfo, ContestantInfoInContest)
 from backend.core.services.interfaces.contestant import IContestantService
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.providers.contestant import get_contestant_service

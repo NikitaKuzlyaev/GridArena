@@ -50,8 +50,9 @@ class ProblemCardService(IProblemCardService):
             )
         )
         problem_card, problem = problem_card_with_problem
-        res = ProblemCardId(problem_card_id=problem_card.id)
-
+        res = ProblemCardId(
+            problem_card_id=problem_card.id,
+        )
         return res
 
     @log_calls
@@ -77,7 +78,9 @@ class ProblemCardService(IProblemCardService):
         if not problem_card:
             raise EntityDoesNotExist("ProblemCard not found")
 
-        res = ProblemCardId(problem_card_id=problem_card.id)
+        res = ProblemCardId(
+            problem_card_id=problem_card.id,
+        )
         return res
 
     @log_calls
@@ -108,7 +111,6 @@ class ProblemCardService(IProblemCardService):
             category_price=problem_card.category_price,
             category_name=problem_card.category_name,
         )
-
         return res
 
     @log_calls
@@ -131,8 +133,9 @@ class ProblemCardService(IProblemCardService):
                 column=column,
             )
         )
-        res = ProblemCardId(problem_card_id=problem_card.id)
-
+        res = ProblemCardId(
+            problem_card_id=problem_card.id,
+        )
         return res
 
     @log_calls
@@ -142,4 +145,4 @@ class ProblemCardService(IProblemCardService):
             category_name: str,
             category_price: int,
     ) -> ProblemCardId:
-        ...
+        raise NotImplementedError("method not implemented")

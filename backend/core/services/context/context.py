@@ -10,7 +10,6 @@ from backend.core.repository.crud.selected_problem import SelectedProblemCRUDRep
 from backend.core.repository.crud.submission import SubmissionCRUDRepository
 from backend.core.repository.crud.transaction import TransactionCRUDRepository
 from backend.core.repository.crud.user import UserCRUDRepository
-# from core.schemas.context import BaseQuizContext, UserContestantContext, SelectedProblemContext
 from backend.core.services.interfaces.context import IContextService
 from backend.core.utilities.exceptions.data_structures import NotEnoughParameters
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
@@ -49,11 +48,15 @@ class ContextModel:
         user_id: int | None = kwargs.get("user_id")
         if not user_id:
             raise NotEnoughParameters("user_id")
-        user: User | None = await self.repository_unit.user_repo.get_user_by_id(
-            user_id=user_id,
+
+        user: User | None = (
+            await self.repository_unit.user_repo.get_user_by_id(
+                user_id=user_id,
+            )
         )
         if not user:
             raise EntityDoesNotExist("user not found")
+
         self.user = user
         return user
 
@@ -67,15 +70,23 @@ class ContextModel:
 
         user: User | None = self.user
         if not user:
+
             user_id: int | None = kwargs.get("user_id")
-            if user_id:
-                user: User | None = await self.repository_unit.user_repo.get_user_by_id(
-                    user_id=user_id, )
+            if user_id: user: User | None = (
+                await self.repository_unit.user_repo.get_user_by_id(
+                    user_id=user_id,
+                )
+            )
             if not user:
                 raise EntityDoesNotExist("user not found")
+
             self.user = user
-        self.contestant = await self.repository_unit.contestant_repo.get_contestant_by_user_id(
-            user_id=user.id, )
+
+        self.contestant = (
+            await self.repository_unit.contestant_repo.get_contestant_by_user_id(
+                user_id=user.id,
+            )
+        )
         return self.contestant
 
     @log_calls
@@ -88,15 +99,23 @@ class ContextModel:
 
         problem_card: ProblemCard | None = self.problem_card
         if not problem_card:
+
             problem_card_id: int | None = kwargs.get("problem_card_id")
             if problem_card_id:
                 problem_card: ProblemCard | None = (
                     await self.repository_unit.problem_card_repo.get_problem_card_by_id(
-                        problem_card_id=problem_card_id, ))
+                        problem_card_id=problem_card_id,
+                    )
+                )
+
             if not problem_card:
                 raise EntityDoesNotExist("problem_card not found")
-        self.problem = await self.repository_unit.problem_repo.get_problem_by_id(
-            problem_id=problem_card.problem_id, )
+
+        self.problem = (
+            await self.repository_unit.problem_repo.get_problem_by_id(
+                problem_id=problem_card.problem_id,
+            )
+        )
         return self.problem
 
     @log_calls
@@ -109,15 +128,23 @@ class ContextModel:
 
         selected_problem: SelectedProblem | None = self.selected_problem
         if not selected_problem:
+
             selected_problem_id: int | None = kwargs.get("selected_problem_id")
             if selected_problem_id:
                 selected_problem: SelectedProblem | None = (
                     await self.repository_unit.selected_problem_repo.get_selected_problem_by_id(
-                        selected_problem_id=selected_problem_id, ))
+                        selected_problem_id=selected_problem_id,
+                    )
+                )
+
             if not selected_problem:
                 raise EntityDoesNotExist("selected_problem not found")
-        self.problem_card = await self.repository_unit.problem_card_repo.get_problem_card_by_id(
-            problem_card_id=selected_problem.problem_card_id, )
+
+        self.problem_card = (
+            await self.repository_unit.problem_card_repo.get_problem_card_by_id(
+                problem_card_id=selected_problem.problem_card_id,
+            )
+        )
         return self.problem_card
 
     @log_calls
@@ -127,17 +154,28 @@ class ContextModel:
     ) -> QuizField:
         if self.quiz_field:
             return self.quiz_field
-        problem_card: ProblemCard | None = await self.get_problem_card_from_selected_problem(**kwargs)
+
+        problem_card: ProblemCard | None = (
+            await self.get_problem_card_from_selected_problem(**kwargs)
+        )
         if not problem_card:
+
             problem_card_id: int | None = kwargs.get("problem_card_id")
             if problem_card_id:
                 problem_card: ProblemCard | None = (
                     await self.repository_unit.problem_card_repo.get_problem_card_by_id(
-                        problem_card_id=problem_card_id, ))
+                        problem_card_id=problem_card_id,
+                    )
+                )
+
             if not problem_card:
                 raise EntityDoesNotExist("problem_card not found")
-        self.quiz_field = await self.repository_unit.quiz_field_repo.get_quiz_field_by_id(
-            quiz_field_id=problem_card.quiz_field_id, )
+
+        self.quiz_field = (
+            await self.repository_unit.quiz_field_repo.get_quiz_field_by_id(
+                quiz_field_id=problem_card.quiz_field_id,
+            )
+        )
         return self.quiz_field
 
     @log_calls
@@ -147,17 +185,59 @@ class ContextModel:
     ) -> Contest:
         if self.contest:
             return self.contest
-        quiz_field: QuizField | None = await self.get_quiz_field_from_problem_card(**kwargs)
+
+        quiz_field: QuizField | None = (
+            await self.get_quiz_field_from_problem_card(**kwargs)
+        )
         if not quiz_field:
+
             quiz_field_id: int | None = kwargs.get("quiz_field_id")
             if quiz_field_id:
                 quiz_field: QuizField | None = (
                     await self.repository_unit.quiz_field_repo.get_quiz_field_by_id(
-                        quiz_field_id=quiz_field_id, ))
+                        quiz_field_id=quiz_field_id,
+                    )
+                )
+
             if not quiz_field:
                 raise EntityDoesNotExist("quiz_field not found")
-        self.contest = await self.repository_unit.contest_repo.get_contest_by_id(
-            contest_id=quiz_field.contest_id, )
+
+        self.contest = (
+            await self.repository_unit.contest_repo.get_contest_by_id(
+                contest_id=quiz_field.contest_id,
+            )
+        )
+        return self.contest
+
+    @log_calls
+    async def get_contest_from_user(
+            self,
+            **kwargs,
+    ) -> Contest:
+        if self.contest:
+            return self.contest
+
+        user: User | None = (
+            await self.get_user(**kwargs)
+        )
+        if not user:
+
+            user_id: int | None = kwargs.get("user_id")
+            if user_id:
+                user: User | None = (
+                    await self.repository_unit.user_repo.get_user_by_id(
+                        user_id=user_id,
+                    )
+                )
+
+            if not user:
+                raise EntityDoesNotExist("user not found")
+
+        self.contest = (
+            await self.repository_unit.contest_repo.get_contest_by_id(
+                contest_id=user.domain_number,
+            )
+        )
         return self.contest
 
     @log_calls
@@ -174,7 +254,10 @@ class ContextModel:
         if selected_problem_id:
             selected_problem: SelectedProblem | None = (
                 await self.repository_unit.selected_problem_repo.get_selected_problem_by_id(
-                    selected_problem_id=selected_problem_id, ))
+                    selected_problem_id=selected_problem_id,
+                )
+            )
+
         if not selected_problem:
             raise EntityDoesNotExist("selected_problem not found")
 
@@ -186,68 +269,3 @@ class ContextService(IContextService):
 
     def __init__(self, context: ContextModel):
         self.context = context
-
-    # @log_calls
-    # async def get_selected_problem_context(
-    #         self,
-    #         selected_problem_id: int,
-    # ) -> SelectedProblemContext:
-    #     selected_problem: SelectedProblem | None = (
-    #         await self.context.repository_unit.selected_problem_repo.get_selected_problem_by_id(
-    #             selected_problem_id=selected_problem_id, ))
-    #     if not selected_problem:
-    #         raise EntityDoesNotExist("selected problem does not exist")
-    #
-    #     problem_card: ProblemCard = (
-    #         await self.context.repository_unit.problem_card_repo.get_problem_card_by_id(
-    #             problem_card_id=selected_problem.problem_card_id, ))
-    #
-    #     problem: Problem = (
-    #         await self.context.repository_unit.problem_repo.get_problem_by_id(
-    #             problem_id=problem_card.problem_id, ))
-    #
-    #     user_contestant_context = await self.get_user_contestant_context(
-    #         contestant_id=selected_problem.contestant_id, )
-    #
-    #     res = SelectedProblemContext(
-    #         **vars(user_contestant_context),
-    #         selected_problem=selected_problem,
-    #         problem_card=problem_card,
-    #         problem=problem,
-    #     )
-    #     return res
-
-    # @log_calls
-    # async def get_user_contestant_context(
-    #         self,
-    #         user_id: int | None = None,
-    #         contestant_id: int | None = None,
-    # ) -> UserContestantContext:
-    #
-    #     if user_id:
-    #         user: User | None = (
-    #             await self.context.repository_unit.user_repo.get_user_by_id(
-    #                 user_id=user_id, ))
-    #         if not user:
-    #             raise EntityDoesNotExist("user not found")
-    #         contestant: Contestant = (
-    #             await self.context.repository_unit.contestant_repo.get_contestant_by_user_id(
-    #                 user_id=user_id, ))
-    #
-    #     elif contestant_id:
-    #         contestant: Contestant | None = (
-    #             await self.context.repository_unit.contestant_repo.get_contestant_by_id(
-    #                 contestant_id=contestant_id, ))
-    #         if not contestant:
-    #             raise EntityDoesNotExist("contestant not found")
-    #         user: User = (
-    #             await self.context.repository_unit.user_repo.get_user_by_id(
-    #                 user_id=contestant.user_id, ))
-    #
-    #     else:
-    #         raise NotEnoughParameters()
-    #
-    #     return UserContestantContext(
-    #         user=user,
-    #         contestant=contestant,
-    #     )

@@ -2,7 +2,8 @@ from typing import Sequence, Tuple
 
 from sqlalchemy import Row
 
-from backend.core.models import QuizField, ProblemCard, Problem, User, Contestant, SelectedProblem, Contest
+from backend.core.models import (
+    QuizField, ProblemCard, Problem, User, Contestant, SelectedProblem, Contest)
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.contestant import ContestantCRUDRepository
@@ -27,7 +28,7 @@ class QuizFieldService(IQuizFieldService):
             contestant_repo: ContestantCRUDRepository,
             user_repo: UserCRUDRepository,
             selected_problem_repo: SelectedProblemCRUDRepository,
-            contest_repo: ContestCRUDRepository
+            contest_repo: ContestCRUDRepository,
     ):
         self.quiz_field_repo = quiz_field_repo
         self.problem_card_repo = problem_card_repo
@@ -53,7 +54,6 @@ class QuizFieldService(IQuizFieldService):
                 contest_id=contest_id,
             )
         )
-
         quiz_field: QuizField = (
             await self.quiz_field_repo.get_quiz_field_by_contest_id(
                 contest_id=contest_id,
@@ -64,13 +64,11 @@ class QuizFieldService(IQuizFieldService):
                 quiz_field_id=quiz_field.id,
             )
         )
-
         contestant: Contestant = (
             await self.contestant_repo.get_contestant_by_user_id(
                 user_id=user_id,
             )
         )
-
         selected_problems: Sequence[SelectedProblem] = (
             await self.selected_problem_repo.get_selected_problem_of_contestant_by_id(
                 contestant_id=contestant.id,
@@ -102,14 +100,17 @@ class QuizFieldService(IQuizFieldService):
                     status = ProblemCardStatus.FAILED
                 else:
                     raise UndefinedMapping("Не определен маппинг SelectedProblemStatusType -> ProblemCardStatus")
+
             else:
                 pass
 
-            is_open_for_buy: bool = all([
-                number_of_active_selected_problems < contest.number_of_slots_for_problems,
-                status == ProblemCardStatus.CLOSED,
-                problem_card.category_price <= contestant.points,
-            ])
+            is_open_for_buy: bool = all(
+                [
+                    number_of_active_selected_problems < contest.number_of_slots_for_problems,
+                    status == ProblemCardStatus.CLOSED,
+                    problem_card.category_price <= contestant.points,
+                ]
+            )
 
             if status == ProblemCardStatus.CLOSED and is_open_for_buy:
                 status = ProblemCardStatus.OPEN
@@ -117,7 +118,7 @@ class QuizFieldService(IQuizFieldService):
             upd = ProblemCardInfoForContestant(
                 problem_card_id=problem_card.id,
                 problem=ProblemId(
-                    problem_id=problem.id
+                    problem_id=problem.id,
                 ),
                 status=status,
                 is_open_for_buy=is_open_for_buy,
@@ -156,7 +157,6 @@ class QuizFieldService(IQuizFieldService):
                 quiz_field_id=quiz_field.id,
             )
         )
-
         res = QuizFieldInfoForEditor(
             quiz_field_id=quiz_field.id,
             number_of_rows=quiz_field.number_of_rows,
@@ -190,8 +190,9 @@ class QuizFieldService(IQuizFieldService):
                 number_of_columns=number_of_columns,
             )
         )
-        res = QuizFieldId(quiz_field_id=quiz_field.id)
-
+        res = QuizFieldId(
+            quiz_field_id=quiz_field.id,
+        )
         return res
 
     @log_calls
@@ -211,5 +212,7 @@ class QuizFieldService(IQuizFieldService):
         if not quiz_field:
             raise EntityDoesNotExist("quiz_field with such quiz_field_id not found")
 
-        res = QuizFieldId(quiz_field_id=quiz_field.id)
+        res = QuizFieldId(
+            quiz_field_id=quiz_field.id,
+        )
         return res

@@ -25,8 +25,9 @@ class ProblemService(IProblemService):
                 answer=answer,
             )
         )
-        res = ProblemId(problem_id=problem.id)
-
+        res = ProblemId(
+            problem_id=problem.id,
+        )
         return res
 
     @log_calls
@@ -36,4 +37,4 @@ class ProblemService(IProblemService):
             statement: str,
             answer: str,
     ) -> ProblemId:
-        ...
+        raise NotImplementedError("method not implemented")

@@ -7,8 +7,8 @@ from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.contestant import ContestantCRUDRepository
 from backend.core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from backend.core.repository.crud.user import UserCRUDRepository
-from backend.core.schemas.contestant import ArrayContestantInfoForEditor, ContestantInfo, ContestantId, ContestantPreviewInfo, \
-    ContestantInfoInContest
+from backend.core.schemas.contestant import (
+    ArrayContestantInfoForEditor, ContestantInfo, ContestantId, ContestantPreviewInfo, ContestantInfoInContest)
 from backend.core.services.interfaces.contestant import IContestantService
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
@@ -23,7 +23,6 @@ class ContestantService(IContestantService):
             permission_service: IPermissionService,
             selected_problem_repo: SelectedProblemCRUDRepository,
             user_repo: UserCRUDRepository,
-
     ):
         self.contest_repo = contest_repo
         self.contestant_repo = contestant_repo

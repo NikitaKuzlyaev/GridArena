@@ -14,12 +14,8 @@ class ProblemCRUDRepository(BaseCRUDRepository):
             problem_id: int,
     ) -> Problem | None:
         res = await self.async_session.execute(
-            select(
-                Problem
-            )
-            .where(
-                Problem.id == problem_id
-            )
+            select(Problem)
+            .where(Problem.id == problem_id)
         )
         res = res.scalar_one_or_none()
         return res
@@ -49,28 +45,19 @@ class ProblemCRUDRepository(BaseCRUDRepository):
             answer: str,
     ) -> Problem | None:
         await self.async_session.execute(
-            update(
-                Problem
-            )
-            .where(
-                Problem.id == problem_id,
-            )
+            update(Problem)
+            .where(Problem.id == problem_id)
             .values(
                 statement=statement,
                 answer=answer
             )
-            .execution_options(
-                synchronize_session="fetch"
-            )
+            .execution_options(synchronize_session="fetch")
         )
         await self.async_session.commit()
 
         result = await self.async_session.execute(
-            select(
-                Problem
-            ).where(
-                Problem.id == problem_id,
-            )
+            select(Problem)
+            .where(Problem.id == problem_id)
         )
         return result.scalar_one_or_none()
 

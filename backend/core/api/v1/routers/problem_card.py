@@ -6,8 +6,9 @@ from starlette.responses import JSONResponse
 
 from backend.core.dependencies.authorization import get_user
 from backend.core.models import User
-from backend.core.schemas.problem_card import ProblemCardId, ProblemCardUpdateRequest, ProblemCardInfoForEditor, \
-    ProblemCardWithProblemUpdateRequest, ProblemCardWithProblemCreateRequest
+from backend.core.schemas.problem_card import (
+    ProblemCardId, ProblemCardUpdateRequest, ProblemCardInfoForEditor, ProblemCardWithProblemUpdateRequest,
+    ProblemCardWithProblemCreateRequest)
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.interfaces.problem_card import IProblemCardService
 from backend.core.services.providers.permission import get_permission_service
@@ -116,6 +117,7 @@ async def problem_card_info_for_editor(
     result = result.model_dump()
 
     return result
+
 
 @router.post(
     path="/with-problem",

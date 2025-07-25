@@ -56,43 +56,28 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
             answer: str,
     ) -> ProblemCard:
         await self.async_session.execute(
-            update(
-                ProblemCard
-            )
-            .where(
-                ProblemCard.id == problem_card_id,
-            )
+            update(ProblemCard)
+            .where(ProblemCard.id == problem_card_id)
             .values(
                 category_name=category_name,
-                category_price=category_price
+                category_price=category_price,
             )
-            .execution_options(
-                synchronize_session="fetch"
-            )
+            .execution_options(synchronize_session="fetch")
         )
         await self.async_session.execute(
-            update(
-                Problem
-            )
-            .where(
-                Problem.id == problem_id,
-            )
+            update(Problem)
+            .where(Problem.id == problem_id)
             .values(
                 statement=statement,
                 answer=answer
             )
-            .execution_options(
-                synchronize_session="fetch"
-            )
+            .execution_options(synchronize_session="fetch")
         )
         await self.async_session.commit()
 
         result = await self.async_session.execute(
-            select(
-                ProblemCard
-            ).where(
-                ProblemCard.id == problem_card_id,
-            )
+            select(ProblemCard)
+            .where(ProblemCard.id == problem_card_id)
         )
         return result.scalar_one_or_none()
 
@@ -110,9 +95,7 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
                 Problem,
                 Problem.id == ProblemCard.problem_id
             )
-            .where(
-                ProblemCard.id == problem_card_id
-            )
+            .where(ProblemCard.id == problem_card_id)
         )
         res = res.one_or_none()
         return res
@@ -131,9 +114,7 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
                 Problem,
                 Problem.id == ProblemCard.problem_id
             )
-            .where(
-                ProblemCard.quiz_field_id == quiz_field_id
-            )
+            .where(ProblemCard.quiz_field_id == quiz_field_id)
         )
         res = res.all()
         return res
@@ -144,12 +125,8 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
             problem_card_id: int,
     ) -> ProblemCard | None:
         res = await self.async_session.execute(
-            select(
-                ProblemCard
-            )
-            .where(
-                ProblemCard.id == problem_card_id
-            )
+            select(ProblemCard)
+            .where(ProblemCard.id == problem_card_id)
         )
         res = res.scalar_one_or_none()
         return res
@@ -160,12 +137,8 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
             problem_id: int,
     ) -> ProblemCard | None:
         res = await self.async_session.execute(
-            select(
-                ProblemCard
-            )
-            .where(
-                ProblemCard.problem_id == problem_id
-            )
+            select(ProblemCard)
+            .where(ProblemCard.problem_id == problem_id)
         )
         res = res.scalar_one_or_none()
         return res
@@ -176,12 +149,8 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
             quiz_field_id: int,
     ) -> Sequence[ProblemCard]:
         res = await self.async_session.execute(
-            select(
-                ProblemCard
-            )
-            .where(
-                ProblemCard.quiz_field_id == quiz_field_id
-            )
+            select(ProblemCard)
+            .where(ProblemCard.quiz_field_id == quiz_field_id)
         )
         res = res.scalars().all()
         return res
@@ -219,28 +188,19 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
             category_price: int,
     ) -> ProblemCard | None:
         await self.async_session.execute(
-            update(
-                ProblemCard
-            )
-            .where(
-                ProblemCard.id == problem_card_id,
-            )
+            update(ProblemCard)
+            .where(ProblemCard.id == problem_card_id)
             .values(
                 category_name=category_name,
                 category_price=category_price
             )
-            .execution_options(
-                synchronize_session="fetch"
-            )
+            .execution_options(synchronize_session="fetch")
         )
         await self.async_session.commit()
 
         result = await self.async_session.execute(
-            select(
-                ProblemCard
-            ).where(
-                ProblemCard.id == problem_card_id,
-            )
+            select(ProblemCard)
+            .where(ProblemCard.id == problem_card_id)
         )
         return result.scalar_one_or_none()
 

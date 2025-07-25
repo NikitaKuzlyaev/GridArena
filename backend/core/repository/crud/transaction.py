@@ -28,7 +28,8 @@ class TransactionCRUDRepository(BaseCRUDRepository):
                 .execution_options(synchronize_session="fetch")
             )
             res = await self.async_session.execute(
-                select(Contestant).where(Contestant.id == contestant_id)
+                select(Contestant)
+                .where(Contestant.id == contestant_id)
             )
             contestant = res.scalar_one_or_none()
 
@@ -62,12 +63,14 @@ class TransactionCRUDRepository(BaseCRUDRepository):
     ) -> SelectedProblem:
         try:
             res = await self.async_session.execute(
-                select(Contestant).where(Contestant.id == contestant_id)
+                select(Contestant)
+                .where(Contestant.id == contestant_id)
             )
             contestant = res.scalar_one_or_none()
 
             res = await self.async_session.execute(
-                select(ProblemCard).where(ProblemCard.id == problem_card_id)
+                select(ProblemCard)
+                .where(ProblemCard.id == problem_card_id)
             )
             problem_card = res.scalar_one_or_none()
 
@@ -75,18 +78,10 @@ class TransactionCRUDRepository(BaseCRUDRepository):
                 raise ValueError("Invalid contestant or problem card")
 
             res = await self.async_session.execute(
-                select(
-                    Contest
-                )
-                .join(
-                    User, User.domain_number == Contest.id
-                )
-                .join(
-                    Contestant, Contestant.user_id == User.id
-                )
-                .where(
-                    Contestant.id == contestant.id
-                )
+                select(Contest)
+                .join(User, User.domain_number == Contest.id)
+                .join(Contestant, Contestant.user_id == User.id)
+                .where(Contestant.id == contestant.id)
             )
             contest = res.scalar_one_or_none()
 

@@ -4,15 +4,19 @@ from backend.core.models import Contestant, User, SelectedProblem, ProblemCard, 
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.contestant import ContestantCRUDRepository
+from backend.core.repository.crud.problem import ProblemCRUDRepository
 from backend.core.repository.crud.problem_card import ProblemCardCRUDRepository
+from backend.core.repository.crud.quiz import QuizFieldCRUDRepository
 from backend.core.repository.crud.selected_problem import SelectedProblemCRUDRepository
+from backend.core.repository.crud.submission import SubmissionCRUDRepository
 from backend.core.repository.crud.transaction import TransactionCRUDRepository
 from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.schemas.problem import ProblemInfoForContestant
-from backend.core.schemas.selected_problem import SelectedProblemId, SelectedProblemInfoForContestant, \
-    ArraySelectedProblemInfoForContestant
+from backend.core.schemas.selected_problem import (
+    SelectedProblemId, SelectedProblemInfoForContestant, ArraySelectedProblemInfoForContestant)
+from backend.core.services.context.context import ContextService, RepositoryUnit, ContextModel
 from backend.core.services.interfaces.selected_problem import ISelectedProblemService
-from backend.core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
+from backend.core.utilities.exceptions.database import EntityAlreadyExists
 from backend.core.utilities.exceptions.logic import PossibleLimitOverflow
 from backend.core.utilities.loggers.log_decorator import log_calls
 
@@ -26,6 +30,9 @@ class SelectedProblemService(ISelectedProblemService):
             user_repo: UserCRUDRepository,
             transaction_repo: TransactionCRUDRepository,
             contest_repo: ContestCRUDRepository,
+            submission_repo: SubmissionCRUDRepository,
+            problem_repo: ProblemCRUDRepository,
+            quiz_field_repo: QuizFieldCRUDRepository,
     ):
         self.selected_problem_repo = selected_problem_repo
         self.problem_card_repo = problem_card_repo
@@ -33,28 +40,42 @@ class SelectedProblemService(ISelectedProblemService):
         self.user_repo = user_repo
         self.transaction_repo = transaction_repo
         self.contest_repo = contest_repo
+        self.submission_repo = submission_repo
+        self.problem_repo = problem_repo
+        self.quiz_field_repo = quiz_field_repo
+        self.context_service = ContextService(
+            context=ContextModel(
+                repository_unit=RepositoryUnit(
+                    submission_repo=self.submission_repo,
+                    selected_problem_repo=self.selected_problem_repo,
+                    problem_card_repo=self.problem_card_repo,
+                    contestant_repo=self.contestant_repo,
+                    user_repo=self.user_repo,
+                    transaction_repo=self.transaction_repo,
+                    contest_repo=self.contest_repo,
+                    problem_repo=self.problem_repo,
+                    quiz_field_repo=quiz_field_repo,
+                )
+            )
+        )
 
     @log_calls
     async def get_contestant_selected_problems(
             self,
             user_id: int,
     ) -> ArraySelectedProblemInfoForContestant:
-        contestant: Contestant | None = (
-            await self.contestant_repo.get_contestant_by_user_id(
-                user_id=user_id,
-            )
+
+        contestant: Contestant = (
+            await self.context_service.context.get_contestant_from_user(user_id=user_id)
         )
-        if not contestant:
-            raise EntityDoesNotExist("contestant not found")
 
         rows: Sequence[Tuple[SelectedProblem, ProblemCard, Problem]] = (
             await self.selected_problem_repo.get_selected_problem_with_problem_card_and_problem_of_contestant_by_id(
                 contestant_id=contestant.id,
             )
         )
-
-        contest: Contest = await self.contest_repo.get_contest_by_user_id(
-            user_id=user_id,
+        contest: Contest = (
+            await self.context_service.context.get_contest_from_user(user_id=user_id)
         )
 
         res = ArraySelectedProblemInfoForContestant(
@@ -72,9 +93,8 @@ class SelectedProblemService(ISelectedProblemService):
                 ) for selected_problem, problem_card, problem in rows if
                 selected_problem.status == SelectedProblemStatusType.ACTIVE
             ],
-            rule_type=contest.rule_type
+            rule_type=contest.rule_type,
         )
-
         return res
 
     @log_calls
@@ -84,28 +104,15 @@ class SelectedProblemService(ISelectedProblemService):
             problem_card_id: int,
     ) -> SelectedProblemId:
         user: User = (
-            await self.user_repo.get_user_by_id(
-                user_id=user_id,
-            )
+            await self.context_service.context.get_user(user_id=user_id)
         )
-        if not user:
-            raise EntityDoesNotExist("user not found")
-
-        contestant: Contestant | None = (
-            await self.contestant_repo.get_contestant_by_user_id(
-                user_id=user_id,
-            )
+        contestant: Contestant = (
+            await self.context_service.context.get_contestant_from_user(user_id=user_id)
         )
-        if not contestant:
-            raise EntityDoesNotExist("contestant not found")
-
         problem_card: ProblemCard | None = (
-            await self.problem_card_repo.get_problem_card_by_id(
-                problem_card_id=problem_card_id,
-            )
+            await self.problem_card_repo.get_problem_card_by_id(problem_card_id=problem_card_id)
         )
-        if not problem_card:
-            raise EntityDoesNotExist("problem card not found")
+        self.context_service.context.problem_card = problem_card
 
         selected_problem: SelectedProblem | None = (
             await self.selected_problem_repo.get_selected_problem_by_contestant_and_problem_card(
@@ -127,6 +134,7 @@ class SelectedProblemService(ISelectedProblemService):
                 filter_by_status=[SelectedProblemStatusType.ACTIVE.value],
             )
         )
+
         if len(active_selected_problems) >= contest.number_of_slots_for_problems:
             raise PossibleLimitOverflow("")
 

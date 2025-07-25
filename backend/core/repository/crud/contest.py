@@ -17,11 +17,8 @@ class ContestCRUDRepository(BaseCRUDRepository):
             contest_id: int,
     ) -> None:
         await self.async_session.execute(
-            delete(
-                Contest
-            ).where(
-                Contest.id == contest_id
-            )
+            delete(Contest)
+            .where(Contest.id == contest_id)
         )
         await self.async_session.commit()
 
@@ -30,15 +27,9 @@ class ContestCRUDRepository(BaseCRUDRepository):
             user_id: int,
     ) -> Contest | None:
         res = await self.async_session.execute(
-            select(
-                Contest
-            )
-            .join(
-                User, User.domain_number == Contest.id
-            )
-            .where(
-                User.id == user_id
-            )
+            select(Contest)
+            .join(User, User.domain_number == Contest.id)
+            .where(User.id == user_id)
         )
         return res.scalar_one_or_none()
 
@@ -47,12 +38,8 @@ class ContestCRUDRepository(BaseCRUDRepository):
             contest_id: int,
     ) -> Contest | None:
         res = await self.async_session.execute(
-            select(
-                Contest
-            )
-            .where(
-                Contest.id == contest_id
-            )
+            select(Contest)
+            .where(Contest.id == contest_id)
         )
         return res.scalar_one_or_none()
 
@@ -139,12 +126,8 @@ class ContestCRUDRepository(BaseCRUDRepository):
             flag_user_can_have_negative_points: bool,
     ) -> Contest | None:
         await self.async_session.execute(
-            update(
-                Contest
-            )
-            .where(
-                Contest.id == contest_id,
-            )
+            update(Contest)
+            .where(Contest.id == contest_id)
             .values(
                 name=name,
                 started_at=started_at,
@@ -154,18 +137,13 @@ class ContestCRUDRepository(BaseCRUDRepository):
                 rule_type=rule_type,
                 flag_user_can_have_negative_points=flag_user_can_have_negative_points,
             )
-            .execution_options(
-                synchronize_session="fetch"
-            )
+            .execution_options(synchronize_session="fetch")
         )
         await self.async_session.commit()
 
         result = await self.async_session.execute(
-            select(
-                Contest
-            ).where(
-                Contest.id == contest_id,
-            )
+            select(Contest)
+            .where(Contest.id == contest_id)
         )
         return result.scalar_one_or_none()
 
@@ -175,9 +153,7 @@ class ContestCRUDRepository(BaseCRUDRepository):
             user_id: int,
     ) -> Sequence[Contest]:
         rows = await self.async_session.execute(
-            select(
-                Contest,
-            )
+            select(Contest)
             .join(
                 Permission,
                 and_(
@@ -185,8 +161,7 @@ class ContestCRUDRepository(BaseCRUDRepository):
                     Permission.resource_type == PermissionResourceType.CONTEST.value,
                     Permission.resource_id == Contest.id,
                     Permission.permission_type == PermissionActionType.EDIT.value,
-                )
-            )
+                ))
         )
         result = rows.scalars().all()
         return result

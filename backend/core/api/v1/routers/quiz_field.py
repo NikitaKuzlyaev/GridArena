@@ -5,8 +5,8 @@ from fastapi import Query
 
 from backend.core.dependencies.authorization import get_user
 from backend.core.models import User
-from backend.core.schemas.quiz_field import QuizFieldId, QuizFieldUpdateRequest, QuizFieldInfoForEditor, \
-    QuizFieldInfoForContestant
+from backend.core.schemas.quiz_field import (
+    QuizFieldId, QuizFieldUpdateRequest, QuizFieldInfoForEditor, QuizFieldInfoForContestant)
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.interfaces.quiz import IQuizFieldService
 from backend.core.services.providers.permission import get_permission_service
