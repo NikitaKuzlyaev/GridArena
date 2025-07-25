@@ -1,4 +1,3 @@
-
 from .contest import Contest
 from .contestant import Contestant
 from .permission import Permission

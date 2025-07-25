@@ -13,7 +13,6 @@ from backend.core.utilities.exceptions.handlers.http400 import async_http_except
 router = fastapi.APIRouter(prefix="/submission", tags=["submission"])
 
 
-
 @router.post(
     path="/",
     response_model=SubmissionId,
@@ -28,7 +27,6 @@ async def check_submission(
         user: User = Depends(get_user),
         submission_service: ISubmissionService = Depends(get_submission_service),
 ) -> JSONResponse:
-
     result: SubmissionId = (
         await submission_service.check_submission(
             user_id=user.id,
