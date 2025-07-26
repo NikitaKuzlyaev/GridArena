@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
@@ -35,6 +37,38 @@ async def get_user(
         )
 
         return user
+
+    except EntityDoesNotExist:
+        raise HTTPException(status_code=404, detail="User not found")
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+
+
+#
+# ДЛЯ ДЕБАГА!!!
+#
+async def get_user_with_access_token(
+        token: str = Depends(oauth2_scheme),
+        user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
+) -> Tuple[User, str]:
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
+        payload = decode_token(token=token)
+        user_uuid: str = payload.get("sub")
+
+        if user_uuid is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+
+        user: User = (
+            await auth_service.get_user_by_uuid(
+                user_uuid=user_uuid,
+                user_repo=user_repo,
+            )
+        )
+
+        return user, token
 
     except EntityDoesNotExist:
         raise HTTPException(status_code=404, detail="User not found")

@@ -44,7 +44,7 @@ async def verify_refresh_token(
         user_uuid: str = payload.get("sub")
         token_type: str = payload.get("token_type")
 
-        if user_uuid is None or token_type is None or token != 'refresh':
+        if user_uuid is None or token_type is None or token_type != 'refresh':
             raise TokenException("Invalid authentication credentials")
 
         user: User = (

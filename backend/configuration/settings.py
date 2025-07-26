@@ -2,12 +2,11 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    async_main_database_url: str = "postgresql+asyncpg://postgres:2476@localhost:5432/quiz"
+    MAIN_ASYNC_DATABASE_URI: str = "postgresql+asyncpg://postgres:2476@localhost:5432/quiz"
 
-
-    # class Config:
-    #     env_file = ".env"
-    #     env_file_encoding = "utf-8"
+    REDIS_KV_SIMPLE_CACHE_HOST: str = 'localhost'
+    REDIS_KV_SIMPLE_CACHE_PORT: int = 6379
+    REDIS_KV_SIMPLE_CACHE_DB: int = 0
 
 
 settings = Settings()

@@ -3,7 +3,10 @@ import './Header.css';
 import config from '../config';
 
 function deleteCookie(name) {
-  document.cookie = name + '=; Max-Age=0; path=/;';
+  // Удаляем cookie с разными путями и доменами
+  document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
+  document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
 }
 
 function Header() {
@@ -43,11 +46,8 @@ function Header() {
   const handleLogout = async () => {
     console.log('Нажата кнопка Выйти');
     const accessToken = localStorage.getItem('access_token');
-    const refreshToken = (() => {
-      const match = document.cookie.match(/(?:^|; )refresh_token=([^;]*)/);
-      return match ? decodeURIComponent(match[1]) : null;
-    })();
     if (!accessToken) return;
+    
     try {
       const response = await fetch(`${config.backendUrl}api/v1/auth/block-my-token`, {
         method: 'POST',
@@ -55,7 +55,8 @@ function Header() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ refresh_token: refreshToken }),
+        body: JSON.stringify({ access_token: accessToken }),
+        credentials: 'include', // Отправляем cookies автоматически
       });
       console.log('Ответ сервера:', response);
       if (!response.ok) {
@@ -65,6 +66,7 @@ function Header() {
       console.error('Ошибка при блокировке токена:', e);
       // Можно обработать ошибку, если нужно
     }
+    
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_type');
     deleteCookie('refresh_token');
