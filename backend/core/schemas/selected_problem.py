@@ -27,3 +27,4 @@ class SelectedProblemInfoForContestant(BaseSchemaModel):
 class ArraySelectedProblemInfoForContestant(BaseSchemaModel):
     body: Sequence[SelectedProblemInfoForContestant]
     rule_type: ContestRuleType
+    max_attempts_for_problem: int | None = None

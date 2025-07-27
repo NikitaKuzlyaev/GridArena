@@ -1,5 +1,7 @@
 from typing import Sequence, Tuple
 
+from pydantic.v1.datetime_parse import MAX_NUMBER
+
 from backend.core.models import Contestant, User, SelectedProblem, ProblemCard, Problem, Contest, Submission
 from backend.core.models.contest import ContestRuleType
 from backend.core.models.selected_problem import SelectedProblemStatusType
@@ -22,6 +24,7 @@ from backend.core.utilities.exceptions.database import EntityAlreadyExists
 from backend.core.utilities.exceptions.logic import PossibleLimitOverflow
 from backend.core.utilities.loggers.log_decorator import log_calls
 
+MAX_NUMBER_OF_ATTEMPTS = 3
 
 class SelectedProblemService(ISelectedProblemService):
     def __init__(
@@ -103,6 +106,7 @@ class SelectedProblemService(ISelectedProblemService):
             attempts_by_selected_problem: dict[int, int] = (
                 await self.get_remaining_number_of_attempts_for_selected_problems(
                     selected_problem_ids=[i[0].id for i in rows],  # Берем SelectedProblem.id из rows
+                    max_number_of_attempts=MAX_NUMBER_OF_ATTEMPTS,
                 )
             )
 
@@ -123,6 +127,7 @@ class SelectedProblemService(ISelectedProblemService):
                 selected_problem.status == SelectedProblemStatusType.ACTIVE
             ],
             rule_type=contest.rule_type,
+            max_attempts_for_problem=MAX_NUMBER_OF_ATTEMPTS if contest.rule_type == ContestRuleType.DEFAULT else None,
         )
         return res
 
