@@ -1,7 +1,9 @@
 from typing import Sequence, Tuple
 
-from backend.core.models import Contestant, User, SelectedProblem, ProblemCard, Problem, Contest
+from backend.core.models import Contestant, User, SelectedProblem, ProblemCard, Problem, Contest, Submission
+from backend.core.models.contest import ContestRuleType
 from backend.core.models.selected_problem import SelectedProblemStatusType
+from backend.core.models.submission import SubmissionVerdict
 from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.contestant import ContestantCRUDRepository
 from backend.core.repository.crud.problem import ProblemCRUDRepository
@@ -59,6 +61,24 @@ class SelectedProblemService(ISelectedProblemService):
             )
         )
 
+    async def get_remaining_number_of_attempts_for_selected_problems(
+            self,
+            selected_problem_ids: list[int],
+            max_number_of_attempts: int = 3,
+    ) -> dict[int, int]:
+        # Правила DEFAULT подразумевают X попыток на решение задачи
+        wrong_attempts_map: dict[int, int] = (
+            await self.submission_repo.get_attempts_count_grouped_by_selected_problem_id(
+                selected_problem_ids=selected_problem_ids,
+                filter_by_verdict=[SubmissionVerdict.WRONG.value]
+            )
+        )
+        attempts_by_selected_problem = {
+            sp_id: max_number_of_attempts - wrong_attempts_map.get(sp_id, 0)
+            for sp_id in selected_problem_ids
+        }
+        return attempts_by_selected_problem
+
     @log_calls
     async def get_contestant_selected_problems(
             self,
@@ -78,6 +98,14 @@ class SelectedProblemService(ISelectedProblemService):
             await self.context_service.context.get_contest_from_user(user_id=user_id)
         )
 
+        attempts_by_selected_problem = {}
+        if contest.rule_type == ContestRuleType.DEFAULT:
+            attempts_by_selected_problem: dict[int, int] = (
+                await self.get_remaining_number_of_attempts_for_selected_problems(
+                    selected_problem_ids=[i[0].id for i in rows],  # Берем SelectedProblem.id из rows
+                )
+            )
+
         res = ArraySelectedProblemInfoForContestant(
             body=[
                 SelectedProblemInfoForContestant(
@@ -90,6 +118,7 @@ class SelectedProblemService(ISelectedProblemService):
                     category_name=problem_card.category_name,
                     category_price=problem_card.category_price,
                     created_at=selected_problem.created_at,
+                    attempts_remaining=attempts_by_selected_problem.get(selected_problem.id, None),
                 ) for selected_problem, problem_card, problem in rows if
                 selected_problem.status == SelectedProblemStatusType.ACTIVE
             ],
