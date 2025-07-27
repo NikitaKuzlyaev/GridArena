@@ -19,6 +19,8 @@ function SolveContest() {
   const [buying, setBuying] = useState(false);
   const [buyError, setBuyError] = useState(null);
   const [myProblems, setMyProblems] = useState([]);
+  const [myProblemsRuleType, setMyProblemsRuleType] = useState(null); // новый стейт для ruleType
+  const [myProblemsMaxAttempts, setMyProblemsMaxAttempts] = useState(null); // новый стейт для maxAttemptsForProblem
   const [answers, setAnswers] = useState({});
   const [holdProgress, setHoldProgress] = useState({}); // для анимации удержания
   const holdTimeouts = useRef({});
@@ -183,6 +185,12 @@ function SolveContest() {
           if (data && Array.isArray(data.body)) {
             setMyProblems(data.body.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
           }
+          if (data && data.ruleType) {
+            setMyProblemsRuleType(data.ruleType);
+          }
+          if (data && typeof data.maxAttemptsForProblem === 'number') {
+            setMyProblemsMaxAttempts(data.maxAttemptsForProblem);
+          }
         }
       })
       .catch(() => {});
@@ -196,71 +204,6 @@ function SolveContest() {
   if (loading) {
     return (
       <p>загрузка</p>
-      // <div className={bgClass} style={{ minHeight: '100vh', width: '100vw', position: 'relative' }}>
-      //   {theme === 'pink' && <FallingFlowers />}
-      //   {theme === 'pink' && (
-      //     <img
-      //       ref={stickerRef}
-      //       src={pinkGif}
-      //       alt="pink sticker"
-      //       style={{
-      //         position: 'fixed',
-      //         width: stickerSize,
-      //         height: stickerSize,
-      //         zIndex: 10,
-      //         cursor: 'grab',
-      //         bottom: stickerPos.bottom,
-      //         left: stickerPos.left,
-      //         top: stickerPos.top,
-      //         ...(stickerPos.left !== undefined && stickerPos.top !== undefined
-      //           ? { right: undefined, bottom: undefined }
-      //           : {}),
-      //         userSelect: 'none',
-      //         touchAction: 'none',
-      //       }}
-      //       onMouseDown={startDrag}
-      //       onTouchStart={startDrag}
-      //       draggable={false}
-      //     />
-      //   )}
-      //   {theme === 'pink' && (
-      //     <img
-      //       ref={sticker2Ref}
-      //       src={pinkGif2}
-      //       alt="pink sticker 2"
-      //       style={{
-      //         position: 'fixed',
-      //         width: sticker2Size,
-      //         height: sticker2Size,
-      //         zIndex: 10,
-      //         cursor: 'grab',
-      //         bottom: sticker2Pos.bottom,
-      //         right: sticker2Pos.right,
-      //         top: sticker2Pos.top,
-      //         ...(sticker2Pos.right !== undefined && sticker2Pos.top !== undefined
-      //           ? { left: undefined, bottom: undefined }
-      //           : {}),
-      //         userSelect: 'none',
-      //         touchAction: 'none',
-      //       }}
-      //       onMouseDown={startDrag2}
-      //       onTouchStart={startDrag2}
-      //       draggable={false}
-      //     />
-      //   )}
-      //   <div style={{
-      //     maxWidth: 800,
-      //     margin: '40px auto',
-      //     padding: '40px',
-      //     textAlign: 'center',
-      //     background: '#fff',
-      //     borderRadius: '12px',
-      //     boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
-      //   }}>
-      //     <div style={{ fontSize: '24px', marginBottom: '16px' }}>⏳</div>
-      //     <div style={{ fontSize: '18px' }}>Загрузка соревнования...</div>
-      //   </div>
-      // </div>
     );
   }
 
@@ -481,26 +424,33 @@ function SolveContest() {
                       maxWidth: 800,
                       margin: '0 auto',
                       position: 'relative',
+                      paddingTop: 0,
                     }}>
-                    {/* Категория и цена */}
-                    <div style={{
-                      position: 'absolute',
-                      top: 12,
-                      left: 18,
-                      fontSize: 14,
-                      fontWeight: 500,
-                      color: '#7b2ff2',
-                      background: 'rgba(245,245,255,0.85)',
-                      borderRadius: 0,
-                      padding: '2px 10px',
-                      zIndex: 2,
-                      boxShadow: '0 1px 2px #e0e0ff',
-                    }}>
-                      {problem.categoryName ? `${problem.categoryName} за ${problem.categoryPrice}` : ''}
-                    </div>
-                    <div style={{ marginBottom: 36, fontWeight: 500 }}>
-                      {/* <span style={{ opacity: 0.7, fontSize: 13 }}>ID: {problem.selectedProblemId}</span> */}
-                      <span style={{ float: 'right', opacity: 0.5, fontSize: 13 }}>{new Date(problem.createdAt).toLocaleString()}</span>
+                    {/* Верхний flex-блок: категория, дата, сердечки */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, marginTop: 16, }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <div style={{ fontSize: 15, fontWeight: 500, color: '#7b2ff2', marginBottom: 2 }}>
+                          {problem.categoryName ? `${problem.categoryName} за ${problem.categoryPrice}` : ''}
+                        </div>
+                        <div style={{ fontWeight: 400, color: '#555', fontSize: 13 }}>
+                          {new Date(problem.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+                      {myProblemsRuleType === 'DEFAULT' && myProblemsMaxAttempts && (
+                        <div style={{ display: 'flex', gap: 2, marginLeft: 16 }}>
+                          {Array.from({ length: myProblemsMaxAttempts }).map((_, idx) => (
+                            <i
+                              key={idx}
+                              className={`bi ${idx < problem.attemptsRemaining ? 'bi-heart-fill' : 'bi-heart'}`}
+                              style={{
+                                color: idx < problem.attemptsRemaining ? '#e63946' : '#bdbdbd',
+                                fontSize: 16,
+                                verticalAlign: 'middle',
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div style={{ marginBottom: 16, textAlign: 'left', fontSize: 14, lineHeight: 1.6 }}>
                       <ReactMarkdown
