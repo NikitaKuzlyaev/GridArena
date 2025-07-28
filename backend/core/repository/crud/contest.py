@@ -1,16 +1,45 @@
 from datetime import datetime
 from typing import Sequence
 
-from sqlalchemy import select, update, delete, and_
+from sqlalchemy import select, update, delete, and_, func
 
 from backend.core.dependencies.repository import get_repository
-from backend.core.models import Contest, Permission, QuizField, ProblemCard, Problem, User
+from backend.core.models import Contest, Permission, QuizField, ProblemCard, Problem, User, Contestant
 from backend.core.models.permission import PermissionResourceType, PermissionActionType
 from backend.core.repository.crud.base import BaseCRUDRepository
+from backend.core.schemas.contest import ArrayContestantInStandings, ContestantInStandings
 from backend.core.utilities.loggers.log_decorator import log_calls
 
 
 class ContestCRUDRepository(BaseCRUDRepository):
+
+    async def get_contestant_in_standings(
+            self,
+            contest_id: int,
+    ) -> Sequence[ContestantInStandings]:
+        res = await self.async_session.execute(
+            select(
+                Contestant.id.label("contestant_id"),
+                Contestant.name,
+                Contestant.points,
+                func.rank().over(order_by=Contestant.points.desc()).label("rank")
+            )
+            .join(User, Contestant.user_id == User.id)
+            .join(Contest, User.domain_number == Contest.id)
+            .where(Contest.id == contest_id)
+            .order_by(Contestant.points.desc())
+        )
+
+        rows = res.all()
+        return [
+            ContestantInStandings(
+                contestant_id=row.contestant_id,
+                name=row.name,
+                points=row.points,
+                rank=row.rank,
+            )
+            for row in rows
+        ]
 
     async def delete_contest(
             self,

@@ -106,4 +106,4 @@ class ContestStandings(BaseSchemaModel):
     started_at: datetime
     closed_at: datetime
     standings: ArrayContestantInStandings
-    use_cache: bool = Field(default=False)
+    use_cache: bool = Field(default=True)

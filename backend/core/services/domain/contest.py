@@ -42,21 +42,20 @@ class ContestService(IContestService):
         if not contest:
             raise EntityDoesNotExist("contest not found")
 
+        contestant_in_standings = (
+            await self.contest_repo.get_contestant_in_standings(
+                contest_id=contest_id,
+            )
+        )
+
         res = ContestStandings(
             contest_id=contest.id,
             name=contest.name,
             started_at=contest.started_at,
             closed_at=contest.closed_at,
             standings=ArrayContestantInStandings(
-                body=[
-                    ContestantInStandings(
-                        contestant_id=0,  # Заглушка
-                        name='',  # Заглушка
-                        points=0,  # Заглушка
-                        rank=0,  # Заглушка
-                    ) for _ in []  # Заглушка
-                ]
-            )
+                body=[i for i in contestant_in_standings],
+            ),
         )
 
         return res
