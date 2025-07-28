@@ -38,7 +38,7 @@ class ProblemCard(Base):
     category_name: Mapped[str] = mapped_column(
         String(length=32),
         unique=False,
-        nullable=True
+        nullable=False
     )
 
     category_price: Mapped[int] = mapped_column(

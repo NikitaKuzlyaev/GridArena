@@ -546,6 +546,14 @@ function SolveContest() {
           >
             Положение
           </button>
+          <button
+            style={{ marginTop: 10, padding: '10px 0', fontSize: 16, borderRadius: 6, background: '#e0e7ff', border: '1px solid #bde0fe', cursor: 'pointer', width: '100%' }}
+            onClick={() => {
+              window.location.href = `/submissions?contest_id=${contestId}`;
+            }}
+          >
+            Посылки
+          </button>
         </div>
       </div>
     </div>

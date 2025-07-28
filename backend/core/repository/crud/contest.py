@@ -4,14 +4,50 @@ from typing import Sequence
 from sqlalchemy import select, update, delete, and_, func
 
 from backend.core.dependencies.repository import get_repository
-from backend.core.models import Contest, Permission, QuizField, ProblemCard, Problem, User, Contestant
+from backend.core.models import Contest, Permission, QuizField, ProblemCard, Problem, User, Contestant, Submission, \
+    SelectedProblem
 from backend.core.models.permission import PermissionResourceType, PermissionActionType
 from backend.core.repository.crud.base import BaseCRUDRepository
-from backend.core.schemas.contest import ArrayContestantInStandings, ContestantInStandings
+from backend.core.schemas.contest import ArrayContestantInStandings, ContestantInStandings, ContestSubmissions, \
+    ContestSubmission, ProblemCardForSubmissionInfo
 from backend.core.utilities.loggers.log_decorator import log_calls
 
 
 class ContestCRUDRepository(BaseCRUDRepository):
+
+    async def get_contest_submissions(
+            self,
+            contest_id: int,
+    ) -> Sequence[ContestSubmission]:
+        res = await self.async_session.execute(
+            select(
+                Contestant,
+                ProblemCard,
+                Submission,
+            )
+            .join(User, Contestant.user_id == User.id)
+            .join(Contest, User.domain_number == Contest.id)
+            .join(SelectedProblem, SelectedProblem.contestant_id == Contestant.id)
+            .join(Submission, Submission.selected_problem_id == SelectedProblem.id)
+            .where(Contest.id == contest_id)
+            .order_by(Submission.created_at.desc())
+        )
+
+        rows = res.all()
+
+        res = [
+            ContestSubmission(
+                contestant_id=contestant.id,
+                contestant_name=contestant.name,
+                problem_card=ProblemCardForSubmissionInfo(
+                    problem_card_id=problem_card.id,
+                    category_name=problem_card.category_name,
+                    category_price=problem_card.category_price,
+                ),
+                verdict=submission.verdict,
+            ) for contestant, problem_card, submission in rows
+        ]
+        return res
 
     async def get_contestant_in_standings(
             self,

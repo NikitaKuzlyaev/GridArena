@@ -2,10 +2,17 @@ from datetime import datetime
 from typing import Protocol
 
 from backend.core.schemas.contest import ContestId, ContestInfoForEditor, \
-    ContestInfoForContestant, ArrayContestShortInfo, ContestStandings
+    ContestInfoForContestant, ArrayContestShortInfo, ContestStandings, ContestSubmissions
 
 
 class IContestService(Protocol):
+
+
+    async def contest_submissions(
+            self,
+            contest_id: int,
+    ) -> ContestSubmissions:
+        ...
 
     async def contest_standings(
             self,

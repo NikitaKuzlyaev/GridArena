@@ -7,7 +7,7 @@ from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.schemas.contest import (
     ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor, ContestStandings,
-    ArrayContestantInStandings, ContestantInStandings)
+    ArrayContestantInStandings, ContestantInStandings, ContestSubmissions, ArrayContestSubmissions)
 from backend.core.services.interfaces.contest import IContestService
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
@@ -26,11 +26,40 @@ class ContestService(IContestService):
         self.user_repo = user_repo
 
     @log_calls
-    @lazy_cache_optimizer.decorator_fabric(
-        get_from_cache_not_later_than_s=15,
-        result_cached_time_s=30,
-        refresh_cache_if_ttl_less_than_s=10,
-    )
+    async def contest_submissions(
+            self,
+            contest_id: int,
+    ) -> ContestSubmissions:
+        contest: Contest | None = (
+            await self.contest_repo.get_contest_by_id(contest_id=contest_id)
+        )
+        if not contest:
+            raise EntityDoesNotExist("contest not found")
+
+        submissions_in_contest = (
+            await self.contest_repo.get_contest_submissions(
+                contest_id=contest_id,
+            )
+        )
+
+        res = ContestSubmissions(
+            contest_id=contest.id,
+            name=contest.name,
+            started_at=contest.started_at,
+            closed_at=contest.closed_at,
+            submissions=ArrayContestSubmissions(
+                body=[i for i in submissions_in_contest],
+            ),
+        )
+
+        return res
+
+    @log_calls
+    # @lazy_cache_optimizer.decorator_fabric(
+    #     get_from_cache_not_later_than_s=5,
+    #     result_cached_time_s=10,
+    #     refresh_cache_if_ttl_less_than_s=5,
+    # )
     async def contest_standings(
             self,
             contest_id: int,

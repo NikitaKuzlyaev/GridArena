@@ -3,7 +3,9 @@ from typing import Sequence
 
 from pydantic import Field, model_validator
 
+from backend.core.models import ProblemCard
 from backend.core.models.contest import ContestRuleType
+from backend.core.models.submission import SubmissionVerdict
 from backend.core.schemas.base import BaseSchemaModel
 
 
@@ -96,8 +98,25 @@ class ContestantInStandings(BaseSchemaModel):
     rank: int
 
 
+class ProblemCardForSubmissionInfo(BaseSchemaModel):
+    problem_card_id: int
+    category_name: str
+    category_price: int
+
+
+class ContestSubmission(BaseSchemaModel):
+    contestant_id: int
+    contestant_name: str
+    problem_card: ProblemCardForSubmissionInfo
+    verdict: SubmissionVerdict
+
+
 class ArrayContestantInStandings(BaseSchemaModel):
     body: Sequence[ContestantInStandings]
+
+
+class ArrayContestSubmissions(BaseSchemaModel):
+    body: Sequence[ContestSubmission]
 
 
 class ContestStandings(BaseSchemaModel):
@@ -106,4 +125,13 @@ class ContestStandings(BaseSchemaModel):
     started_at: datetime
     closed_at: datetime
     standings: ArrayContestantInStandings
-    use_cache: bool = Field(default=True)
+    use_cache: bool = Field(default=False)
+
+
+class ContestSubmissions(BaseSchemaModel):
+    contest_id: int
+    name: str
+    started_at: datetime
+    closed_at: datetime
+    submissions: ArrayContestSubmissions
+    use_cache: bool = Field(default=False)

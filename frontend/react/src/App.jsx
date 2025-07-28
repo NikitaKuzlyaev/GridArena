@@ -13,6 +13,7 @@ import EditContestants from './pages/EditContestants.jsx';
 import EditSubmissions from './pages/EditSubmissions.jsx';
 import SolveContest from './pages/SolveContest.jsx';
 import ContestStandings from './pages/ContestStandings';
+import ContestSubmissions from './pages/ContestSubmissions';
 import './App.css';
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
           <Route path="/edit-submissions" element={<EditSubmissions />} />
           <Route path="/contest" element={<SolveContest />} />
           <Route path="/standings" element={<ContestStandings />} />
+          <Route path="/submissions" element={<ContestSubmissions />} />
         </Routes>
       </div>
     </BrowserRouter>
