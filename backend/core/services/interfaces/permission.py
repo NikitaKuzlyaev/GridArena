@@ -1,6 +1,6 @@
 from typing import Protocol, Optional, Callable, Awaitable
 
-from backend.core.schemas.permission import PermissionId
+from backend.core.schemas.permission import PermissionId, PermissionPromise
 
 
 class IPermissionService(Protocol):
@@ -85,4 +85,11 @@ class IPermissionService(Protocol):
             user_id: int,
             problem_id: int,
     ) -> PermissionId | None:
+        ...
+
+    async def check_permission_for_view_contest_standings(
+            self,
+            user_id: int,
+            contest_id: int,
+    ) -> PermissionPromise | None:
         ...

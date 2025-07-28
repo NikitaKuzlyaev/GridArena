@@ -2,9 +2,12 @@ from datetime import datetime
 from typing import Sequence
 
 from backend.core.models import Contest
+from backend.core.optimazers.cache.lazy_cache import lazy_cache_optimizer
 from backend.core.repository.crud.contest import ContestCRUDRepository
+from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.schemas.contest import (
-    ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor)
+    ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor, ContestStandings,
+    ArrayContestantInStandings, ContestantInStandings)
 from backend.core.services.interfaces.contest import IContestService
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
@@ -16,9 +19,47 @@ class ContestService(IContestService):
             self,
             contest_repo: ContestCRUDRepository,
             permission_service: IPermissionService,
+            user_repo: UserCRUDRepository,
     ):
         self.contest_repo = contest_repo
         self.permission_service = permission_service
+        self.user_repo = user_repo
+
+    @log_calls
+    @lazy_cache_optimizer.decorator_fabric(
+        get_from_cache_not_later_than_s=15,
+        result_cached_time_s=30,
+        refresh_cache_if_ttl_less_than_s=10,
+    )
+    async def contest_standings(
+            self,
+            contest_id: int,
+    ) -> ContestStandings:
+
+        contest: Contest | None = (
+            await self.contest_repo.get_contest_by_id(contest_id=contest_id)
+        )
+        if not contest:
+            raise EntityDoesNotExist("contest not found")
+
+        res = ContestStandings(
+            contest_id=contest.id,
+            name=contest.name,
+            started_at=contest.started_at,
+            closed_at=contest.closed_at,
+            standings=ArrayContestantInStandings(
+                body=[
+                    ContestantInStandings(
+                        contestant_id=0,  # Заглушка
+                        name='',  # Заглушка
+                        points=0,  # Заглушка
+                        rank=0,  # Заглушка
+                    ) for _ in []  # Заглушка
+                ]
+            )
+        )
+
+        return res
 
     @log_calls
     async def create_full_contest(

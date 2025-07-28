@@ -1,29 +1,36 @@
+from typing import Dict, Tuple
+
 import redis.asyncio as redis
 
 from backend.configuration.settings import settings
 from backend.storages.kv.simple_cache.impl.redis_kv.redis_kv import RedisKeyValueSimpleCache
 from backend.storages.kv.simple_cache.interface import IKeyValueSimpleCache
 
-host = settings.REDIS_KV_SIMPLE_CACHE_HOST
-port = settings.REDIS_KV_SIMPLE_CACHE_PORT
-db = settings.REDIS_KV_SIMPLE_CACHE_DB
+BASE_HOST = settings.REDIS_KV_SIMPLE_CACHE_HOST
+BASE_PORT = settings.REDIS_KV_SIMPLE_CACHE_PORT
+BASE_DB = settings.REDIS_KV_SIMPLE_CACHE_DB
 
-_redis_kv_instance: RedisKeyValueSimpleCache | None = None
+# Хранилище инстансов по (host, port, db)
+_redis_kv_instances: Dict[Tuple[str, int, int], RedisKeyValueSimpleCache] = {}
 
 
-async def get_redis_kv_simple_cache() -> IKeyValueSimpleCache:
-    global _redis_kv_instance
+def get_redis_kv_simple_cache(
+        host: str = BASE_HOST,
+        port: int = BASE_PORT,
+        db: int = BASE_DB,
+) -> IKeyValueSimpleCache:
+    key = (host, port, db)
 
-    if _redis_kv_instance:
-        return _redis_kv_instance
+    if key in _redis_kv_instances:
+        return _redis_kv_instances[key]
 
     redis_client = redis.Redis(
         host=host,
-        port=6379,
-        db=0,
+        port=port,
+        db=db,
         decode_responses=False
     )
 
-    _redis_kv_instance = RedisKeyValueSimpleCache(redis_client)
-
-    return _redis_kv_instance
+    instance = RedisKeyValueSimpleCache(redis_client)
+    _redis_kv_instances[key] = instance
+    return instance

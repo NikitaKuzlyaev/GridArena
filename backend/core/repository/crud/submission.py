@@ -1,10 +1,9 @@
-from collections import defaultdict
 from typing import List, Sequence
 
 from sqlalchemy import select, func
 
 from backend.core.dependencies.repository import get_repository
-from backend.core.models.submission import Submission, SubmissionVerdict
+from backend.core.models.submission import Submission
 from backend.core.repository.crud.base import BaseCRUDRepository
 from backend.core.utilities.loggers.log_decorator import log_calls
 

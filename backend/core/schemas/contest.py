@@ -87,3 +87,23 @@ class ContestInfoForContestant(BaseSchemaModel):
     name: str
     started_at: datetime
     closed_at: datetime
+
+
+class ContestantInStandings(BaseSchemaModel):
+    contestant_id: int
+    name: str
+    points: int
+    rank: int
+
+
+class ArrayContestantInStandings(BaseSchemaModel):
+    body: Sequence[ContestantInStandings]
+
+
+class ContestStandings(BaseSchemaModel):
+    contest_id: int
+    name: str
+    started_at: datetime
+    closed_at: datetime
+    standings: ArrayContestantInStandings
+    use_cache: bool = Field(default=False)

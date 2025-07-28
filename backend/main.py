@@ -1,8 +1,9 @@
 import os
 
 from fastapi import FastAPI, Request
-from starlette.middleware.cors import CORSMiddleware
 from pyinstrument import Profiler
+from starlette.middleware.cors import CORSMiddleware
+
 from backend.core.api.v1.routers import routers as routers_v1
 
 app = FastAPI()

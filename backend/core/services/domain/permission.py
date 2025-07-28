@@ -1,12 +1,15 @@
 from typing import Optional, Callable, Awaitable
 
-from backend.core.models import ProblemCard, QuizField
+from backend.core.models import ProblemCard, QuizField, User, Contest
 from backend.core.models.permission import PermissionResourceType, PermissionActionType, Permission
+from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.permission import PermissionCRUDRepository
 from backend.core.repository.crud.problem_card import ProblemCardCRUDRepository
 from backend.core.repository.crud.quiz import QuizFieldCRUDRepository
-from backend.core.schemas.permission import PermissionId
+from backend.core.repository.crud.user import UserCRUDRepository
+from backend.core.schemas.permission import PermissionId, PermissionPromise
 from backend.core.services.interfaces.permission import IPermissionService
+from backend.core.utilities.exceptions.database import EntityDoesNotExist
 from backend.core.utilities.exceptions.permission import PermissionDenied
 
 
@@ -16,10 +19,14 @@ class PermissionService(IPermissionService):
             permission_repo: PermissionCRUDRepository,
             problem_card_repo: ProblemCardCRUDRepository,
             quiz_field_repo: QuizFieldCRUDRepository,
+            user_repo: UserCRUDRepository,
+            contest_repo: ContestCRUDRepository,
     ):
         self.permission_repo = permission_repo
         self.problem_card_repo = problem_card_repo
         self.quiz_field_repo = quiz_field_repo
+        self.user_repo = user_repo
+        self.contest_repo = contest_repo
 
     async def raise_if_not_all(
             self,
@@ -202,3 +209,39 @@ class PermissionService(IPermissionService):
             )
         )
         return res
+
+    async def check_permission_for_view_contest_standings(
+            self,
+            user_id: int,
+            contest_id: int,
+    ) -> PermissionPromise | None:
+        user: User | None = (
+            await self.user_repo.get_user_by_id(
+                user_id=user_id,
+            )
+        )
+        if not user:
+            raise EntityDoesNotExist("user not found")
+
+        contest: Contest | None = (
+            await self.contest_repo.get_contest_by_id(
+                contest_id=contest_id,
+            )
+        )
+        if not contest:
+            raise EntityDoesNotExist("contest not found")
+
+        if user.domain_number == 0:
+            permission: Permission | None = (
+                await self.check_permission_for_edit_contest(
+                    user_id=user_id,
+                    contest_id=contest_id,
+                )
+            )
+            if permission:
+                return PermissionPromise()
+            return None
+        else:
+            if user.domain_number == contest.id:
+                return PermissionPromise()
+            return None

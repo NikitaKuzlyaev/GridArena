@@ -13,5 +13,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 180
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 20
 
+    RMQ_AMQP_URL: str = "amqp://guest:guest@localhost/"
+
 
 settings = Settings()

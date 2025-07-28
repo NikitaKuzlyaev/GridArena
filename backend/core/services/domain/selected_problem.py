@@ -1,8 +1,6 @@
 from typing import Sequence, Tuple
 
-from pydantic.v1.datetime_parse import MAX_NUMBER
-
-from backend.core.models import Contestant, User, SelectedProblem, ProblemCard, Problem, Contest, Submission
+from backend.core.models import Contestant, User, SelectedProblem, ProblemCard, Problem, Contest
 from backend.core.models.contest import ContestRuleType
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.models.submission import SubmissionVerdict

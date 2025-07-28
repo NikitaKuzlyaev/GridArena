@@ -538,6 +538,14 @@ function SolveContest() {
           ) : (
             <div style={{ fontSize: 15 }}>Загрузка...</div>
           )}
+          <button
+            style={{ marginTop: 'auto', padding: '10px 0', fontSize: 16, borderRadius: 6, background: '#e0e7ff', border: '1px solid #bde0fe', cursor: 'pointer', width: '100%' }}
+            onClick={() => {
+              window.location.href = `/standings?contest_id=${contestId}`;
+            }}
+          >
+            Положение
+          </button>
         </div>
       </div>
     </div>

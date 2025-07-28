@@ -157,13 +157,18 @@ async def move_user_tokens_to_blacklist(
     if user.username != user_from_refresh_token.username:
         raise HTTPException(status_code=403, detail="Permission denied.")
 
-    await token_blacklist_handler.move_token_to_blacklist(
-        token=refresh_token,
-        expires_in_seconds=REFRESH_TOKEN_EXPIRE_MINUTES * 60 * 2,
-    )
-    await token_blacklist_handler.move_token_to_blacklist(
-        token=access_token,
-        expires_in_seconds=REFRESH_TOKEN_EXPIRE_MINUTES * 60 * 2,
-    )
+    try:
+        coro_1 = token_blacklist_handler.move_token_to_blacklist(
+            token=refresh_token,
+            expires_in_seconds=REFRESH_TOKEN_EXPIRE_MINUTES * 60 * 2,
+        )
+        coro_2 = token_blacklist_handler.move_token_to_blacklist(
+            token=access_token,
+            expires_in_seconds=REFRESH_TOKEN_EXPIRE_MINUTES * 60 * 2,
+        )
+        await coro_1
+        await coro_2
+    except:
+        raise HTTPException(status_code=503, detail="Service for check user token temporarily unavailable.")
 
     return JSONResponse({'success': True})

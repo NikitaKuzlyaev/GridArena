@@ -8,7 +8,7 @@ from backend.core.dependencies.authorization import get_user
 from backend.core.models import User
 from backend.core.schemas.contest import (
     ContestId, ContestCreateRequest, ContestUpdateRequest, ContestInfoForEditor, ContestInfoForContestant,
-    ArrayContestShortInfo)
+    ArrayContestShortInfo, ContestStandings)
 from backend.core.services.interfaces.contest import IContestService
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.providers.contest import get_contest_service
@@ -185,3 +185,36 @@ async def contest_info_for_contestant(
     result = result.model_dump()
 
     return JSONResponse({'body': result})
+
+
+@router.get(
+    path="/standings",
+    response_model=ContestStandings,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def contest_standings(
+        contest_id: int = Query(...),
+        user: User = Depends(get_user),
+        contest_service: IContestService = Depends(get_contest_service),
+        permission_service: IPermissionService = Depends(get_permission_service),
+) -> ContestStandings:
+    # Для просмотра положения пользователь должен быть или редактором контеста, или участником
+    await permission_service.raise_if_not_all([
+        lambda: permission_service.check_permission_for_view_contest_standings(
+            user_id=user.id, contest_id=contest_id),
+    ])
+
+    result: ContestStandings = (
+        await contest_service.contest_standings(
+            contest_id=contest_id,
+        )
+    )
+    result = result.model_dump()
+
+    return result

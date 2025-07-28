@@ -1,0 +1,1 @@
+from .contest import contest_standings_proxy
