@@ -139,12 +139,11 @@ function EditQuizField() {
         method: 'PATCH',
         body: JSON.stringify({
           problemCardId: modalCard.problemCardId,
+          problemId: modalCardInfo.problem.problemId, // Добавляем problemId
           categoryName: editForm.categoryName,
           categoryPrice: Number(editForm.categoryPrice),
-          problem: {
-            statement: editForm.statement,
-            answer: editForm.answer,
-          },
+          statement: editForm.statement, // Выносим на верхний уровень
+          answer: editForm.answer, // Выносим на верхний уровень
         }),
       });
       setModalCard(null);
@@ -180,14 +179,13 @@ function EditQuizField() {
         method: 'POST',
         body: JSON.stringify({
           contestId: Number(contestId),
+          quizFieldId: data.quizFieldId, // Добавляем quizFieldId
           row: createCell.row,
           column: createCell.col,
           categoryName: editForm.categoryName,
           categoryPrice: Number(editForm.categoryPrice),
-          problem: {
-            statement: editForm.statement,
-            answer: editForm.answer,
-          },
+          statement: editForm.statement, // Выносим на верхний уровень
+          answer: editForm.answer, // Выносим на верхний уровень
         }),
       });
       setModalCard(null);
