@@ -6,9 +6,7 @@
 
 from typing import Protocol
 
-from backend.core.schemas.problem import (
-    ProblemId,
-)
+from backend.core.schemas.problem import ProblemId
 
 
 class IProblemService(Protocol):

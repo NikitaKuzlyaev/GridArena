@@ -28,7 +28,7 @@ def get_redis_kv_simple_cache(
         host=host,
         port=port,
         db=db,
-        decode_responses=False
+        decode_responses=False,
     )
 
     instance = RedisKeyValueSimpleCache(redis_client)

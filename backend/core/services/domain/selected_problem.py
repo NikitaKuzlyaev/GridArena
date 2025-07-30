@@ -1,6 +1,16 @@
-from typing import Sequence, Tuple
+from typing import (
+    Sequence,
+    Tuple,
+)
 
-from backend.core.models import Contestant, User, SelectedProblem, ProblemCard, Problem, Contest
+from backend.core.models import (
+    Contestant,
+    User,
+    SelectedProblem,
+    ProblemCard,
+    Problem,
+    Contest,
+)
 from backend.core.models.contest import ContestRuleType
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.models.submission import SubmissionVerdict
@@ -15,8 +25,15 @@ from backend.core.repository.crud.transaction import TransactionCRUDRepository
 from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.schemas.problem import ProblemInfoForContestant
 from backend.core.schemas.selected_problem import (
-    SelectedProblemId, SelectedProblemInfoForContestant, ArraySelectedProblemInfoForContestant)
-from backend.core.services.context.context import ContextService, RepositoryUnit, ContextModel
+    SelectedProblemId,
+    SelectedProblemInfoForContestant,
+    ArraySelectedProblemInfoForContestant,
+)
+from backend.core.services.context.context import (
+    ContextService,
+    RepositoryUnit,
+    ContextModel,
+)
 from backend.core.services.interfaces.selected_problem import ISelectedProblemService
 from backend.core.utilities.exceptions.database import EntityAlreadyExists
 from backend.core.utilities.exceptions.logic import PossibleLimitOverflow

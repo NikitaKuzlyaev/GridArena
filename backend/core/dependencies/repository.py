@@ -1,4 +1,8 @@
-from typing import Type, TypeVar, Callable
+from typing import (
+    Type,
+    TypeVar,
+    Callable,
+)
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession

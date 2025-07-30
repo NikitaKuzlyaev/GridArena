@@ -1,5 +1,10 @@
 import datetime
-from typing import Protocol, runtime_checkable, Tuple, Optional
+from typing import (
+    Protocol,
+    runtime_checkable,
+    Tuple,
+    Optional,
+)
 
 
 @runtime_checkable

@@ -3,7 +3,10 @@ from enum import Enum
 from pydantic import Field
 
 from backend.core.schemas.base import BaseSchemaModel
-from backend.core.schemas.problem import ProblemInfoForEditor, ProblemId
+from backend.core.schemas.problem import (
+    ProblemInfoForEditor,
+    ProblemId,
+)
 
 
 class ProblemCardId(BaseSchemaModel):

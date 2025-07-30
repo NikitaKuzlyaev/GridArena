@@ -3,7 +3,10 @@ from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.schemas.user import SiteUserCreate
 from backend.core.services.security import decode_token
 from backend.core.utilities.exceptions.auth import TokenException
-from backend.core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
+from backend.core.utilities.exceptions.database import (
+    EntityDoesNotExist,
+    EntityAlreadyExists,
+)
 from backend.core.utilities.loggers.log_decorator import log_calls
 
 

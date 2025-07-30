@@ -11,7 +11,6 @@ from backend.core.utilities.loggers.log_decorator import log_calls
 from backend.core.utilities.methods.registry import function_registry
 
 
-
 @function_registry.register_function(
     alias='backend.core.services.domain.contest.ContestService.contest_standings'
 )

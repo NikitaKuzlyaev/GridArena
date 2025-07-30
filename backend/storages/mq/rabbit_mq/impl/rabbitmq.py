@@ -1,6 +1,9 @@
 import inspect
 import json
-from typing import Optional, Callable
+from typing import (
+    Optional,
+    Callable,
+)
 
 import aio_pika
 

@@ -1,4 +1,7 @@
-from typing import Protocol, Callable
+from typing import (
+    Protocol,
+    Callable,
+)
 
 
 class IVoidMessageQueue(Protocol):

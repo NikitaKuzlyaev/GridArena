@@ -2,12 +2,18 @@ from datetime import datetime
 from typing import Sequence
 
 from backend.core.models import Contest
-from backend.core.optimazers.cache.lazy_cache import lazy_cache_optimizer
 from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.schemas.contest import (
-    ContestId, ContestShortInfo, ArrayContestShortInfo, ContestInfoForEditor, ContestStandings,
-    ArrayContestantInStandings, ContestantInStandings, ContestSubmissions, ArrayContestSubmissions)
+    ContestId,
+    ContestShortInfo,
+    ArrayContestShortInfo,
+    ContestInfoForEditor,
+    ContestStandings,
+    ArrayContestantInStandings,
+    ContestSubmissions,
+    ArrayContestSubmissions,
+)
 from backend.core.services.interfaces.contest import IContestService
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.utilities.exceptions.database import EntityDoesNotExist

@@ -1,6 +1,14 @@
 from dataclasses import dataclass
 
-from backend.core.models import QuizField, User, Contestant, SelectedProblem, ProblemCard, Problem, Contest
+from backend.core.models import (
+    QuizField,
+    User,
+    Contestant,
+    SelectedProblem,
+    ProblemCard,
+    Problem,
+    Contest,
+)
 from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.contestant import ContestantCRUDRepository
 from backend.core.repository.crud.problem import ProblemCRUDRepository

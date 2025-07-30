@@ -1,4 +1,7 @@
-from sqlalchemy import select, update
+from sqlalchemy import (
+    select,
+    update,
+)
 
 from backend.core.dependencies.repository import get_repository
 from backend.core.models import Problem

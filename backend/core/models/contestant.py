@@ -1,8 +1,15 @@
 import datetime
 
-from sqlalchemy import String, DateTime, Integer, ForeignKey
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
+from sqlalchemy import (
+    String,
+    DateTime,
+    Integer,
+    ForeignKey,
+)
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+)
 from sqlalchemy.sql import functions as sqlalchemy_functions
 
 from backend.core.database.connection import Base

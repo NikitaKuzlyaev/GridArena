@@ -1,6 +1,8 @@
 import fastapi
-from fastapi import Body
-from fastapi import Depends
+from fastapi import (
+    Body,
+    Depends,
+)
 from starlette.responses import JSONResponse
 
 from backend.core.dependencies.authorization import get_user

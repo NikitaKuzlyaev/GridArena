@@ -1,17 +1,11 @@
-# # запуск в дебаге!!!
-# import sys
-# import os
-#
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
-
 import asyncio
-from backend.core.services.proxies.contest import contest_standings_proxy
+
 from backend.core.services.proxies.cache import cache_method_result_proxy
+from backend.core.services.proxies.contest import contest_standings_proxy
+from backend.storages.mq.rabbit_mq.impl.provider import get_rabbit_mq
 
 cs = contest_standings_proxy
 ch = cache_method_result_proxy
-
-from backend.storages.mq.rabbit_mq.impl.provider import get_rabbit_mq
 
 mq = get_rabbit_mq(queue_name="lazy_cache")
 
@@ -23,5 +17,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-# python D:/Quiz/backend/handlers/cache_rmq_worker/worker.py

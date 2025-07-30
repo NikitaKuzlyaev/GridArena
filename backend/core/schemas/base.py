@@ -1,6 +1,9 @@
 import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+)
 
 from backend.core.utilities.formatters.datetime_formatter import format_datetime_into_isoformat
 from backend.core.utilities.formatters.field_formatter import format_dict_key_to_camel_case

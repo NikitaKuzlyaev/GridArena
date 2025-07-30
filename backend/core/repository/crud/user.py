@@ -5,7 +5,11 @@ from sqlalchemy import select
 from backend.core.dependencies.repository import get_repository
 from backend.core.models.user import User
 from backend.core.repository.crud.base import BaseCRUDRepository
-from backend.core.services.security import hash_password, verify_password, create_access_token
+from backend.core.services.security import (
+    hash_password,
+    verify_password,
+    create_access_token,
+)
 from backend.core.utilities.exceptions.auth import TokenException
 from backend.core.utilities.exceptions.database import EntityAlreadyExists
 from backend.core.utilities.loggers.log_decorator import log_calls

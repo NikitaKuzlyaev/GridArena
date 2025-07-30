@@ -1,17 +1,37 @@
-from datetime import datetime, timezone, timedelta
-from typing import Sequence, Tuple
+from datetime import (
+    datetime,
+    timezone,
+    timedelta,
+)
+from typing import (
+    Sequence,
+    Tuple,
+)
 
-from backend.core.models import Contest, Contestant, User, SelectedProblem
+from backend.core.models import (
+    Contest,
+    Contestant,
+    User,
+    SelectedProblem,
+)
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.contestant import ContestantCRUDRepository
 from backend.core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.schemas.contestant import (
-    ArrayContestantInfoForEditor, ContestantInfo, ContestantId, ContestantPreviewInfo, ContestantInfoInContest)
+    ArrayContestantInfoForEditor,
+    ContestantInfo,
+    ContestantId,
+    ContestantPreviewInfo,
+    ContestantInfoInContest,
+)
 from backend.core.services.interfaces.contestant import IContestantService
 from backend.core.services.interfaces.permission import IPermissionService
-from backend.core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
+from backend.core.utilities.exceptions.database import (
+    EntityDoesNotExist,
+    EntityAlreadyExists,
+)
 from backend.core.utilities.loggers.log_decorator import log_calls
 
 
@@ -102,8 +122,8 @@ class ContestantService(IContestantService):
                 )
             )
 
-            utc_plus_7 = timezone(timedelta(hours=7)) # какой кринж
-            current_time = datetime.now(utc_plus_7) # todo: переделать нормально
+            utc_plus_7 = timezone(timedelta(hours=7))  # какой кринж
+            current_time = datetime.now(utc_plus_7)  # todo: переделать нормально
 
             res = ContestantPreviewInfo(
                 contestant_id=contestant.id,

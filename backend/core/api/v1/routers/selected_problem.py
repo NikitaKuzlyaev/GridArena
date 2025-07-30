@@ -1,6 +1,8 @@
 import fastapi
-from fastapi import Body
-from fastapi import Depends
+from fastapi import (
+    Body,
+    Depends,
+)
 
 from backend.core.dependencies.authorization import get_user
 from backend.core.models import User

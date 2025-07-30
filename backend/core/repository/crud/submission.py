@@ -1,6 +1,12 @@
-from typing import List, Sequence
+from typing import (
+    List,
+    Sequence,
+)
 
-from sqlalchemy import select, func
+from sqlalchemy import (
+    select,
+    func,
+)
 
 from backend.core.dependencies.repository import get_repository
 from backend.core.models.submission import Submission

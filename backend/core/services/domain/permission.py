@@ -1,7 +1,20 @@
-from typing import Optional, Callable, Awaitable
+from typing import (
+    Optional,
+    Callable,
+    Awaitable,
+)
 
-from backend.core.models import ProblemCard, QuizField, User, Contest
-from backend.core.models.permission import PermissionResourceType, PermissionActionType, Permission
+from backend.core.models import (
+    ProblemCard,
+    QuizField,
+    User,
+    Contest,
+)
+from backend.core.models.permission import (
+    PermissionResourceType,
+    PermissionActionType,
+    Permission,
+)
 from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.permission import PermissionCRUDRepository
 from backend.core.repository.crud.problem_card import ProblemCardCRUDRepository

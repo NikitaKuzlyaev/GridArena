@@ -1,7 +1,11 @@
 from sqlalchemy import select
 
 from backend.core.dependencies.repository import get_repository
-from backend.core.models.permission import Permission, PermissionActionType, PermissionResourceType
+from backend.core.models.permission import (
+    Permission,
+    PermissionActionType,
+    PermissionResourceType,
+)
 from backend.core.repository.crud.base import BaseCRUDRepository
 from backend.core.utilities.loggers.log_decorator import log_calls
 

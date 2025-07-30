@@ -1,9 +1,16 @@
 from typing import Sequence, Tuple
 
-from sqlalchemy import select, update, Row
+from sqlalchemy import (
+    select,
+    update,
+    Row,
+)
 
 from backend.core.dependencies.repository import get_repository
-from backend.core.models import Problem, ProblemCard
+from backend.core.models import (
+    Problem,
+    ProblemCard,
+)
 from backend.core.repository.crud.base import BaseCRUDRepository
 from backend.core.utilities.loggers.log_decorator import log_calls
 

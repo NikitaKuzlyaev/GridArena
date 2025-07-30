@@ -1,9 +1,17 @@
-from typing import Sequence, List, Tuple
+from typing import (
+    Sequence,
+    List,
+    Tuple,
+)
 
 from sqlalchemy import select
 
 from backend.core.dependencies.repository import get_repository
-from backend.core.models import SelectedProblem, ProblemCard, Problem
+from backend.core.models import (
+    SelectedProblem,
+    ProblemCard,
+    Problem,
+)
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.repository.crud.base import BaseCRUDRepository
 

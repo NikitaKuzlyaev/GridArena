@@ -1,6 +1,10 @@
 from typing import Tuple
 
-from backend.core.models import ProblemCard, Problem, QuizField
+from backend.core.models import (
+    ProblemCard,
+    Problem,
+    QuizField,
+)
 from backend.core.repository.crud.problem_card import ProblemCardCRUDRepository
 from backend.core.repository.crud.quiz import QuizFieldCRUDRepository
 from backend.core.schemas.problem import ProblemInfoForEditor

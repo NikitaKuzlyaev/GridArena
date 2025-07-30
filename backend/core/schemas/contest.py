@@ -1,9 +1,11 @@
 from datetime import datetime
 from typing import Sequence
 
-from pydantic import Field, model_validator
+from pydantic import (
+    Field,
+    model_validator,
+)
 
-from backend.core.models import ProblemCard
 from backend.core.models.contest import ContestRuleType
 from backend.core.models.submission import SubmissionVerdict
 from backend.core.schemas.base import BaseSchemaModel

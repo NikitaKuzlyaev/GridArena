@@ -1,9 +1,14 @@
 import enum
 
-from sqlalchemy import Enum
-from sqlalchemy import ForeignKey, Index
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
+from sqlalchemy import (
+    Enum,
+    ForeignKey,
+    Index,
+)
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+)
 
 from backend.core.database.connection import Base
 

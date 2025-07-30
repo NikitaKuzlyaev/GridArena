@@ -5,9 +5,17 @@
 пользователей к различным ресурсам системы (контесты, задачи, поля и т.д.).
 """
 
-from typing import Protocol, Optional, Callable, Awaitable
+from typing import (
+    Protocol,
+    Optional,
+    Callable,
+    Awaitable,
+)
 
-from backend.core.schemas.permission import PermissionId, PermissionPromise
+from backend.core.schemas.permission import (
+    PermissionId,
+    PermissionPromise,
+)
 
 
 class IPermissionService(Protocol):

@@ -2,8 +2,12 @@ import asyncio
 from typing import Annotated
 
 import fastapi
-from fastapi import Depends, Request, Response
-from fastapi import HTTPException
+from fastapi import (
+    Depends,
+    Request,
+    Response,
+    HTTPException,
+)
 from starlette.responses import JSONResponse
 
 from backend.core.dependencies.authorization import get_user_with_access_token
@@ -11,7 +15,12 @@ from backend.core.dependencies.repository import get_repository
 from backend.core.forms.authorization import CustomLoginForm
 from backend.core.models.user import User
 from backend.core.repository.crud.user import UserCRUDRepository
-from backend.core.schemas.user import SiteUserCreate, UserOut, Token, UserType
+from backend.core.schemas.user import (
+    SiteUserCreate,
+    UserOut,
+    Token,
+    UserType,
+)
 from backend.core.services.domain import auth as auth_service
 from backend.core.services.domain.auth import verify_refresh_token
 from backend.core.services.security import (

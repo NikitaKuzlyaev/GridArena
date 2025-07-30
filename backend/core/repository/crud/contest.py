@@ -1,15 +1,36 @@
 from datetime import datetime
 from typing import Sequence
 
-from sqlalchemy import select, update, delete, and_, func
+from sqlalchemy import (
+    select,
+    update,
+    delete,
+    and_,
+    func,
+)
 
 from backend.core.dependencies.repository import get_repository
-from backend.core.models import Contest, Permission, QuizField, ProblemCard, Problem, User, Contestant, Submission, \
-    SelectedProblem
-from backend.core.models.permission import PermissionResourceType, PermissionActionType
+from backend.core.models import (
+    Contest,
+    Permission,
+    QuizField,
+    ProblemCard,
+    Problem,
+    User,
+    Contestant,
+    Submission,
+    SelectedProblem,
+)
+from backend.core.models.permission import (
+    PermissionResourceType,
+    PermissionActionType,
+)
 from backend.core.repository.crud.base import BaseCRUDRepository
-from backend.core.schemas.contest import ArrayContestantInStandings, ContestantInStandings, ContestSubmissions, \
-    ContestSubmission, ProblemCardForSubmissionInfo
+from backend.core.schemas.contest import (
+    ContestantInStandings,
+    ContestSubmission,
+    ProblemCardForSubmissionInfo,
+)
 from backend.core.utilities.loggers.log_decorator import log_calls
 
 

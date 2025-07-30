@@ -6,9 +6,7 @@
 
 from typing import Protocol
 
-from backend.core.schemas.submission import (
-    SubmissionId,
-)
+from backend.core.schemas.submission import SubmissionId
 
 
 class ISubmissionService(Protocol):

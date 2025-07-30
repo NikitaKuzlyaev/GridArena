@@ -1,9 +1,19 @@
-from typing import Sequence, Tuple
+from typing import (
+    Sequence,
+    Tuple,
+)
 
 from sqlalchemy import Row
 
 from backend.core.models import (
-    QuizField, ProblemCard, Problem, User, Contestant, SelectedProblem, Contest)
+    QuizField,
+    ProblemCard,
+    Problem,
+    User,
+    Contestant,
+    SelectedProblem,
+    Contest,
+)
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.contestant import ContestantCRUDRepository
@@ -12,8 +22,16 @@ from backend.core.repository.crud.quiz import QuizFieldCRUDRepository
 from backend.core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.schemas.problem import ProblemId
-from backend.core.schemas.problem_card import ProblemCardInfo, ProblemCardInfoForContestant, ProblemCardStatus
-from backend.core.schemas.quiz_field import QuizFieldId, QuizFieldInfoForEditor, QuizFieldInfoForContestant
+from backend.core.schemas.problem_card import (
+    ProblemCardInfo,
+    ProblemCardInfoForContestant,
+    ProblemCardStatus,
+)
+from backend.core.schemas.quiz_field import (
+    QuizFieldId,
+    QuizFieldInfoForEditor,
+    QuizFieldInfoForContestant,
+)
 from backend.core.services.interfaces.quiz_field import IQuizFieldService
 from backend.core.utilities.exceptions.data_structures import UndefinedMapping
 from backend.core.utilities.exceptions.database import EntityDoesNotExist

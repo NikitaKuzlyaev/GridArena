@@ -1,8 +1,18 @@
 from typing import Sequence
 
-from backend.core.models import Contestant, ProblemCard, SelectedProblem, Problem, QuizField, Contest
+from backend.core.models import (
+    Contestant,
+    ProblemCard,
+    SelectedProblem,
+    Problem,
+    QuizField,
+    Contest,
+)
 from backend.core.models.selected_problem import SelectedProblemStatusType
-from backend.core.models.submission import SubmissionVerdict, Submission
+from backend.core.models.submission import (
+    SubmissionVerdict,
+    Submission,
+)
 from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.contestant import ContestantCRUDRepository
 from backend.core.repository.crud.problem import ProblemCRUDRepository
@@ -13,7 +23,11 @@ from backend.core.repository.crud.submission import SubmissionCRUDRepository
 from backend.core.repository.crud.transaction import TransactionCRUDRepository
 from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.schemas.submission import SubmissionId
-from backend.core.services.context.context import ContextService, ContextModel, RepositoryUnit
+from backend.core.services.context.context import (
+    ContextService,
+    ContextModel,
+    RepositoryUnit,
+)
 from backend.core.services.interfaces.submission import ISubmissionService
 from backend.core.services.rules.submission_reward import calculate_max_submission_reward
 from backend.core.utilities.exceptions.permission import PermissionDenied

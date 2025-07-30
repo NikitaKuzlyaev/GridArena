@@ -1,6 +1,9 @@
 import os
 
-from fastapi import FastAPI, Request
+from fastapi import (
+    FastAPI,
+    Request,
+)
 from pyinstrument import Profiler
 from starlette.middleware.cors import CORSMiddleware
 

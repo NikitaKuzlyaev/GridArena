@@ -3,7 +3,10 @@ from typing import Sequence
 from pydantic import Field
 
 from backend.core.schemas.base import BaseSchemaModel
-from backend.core.schemas.problem_card import ProblemCardInfoForContestant, ProblemCardInfo
+from backend.core.schemas.problem_card import (
+    ProblemCardInfoForContestant,
+    ProblemCardInfo,
+)
 
 
 class QuizFieldId(BaseSchemaModel):
