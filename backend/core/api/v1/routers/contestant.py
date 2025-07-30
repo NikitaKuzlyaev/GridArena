@@ -6,12 +6,17 @@ from fastapi import Query
 from backend.core.dependencies.authorization import get_user
 from backend.core.models import User
 from backend.core.schemas.contestant import (
-    ArrayContestantInfoForEditor, ContestantId, ContestantInCreate, ContestantPreviewInfo, ContestantInfoInContest)
+    ArrayContestantInfoForEditor,
+    ContestantId,
+    ContestantInCreate,
+    ContestantPreviewInfo,
+    ContestantInfoInContest
+)
 from backend.core.services.interfaces.contestant import IContestantService
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.providers.contestant import get_contestant_service
 from backend.core.services.providers.permission import get_permission_service
-from backend.core.utilities.exceptions.database import EntityDoesNotExist
+from backend.core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
 from backend.core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
 from backend.core.utilities.exceptions.permission import PermissionDenied
 
@@ -27,6 +32,7 @@ router = fastapi.APIRouter(prefix="/contestant", tags=["contestant"])
     mapping={
         PermissionDenied: (403, None),
         EntityDoesNotExist: (404, None),
+        EntityAlreadyExists: (409, None),
     }
 )
 async def create_contestant(
@@ -35,6 +41,31 @@ async def create_contestant(
         contestant_service: IContestantService = Depends(get_contestant_service),
         permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ContestantId:
+    """
+    Создаёт нового участника для указанного контеста.
+
+    Пользователь должен иметь права на редактирование контеста (быть "менеджером" контеста).
+    Эндпоинт используется менеджерами при регистрации новых участников на свое соревнование
+
+    Args:
+        params (ContestantInCreate): Данные для создания участника:
+            - username: имя пользователя
+            - password: пароль пользователя
+            - name: имя пользователя, которое видно на странице соревнования
+            - contest_id: ID контеста, для которого регистрируется участник
+            - points: начальный баланс участника
+        user (User): Текущий авторизованный пользователь (из JWT).
+        contestant_service (IContestantService): Сервис для работы с участниками.
+        permission_service (IPermissionService): Сервис для проверки прав.
+
+    Returns:
+        ContestantId: Объект с полем `id` — идентификатором созданного участника.
+
+    Raises:
+        PermissionDenied: Если у пользователя нет прав на редактирование контеста.
+        EntityDoesNotExist: Если контест с указанным `contest_id` не существует.
+        EntityAlreadyExists: Если пользователь с указанным `username` уже существует в этом домене.
+    """
     await permission_service.raise_if_not_all([
         lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=params.contest_id),
     ])
@@ -65,6 +96,30 @@ async def preview_contestant_info(
         contestant_service: IContestantService = Depends(get_contestant_service),
         permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ContestantPreviewInfo:
+    """
+    Получает превью о контесте и участии в нём текущего пользователя.
+
+    Используется на фронтенде для отображения карточки участия перед входом в интерфейс контеста.
+
+    Args:
+        user (User): Авторизованный пользователь (определяется по JWT-токену).
+        contestant_service (IContestantService): Сервис для получения данных участника.
+        permission_service (IPermissionService): Сервис проверки прав доступа
+
+    Returns:
+        ContestantPreviewInfo: Модель с информацией:
+            - contestant_id: ID участника
+            - contestant_name: Полное имя участника
+            - contest_id: ID контеста
+            - contest_name: Название контеста
+            - started_at: Время начала контеста (datetime)
+            - closed_at: Время окончания контеста (datetime)
+            - is_contest_open: True, если контест ещё активен (текущее время в диапазоне)
+
+    Raises:
+        PermissionDenied: Если у пользователя нет доступа к данным.
+        EntityDoesNotExist: Если участник или связанный контест не найдены.
+    """
     res: ContestantPreviewInfo = (
         await contestant_service.get_contestant_preview(
             user_id=user.id,
@@ -90,6 +145,27 @@ async def preview_contestant_info(
         user: User = Depends(get_user),
         contestant_service: IContestantService = Depends(get_contestant_service),
 ) -> ContestantInfoInContest:
+    """
+    Получает информацию об участнике в контексте текущего контеста.
+
+    Используется в интерфейсе контеста.
+
+    Args:
+        user (User): Авторизованный пользователь (определяется по JWT-токену).
+        contestant_service (IContestantService): Сервис для получения данных участника.
+
+    Returns:
+        ContestantInfoInContest: Модель с информацией:
+            - contestant_id: Уникальный ID участника
+            - contestant_name: Полное имя участника
+            - points: Количество баллов к текущему моменту
+            - problems_current: Количество активных задач (тех, что куплены и решаются сейчас)
+            - problems_max: Максимальное количество задач, которое можно иметь одновременно (из настроек контеста)
+
+    Raises:
+        PermissionDenied: Если у пользователя нет доступа к данным.
+        EntityDoesNotExist: Если участник или его участие в контесте не найдено.
+    """
     res: ContestantInfoInContest = (
         await contestant_service.get_contestant_info_in_contest(
             user_id=user.id,
@@ -117,6 +193,26 @@ async def view_contestants(
         contestant_service: IContestantService = Depends(get_contestant_service),
         permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ArrayContestantInfoForEditor:
+    """
+    Получает список всех участников указанного контеста для редактирования.
+
+    Требует прав на редактирование контеста. Возвращает список участников с их ID,
+    именем и набранными баллами — в формате, пригодном для использования в интерфейсе администратора или редактора.
+
+    Args:
+        contest_id (int): ID контеста, участники которого запрашиваются.
+        user (User): Авторизованный пользователь (определяется по JWT).
+        contestant_service (IContestantService): Сервис для получения данных об участниках.
+        permission_service (IPermissionService): Сервис для проверки прав доступа.
+
+    Returns:
+        ArrayContestantInfoForEditor: Объект, содержащий список участников в поле `body`,
+        где каждый элемент — информация об участнике (ID, имя, баллы).
+
+    Raises:
+        PermissionDenied: Если у пользователя нет прав на редактирование контеста.
+        EntityDoesNotExist: Если контест с указанным ID не существует.
+    """
     await permission_service.raise_if_not_all([
         lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=contest_id),
     ])
