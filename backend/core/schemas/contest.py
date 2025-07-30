@@ -135,3 +135,4 @@ class ContestSubmissions(BaseSchemaModel):
     closed_at: datetime
     submissions: ArrayContestSubmissions
     use_cache: bool = Field(default=False)
+    show_last_n_submissions: int | None = Field(default=None)

@@ -18,6 +18,7 @@ class ContestCRUDRepository(BaseCRUDRepository):
     async def get_contest_submissions(
             self,
             contest_id: int,
+            show_last_n_submissions: int,
     ) -> Sequence[ContestSubmission]:
         res = await self.async_session.execute(
             select(
@@ -31,6 +32,7 @@ class ContestCRUDRepository(BaseCRUDRepository):
             .join(Submission, Submission.selected_problem_id == SelectedProblem.id)
             .where(Contest.id == contest_id)
             .order_by(Submission.created_at.desc())
+            .limit(show_last_n_submissions)
         )
 
         rows = res.all()

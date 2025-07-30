@@ -29,6 +29,7 @@ class ContestService(IContestService):
     async def contest_submissions(
             self,
             contest_id: int,
+            show_last_n_submissions: int = 30,
     ) -> ContestSubmissions:
         contest: Contest | None = (
             await self.contest_repo.get_contest_by_id(contest_id=contest_id)
@@ -39,6 +40,7 @@ class ContestService(IContestService):
         submissions_in_contest = (
             await self.contest_repo.get_contest_submissions(
                 contest_id=contest_id,
+                show_last_n_submissions=show_last_n_submissions,
             )
         )
 
@@ -50,6 +52,7 @@ class ContestService(IContestService):
             submissions=ArrayContestSubmissions(
                 body=[i for i in submissions_in_contest],
             ),
+            show_last_n_submissions=show_last_n_submissions,
         )
 
         return res
