@@ -26,9 +26,33 @@ router = fastapi.APIRouter(prefix="/problem", tags=["problem"])
 )
 async def update_problem(
         params: ProblemUpdateRequest = Body(...),
-        user: User = Depends(get_user),
+        user: User = Depends(get_user),  # todo: настроить проверку прав
         problem_service: IProblemService = Depends(get_problem_service),
 ) -> JSONResponse:
+    """
+    Обновляет текст условия и ответ задачи.
+
+    Доступно только пользователям с правами на редактирование задачи (проверяется на уровне сервиса).
+    Изменения применяются немедленно.
+
+    Args:
+        params (ProblemUpdateRequest): Новые данные задачи:
+            - problem_id: ID задачи, которую необходимо обновить
+            - statement: новое условие задачи (до 2048 символов)
+            - answer: правильный ответ (до 32 символов)
+        user (User): Авторизованный пользователь (определяется по JWT).
+        problem_service (IProblemService): Сервис для обновления задачи.
+
+    Returns:
+        JSONResponse: Объект с обновлённым ID задачи в поле `body`
+
+    Raises:
+        EntityDoesNotExist: Если задача с указанным problem_id не существует (возвращает 404).
+
+    Примечание:
+        Изменение задачи НЕ влияет повлиять на уже отправленные посылки, если меняется ответ.
+        Система должна корректно обрабатывать перепроверку при необходимости.
+    """
     result: ProblemId = (
         await problem_service.update_problem(
             **params.model_dump(),
