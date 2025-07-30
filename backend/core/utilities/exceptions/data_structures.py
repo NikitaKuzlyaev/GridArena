@@ -1,10 +1,16 @@
-class UndefinedMapping(Exception):
+class DataStructureException(Exception):
+    """
+    Базовый класс для исключений структур данных
+    """
+
+
+class UndefinedMapping(DataStructureException):
     """
 
     """
 
 
-class NotEnoughParameters(Exception):
+class NotEnoughParameters(DataStructureException):
     """
 
     """

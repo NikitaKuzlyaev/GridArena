@@ -1,10 +1,16 @@
-class PasswordDoesNotMatch(Exception):
+class AuthException(Exception):
+    """
+    Базовый класс для исключений аутентификации
+    """
+
+
+class PasswordDoesNotMatch(AuthException):
     """
     Throw an exception when the account password does not match the entitiy's hashed password from the database.
     """
 
 
-class TokenException(Exception):
+class TokenException(AuthException):
     """
 
     """
@@ -28,7 +34,7 @@ class UndecodedToken(TokenException):
     """
 
 
-class UnauthorizedException(Exception):
+class UnauthorizedException(AuthException):
     """
 
     """
