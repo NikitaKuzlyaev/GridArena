@@ -12,7 +12,7 @@ from backend.core.schemas.quiz_field import (
     QuizFieldInfoForContestant,
 )
 from backend.core.services.interfaces.permission import IPermissionService
-from backend.core.services.interfaces.quiz import IQuizFieldService
+from backend.core.services.interfaces.quiz_field import IQuizFieldService
 from backend.core.services.providers.permission import get_permission_service
 from backend.core.services.providers.quiz import get_quiz_field_service
 from backend.core.utilities.exceptions.database import EntityDoesNotExist

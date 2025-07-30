@@ -14,7 +14,7 @@ from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.schemas.problem import ProblemId
 from backend.core.schemas.problem_card import ProblemCardInfo, ProblemCardInfoForContestant, ProblemCardStatus
 from backend.core.schemas.quiz_field import QuizFieldId, QuizFieldInfoForEditor, QuizFieldInfoForContestant
-from backend.core.services.interfaces.quiz import IQuizFieldService
+from backend.core.services.interfaces.quiz_field import IQuizFieldService
 from backend.core.utilities.exceptions.data_structures import UndefinedMapping
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
 from backend.core.utilities.loggers.log_decorator import log_calls

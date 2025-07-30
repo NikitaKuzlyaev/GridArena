@@ -8,7 +8,7 @@ from backend.core.repository.crud.quiz import QuizFieldCRUDRepository
 from backend.core.repository.crud.selected_problem import SelectedProblemCRUDRepository
 from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.services.domain.quiz import QuizFieldService
-from backend.core.services.interfaces.quiz import IQuizFieldService
+from backend.core.services.interfaces.quiz_field import IQuizFieldService
 
 
 def get_quiz_field_service(
