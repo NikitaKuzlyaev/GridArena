@@ -4,6 +4,7 @@ from jose import jwt
 from passlib.context import CryptContext
 
 from backend.configuration.settings import settings
+from backend.core.utilities.loggers.log_decorator import log_calls
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
@@ -20,18 +21,18 @@ def hash_password(password: str) -> str:
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
-
+@log_calls
 def create_access_token(data: dict) -> str:
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": data["sub"], "token_type": "access"}
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-
+@log_calls
 def create_refresh_token(data: dict) -> str:
     expire = datetime.utcnow() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": data["sub"], "token_type": "refresh"}
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-
+@log_calls
 def decode_token(token: str):
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])

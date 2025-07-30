@@ -9,16 +9,18 @@ from backend.core.models.user import User
 from backend.core.repository.crud.user import UserCRUDRepository
 from backend.core.services.domain import auth as auth_service
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
+from backend.core.utilities.loggers.log_decorator import log_calls
 from backend.handlers.token_blacklist.impl.main.provider import get_token_blacklist_handler
 from backend.handlers.token_blacklist.interface import ITokenBlacklistHandler
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
+oauth2_schema = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
 from backend.core.services.security import decode_token
 
 
+@log_calls
 async def get_user(
-        token: str = Depends(oauth2_scheme),
+        token: str = Depends(oauth2_schema),
         token_blacklist_handler: ITokenBlacklistHandler = Depends(get_token_blacklist_handler),
         user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
 ) -> User:
@@ -58,8 +60,9 @@ async def get_user(
 #
 # ДЛЯ ДЕБАГА!!!
 #
+@log_calls
 async def get_user_with_access_token(
-        token: str = Depends(oauth2_scheme),
+        token: str = Depends(oauth2_schema),
         user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
 ) -> Tuple[User, str]:
     if not token:

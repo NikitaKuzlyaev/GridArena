@@ -102,8 +102,8 @@ class ContestantService(IContestantService):
                 )
             )
 
-            utc_plus_7 = timezone(timedelta(hours=7))
-            current_time = datetime.now(utc_plus_7)
+            utc_plus_7 = timezone(timedelta(hours=7)) # какой кринж
+            current_time = datetime.now(utc_plus_7) # todo: переделать нормально
 
             res = ContestantPreviewInfo(
                 contestant_id=contestant.id,

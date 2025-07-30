@@ -4,8 +4,10 @@ from backend.core.schemas.user import SiteUserCreate
 from backend.core.services.security import decode_token
 from backend.core.utilities.exceptions.auth import TokenException
 from backend.core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
+from backend.core.utilities.loggers.log_decorator import log_calls
 
 
+@log_calls
 async def register_site_user(
         data: SiteUserCreate,
         user_repo: UserCRUDRepository,
@@ -22,6 +24,7 @@ async def register_site_user(
         raise EntityAlreadyExists("Пользователь с таким username уже существует в указанном домене")
 
 
+@log_calls
 async def register_contest_user(
         data: SiteUserCreate,
         user_repo: UserCRUDRepository,
@@ -35,6 +38,7 @@ async def register_contest_user(
     return user
 
 
+@log_calls
 async def verify_refresh_token(
         token: str,
         user_repo: UserCRUDRepository,
@@ -63,6 +67,7 @@ async def verify_refresh_token(
         raise e
 
 
+@log_calls
 async def authenticate_user(
         domain_number: int,
         username: str,
@@ -79,6 +84,7 @@ async def authenticate_user(
     return token
 
 
+@log_calls
 async def get_user_by_uuid(
         user_uuid: str,
         user_repo: UserCRUDRepository,
