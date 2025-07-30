@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import config from '../config';
+import { useApi } from '../hooks/useApi';
 
 function EditContestants() {
   const location = useLocation();
+  const { makeRequest } = useApi();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,36 +23,24 @@ function EditContestants() {
   const searchParams = new URLSearchParams(location.search);
   const contestId = searchParams.get('contest_id');
 
-  const fetchContestants = () => {
+  const fetchContestants = async () => {
     setLoading(true);
     setError(null);
-    const token = localStorage.getItem('access_token');
-    fetch(`${config.backendUrl}api/v1/contestant?contest_id=${contestId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      credentials: 'include',
-    })
-      .then(async res => {
-        if (!res.ok) {
-          let msg = 'Ошибка загрузки данных';
-          try {
-            const data = await res.json();
-            if (data && data.detail) msg = data.detail;
-          } catch {}
-          setError(msg);
-          setLoading(false);
-          return;
-        }
-        const data = await res.json();
-        setData(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Ошибка сети');
-        setLoading(false);
-      });
+    try {
+      const data = await makeRequest(`${config.backendUrl}api/v1/contestant?contest_id=${contestId}`);
+      setData(data);
+      setLoading(false);
+    } catch (error) {
+      let msg = 'Ошибка загрузки данных';
+      if (error.message && error.message.includes('detail')) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.detail) msg = errorData.detail;
+        } catch {}
+      }
+      setError(msg);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -81,15 +71,9 @@ function EditContestants() {
   const handleSave = async () => {
     setModalError(null);
     setSaving(true);
-    const token = localStorage.getItem('access_token');
     try {
-      const response = await fetch(`${config.backendUrl}api/v1/contestant`, {
+      await makeRequest(`${config.backendUrl}api/v1/contestant`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        credentials: 'include',
         body: JSON.stringify({
           username: form.username,
           password: form.password,
@@ -98,18 +82,19 @@ function EditContestants() {
           contest_id: Number(contestId),
         }),
       });
-      const data = await response.json();
       setSaving(false);
-      if (!response.ok) {
-        let msg = data && data.detail ? data.detail : response.statusText;
-        setModalError(msg);
-        return;
-      }
       handleCloseModal();
       fetchContestants();
-    } catch (err) {
+    } catch (error) {
       setSaving(false);
-      setModalError('Ошибка сети');
+      let msg = 'Ошибка сети';
+      if (error.message && error.message.includes('detail')) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.detail) msg = errorData.detail;
+        } catch {}
+      }
+      setModalError(msg);
     }
   };
 
@@ -117,32 +102,25 @@ function EditContestants() {
     setEditModalError(null);
     setEditLoading(true);
     setEditId(contestantId);
-    setShowModal('edit-' + contestantId);
-    const token = localStorage.getItem('access_token');
     try {
-      const res = await fetch(`${config.backendUrl}api/v1/contestant/info-editor?contestant_id=${contestantId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setEditModalError(data && data.detail ? data.detail : 'Ошибка загрузки');
-        setEditLoading(false);
-        return;
-      }
+      const data = await makeRequest(`${config.backendUrl}api/v1/contestant/info-editor?contestant_id=${contestantId}`);
       setEditForm({
         username: data.username || '',
         name: data.name || '',
-        points: data.points !== undefined ? String(data.points) : '',
+        points: data.points?.toString() || '',
       });
-      setEditLoading(false);
-    } catch {
-      setEditModalError('Ошибка сети');
-      setEditLoading(false);
+      setShowModal('edit-' + contestantId);
+    } catch (error) {
+      let msg = 'Ошибка загрузки данных';
+      if (error.message && error.message.includes('detail')) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.detail) msg = errorData.detail;
+        } catch {}
+      }
+      setEditModalError(msg);
     }
+    setEditLoading(false);
   };
 
   const handleEditFormChange = e => {
@@ -152,15 +130,9 @@ function EditContestants() {
   const handleEditSave = async () => {
     setEditModalError(null);
     setEditSaving(true);
-    const token = localStorage.getItem('access_token');
     try {
-      const response = await fetch(`${config.backendUrl}api/v1/contestant`, {
+      await makeRequest(`${config.backendUrl}api/v1/contestant`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        credentials: 'include',
         body: JSON.stringify({
           contestant_id: editId,
           username: editForm.username,
@@ -168,19 +140,20 @@ function EditContestants() {
           points: Number(editForm.points),
         }),
       });
-      const data = await response.json();
       setEditSaving(false);
-      if (!response.ok) {
-        let msg = data && data.detail ? data.detail : response.statusText;
-        setEditModalError(msg);
-        return;
-      }
       setShowModal(false);
       setEditId(null);
       fetchContestants();
-    } catch (err) {
+    } catch (error) {
       setEditSaving(false);
-      setEditModalError('Ошибка сети');
+      let msg = 'Ошибка сети';
+      if (error.message && error.message.includes('detail')) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.detail) msg = errorData.detail;
+        } catch {}
+      }
+      setEditModalError(msg);
     }
   };
 

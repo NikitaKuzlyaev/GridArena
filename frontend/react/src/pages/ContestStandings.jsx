@@ -1,34 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import config from '../config';
+import { useApi } from '../hooks/useApi';
 
 function ContestStandings() {
   const [searchParams] = useSearchParams();
   const contestId = searchParams.get('contest_id');
+  const { makeRequest } = useApi();
   const [standingsData, setStandingsData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   // Функция для загрузки standings
-  const fetchStandings = (showLoader = false) => {
+  const fetchStandings = async (showLoader = false) => {
     if (!contestId) return;
     if (showLoader) setLoading(true);
-    const token = localStorage.getItem('access_token');
-    fetch(`${config.backendUrl}api/v1/contest/standings?contest_id=${contestId}`, {
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      credentials: 'include',
-    })
-      .then(res => res.json())
-      .then(data => {
-        setStandingsData(data);
-      })
-      .finally(() => {
-        if (showLoader) setLoading(false);
-        if (isFirstLoad) setIsFirstLoad(false);
-      });
+    try {
+      const data = await makeRequest(`${config.backendUrl}api/v1/contest/standings?contest_id=${contestId}`);
+      setStandingsData(data);
+    } catch (error) {
+      console.error('Ошибка при загрузке standings:', error);
+    } finally {
+      if (showLoader) setLoading(false);
+      if (isFirstLoad) setIsFirstLoad(false);
+    }
   };
 
   useEffect(() => {

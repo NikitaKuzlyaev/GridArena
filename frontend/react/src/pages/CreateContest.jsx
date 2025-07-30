@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import config from '../config';
 import ErrorBlock from '../components/ErrorBlock.jsx';
+import { useApi } from '../hooks/useApi';
 
 function CreateContest() {
   const [form, setForm] = useState({
@@ -12,6 +13,7 @@ function CreateContest() {
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { makeRequest } = useApi();
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,13 +24,8 @@ function CreateContest() {
     setError(null);
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(config.backendUrl + 'api/v1/contest', {
+      const data = await makeRequest(config.backendUrl + 'api/v1/contest', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
         body: JSON.stringify({
           name: form.name,
           started_at: form.started_at,
@@ -36,22 +33,23 @@ function CreateContest() {
           start_points: Number(form.start_points),
           number_of_slots_for_problems: Number(form.number_of_slots_for_problems),
         }),
-        credentials: 'include',
       });
-      const data = await response.json();
       setLoading(false);
-      if (!response.ok) {
-        setError({ code: response.status, message: data.detail || response.statusText });
-        return;
-      }
       if (data.contestId) {
         window.location.href = '/my-contests';
       } else {
         setError({ code: 'unknown', message: 'Некорректный ответ сервера' });
       }
-    } catch (err) {
+    } catch (error) {
       setLoading(false);
-      setError({ code: 'network', message: 'Ошибка сети' });
+      let msg = 'Ошибка сети';
+      if (error.message && error.message.includes('detail')) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.detail) msg = errorData.detail;
+        } catch {}
+      }
+      setError({ code: 'network', message: msg });
     }
   };
 

@@ -1,29 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useApi } from '../hooks/useApi';
 import config from '../config';
 
 function ContestSubmissions() {
   const [searchParams] = useSearchParams();
   const contestId = searchParams.get('contest_id');
   const [submissions, setSubmissions] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { makeRequest, loading } = useApi();
 
   useEffect(() => {
     if (!contestId) return;
-    setLoading(true);
-    const token = localStorage.getItem('access_token');
-    fetch(`${config.backendUrl}api/v1/contest/submissions?contest_id=${contestId}`, {
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      credentials: 'include',
-    })
-      .then(res => res.json())
-      .then(data => {
+    
+    const fetchSubmissions = async () => {
+      try {
+        const data = await makeRequest(`${config.backendUrl}api/v1/contest/submissions?contest_id=${contestId}`);
         setSubmissions(data);
-      })
-      .finally(() => setLoading(false));
-  }, [contestId]);
+      } catch (error) {
+        console.error('Ошибка при загрузке посылок:', error);
+      }
+    };
+
+    fetchSubmissions();
+  }, [contestId, makeRequest]);
 
   return (
     <div style={{ maxWidth: 1000, margin: '32px auto', padding: '0 16px' }}>

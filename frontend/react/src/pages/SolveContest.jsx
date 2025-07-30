@@ -9,6 +9,7 @@ import './SolveContest.css';
 import FallingFlowers from './FallingFlowers';
 import pinkGif from './pink-gif.gif';
 import pinkGif2 from './pink-gif-2.gif';
+import { useApi } from '../hooks/useApi';
 
 function SolveContest() {
   const [searchParams] = useSearchParams();
@@ -132,76 +133,64 @@ function SolveContest() {
     e.preventDefault();
   }
 
+  const { makeRequest, loading: apiLoading } = useApi();
+
   useEffect(() => {
-    // Имитация загрузки
-    // setTimeout(() => {
-    //   setLoading(false);
-    // }, 1);
+    if (!contestId) {
+      setLoading(true);
+      return;
+    }
     setLoading(false);
+    
     // Запрос к API для получения информации о поле для участника
-    const token = localStorage.getItem('access_token');
-    fetch(`${config.backendUrl}api/v1/quiz-field/info-contestant`, {
-      method: 'GET',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      credentials: 'include',
-    })
-      .then(async res => {
-        if (res.ok) {
-          const data = await res.json();
-          setFieldData(data);
-        }
-      })
-      .catch(() => {});
+    const fetchFieldData = async () => {
+      try {
+        const data = await makeRequest(`${config.backendUrl}api/v1/quiz-field/info-contestant`);
+        setFieldData(data);
+      } catch (error) {
+        console.error('Ошибка при загрузке данных поля:', error);
+      }
+    };
 
     // Новый запрос к API для получения информации об участнике
-    fetch(`${config.backendUrl}api/v1/contestant/info`, {
-      method: 'GET',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      credentials: 'include',
-    })
-      .then(async res => {
-        if (res.ok) {
-          const data = await res.json();
-          setContestantInfo(data);
-        }
-      })
-      .catch(() => {});
+    const fetchContestantInfo = async () => {
+      try {
+        const data = await makeRequest(`${config.backendUrl}api/v1/contestant/info`);
+        setContestantInfo(data);
+      } catch (error) {
+        console.error('Ошибка при загрузке информации об участнике:', error);
+      }
+    };
 
     // Новый запрос к API для получения своих выбранных задач
-    fetch(`${config.backendUrl}api/v1/selected-problem/my`, {
-      method: 'GET',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      credentials: 'include',
-    })
-      .then(async res => {
-        if (res.ok) {
-          const data = await res.json();
-          if (data && Array.isArray(data.body)) {
-            setMyProblems(data.body.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-          }
-          if (data && data.ruleType) {
-            setMyProblemsRuleType(data.ruleType);
-          }
-          if (data && typeof data.maxAttemptsForProblem === 'number') {
-            setMyProblemsMaxAttempts(data.maxAttemptsForProblem);
-          }
+    const fetchMyProblems = async () => {
+      try {
+        const data = await makeRequest(`${config.backendUrl}api/v1/selected-problem/my`);
+        if (data && Array.isArray(data.body)) {
+          setMyProblems(data.body.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
         }
-      })
-      .catch(() => {});
-  }, [contestId]);
+        if (data && data.ruleType) {
+          setMyProblemsRuleType(data.ruleType);
+        }
+        if (data && typeof data.maxAttemptsForProblem === 'number') {
+          setMyProblemsMaxAttempts(data.maxAttemptsForProblem);
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке моих задач:', error);
+      }
+    };
+
+    fetchFieldData();
+    fetchContestantInfo();
+    fetchMyProblems();
+  }, [contestId, makeRequest]);
 
   const getCardAt = (row, col) => {
     if (!fieldData || !fieldData.problemCards) return null;
     return fieldData.problemCards.find(card => card.row === row && card.column === col);
   };
 
-  if (loading) {
+  if (loading || apiLoading) {
     return (
       <p>загрузка</p>
     );
@@ -365,33 +354,24 @@ function SolveContest() {
                     onClick={async () => {
                       setBuying(true);
                       setBuyError(null);
-                      const token = localStorage.getItem('access_token');
                       try {
-                        const res = await fetch(`${config.backendUrl}api/v1/selected-problem/buy`, {
+                        await makeRequest(`${config.backendUrl}api/v1/selected-problem/buy`, {
                           method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': token ? `Bearer ${token}` : '',
-                          },
-                          credentials: 'include',
                           body: JSON.stringify({ problem_card_id: modalCard.problemCardId }),
                         });
-                        if (!res.ok) {
-                          let msg = 'Ошибка покупки';
-                          try {
-                            const data = await res.json();
-                            if (data && data.detail) msg = data.detail;
-                          } catch {}
-                          setBuyError(msg);
-                          setBuying(false);
-                          return;
-                        }
                         setModalCard(null);
                         setBuying(false);
                         // Можно добавить обновление поля или уведомление об успехе
                         window.location.reload();
-                      } catch {
-                        setBuyError('Ошибка сети');
+                      } catch (error) {
+                        let msg = 'Ошибка покупки';
+                        if (error.message && error.message.includes('detail')) {
+                          try {
+                            const errorData = JSON.parse(error.message);
+                            if (errorData.detail) msg = errorData.detail;
+                          } catch {}
+                        }
+                        setBuyError(msg);
                         setBuying(false);
                       }
                     }}
@@ -484,20 +464,18 @@ function SolveContest() {
                           outlineOffset: '0px',
                         }}
                         onClick={async () => {
-                          const token = localStorage.getItem('access_token');
-                          await fetch(`${config.backendUrl}api/v1/submission`, {
-                            method: 'POST',
-                            headers: {
-                              'Authorization': token ? `Bearer ${token}` : '',
-                              'Content-Type': 'application/json',
-                            },
-                            credentials: 'include',
-                            body: JSON.stringify({
-                              selected_problem_id: problem.selectedProblemId,
-                              answer: answers[problem.selectedProblemId] || ''
-                            }),
-                          });
-                          window.location.reload();
+                          try {
+                            await makeRequest(`${config.backendUrl}api/v1/submission`, {
+                              method: 'POST',
+                              body: JSON.stringify({
+                                selected_problem_id: problem.selectedProblemId,
+                                answer: answers[problem.selectedProblemId] || ''
+                              }),
+                            });
+                            window.location.reload();
+                          } catch (error) {
+                            console.error('Ошибка при отправке ответа:', error);
+                          }
                         }}
                         title="Отправить ответ"
                       >

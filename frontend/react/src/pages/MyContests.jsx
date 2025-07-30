@@ -2,36 +2,28 @@
 import React, { useEffect, useState } from 'react';
 import config from '../config';
 import ErrorBlock from '../components/ErrorBlock.jsx';
+import { useApi } from '../hooks/useApi';
 
 function MyContests() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [contests, setContests] = useState(null);
+  const { makeRequest } = useApi();
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    fetch(config.backendUrl + 'api/v1/contest', {
-      method: 'GET',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      credentials: 'include',
-    })
-      .then(async res => {
-        if (!res.ok) {
-          setError({ code: res.status, message: res.statusText });
-          setLoading(false);
-          return;
-        }
-        const data = await res.json();
+    const fetchContests = async () => {
+      try {
+        const data = await makeRequest(config.backendUrl + 'api/v1/contest');
         setContests(data);
         setLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         setError({ code: 'network', message: 'Ошибка сети' });
         setLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    fetchContests();
+  }, [makeRequest]);
 
   if (loading) {
     return <div style={{ textAlign: 'center', marginTop: '40px' }}>Загрузка...</div>;

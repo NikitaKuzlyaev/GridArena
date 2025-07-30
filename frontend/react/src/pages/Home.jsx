@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useApi } from '../hooks/useApi';
 import config from '../config';
 
 function Home() {
   const [markdown, setMarkdown] = useState('');
   const [contestantData, setContestantData] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState(null);
+  const { makeRequest, loading } = useApi();
 
   useEffect(() => {
     // Загрузка markdown
@@ -19,34 +20,19 @@ function Home() {
     setUserType(userTypeFromStorage);
     
     if (userTypeFromStorage === 'CONTEST') {
-      setLoading(true);
-      
-      const token = localStorage.getItem('access_token');
-      fetch(`${config.backendUrl}api/v1/contestant/preview`, {
-        method: 'GET',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        credentials: 'include',
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Ошибка при загрузке данных участника');
+      const fetchContestantData = async () => {
+        try {
+          const data = await makeRequest(`${config.backendUrl}api/v1/contestant/preview`);
+          setContestantData(data);
+          console.log('Данные участника загружены:', data);
+        } catch (error) {
+          console.error('Ошибка при загрузке данных участника:', error);
         }
-        return response.json();
-      })
-      .then(data => {
-        setContestantData(data);
-        console.log('Данные участника загружены:', data);
-      })
-      .catch(error => {
-        console.error('Ошибка при загрузке данных участника:', error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      };
+
+      fetchContestantData();
     }
-  }, []);
+      }, [makeRequest]);
 
   return (
     <div style={{ maxWidth: 700, margin: '32px auto' }}>

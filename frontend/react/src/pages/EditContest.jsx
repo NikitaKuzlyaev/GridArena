@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import config from '../config';
 import ErrorBlock from '../components/ErrorBlock.jsx';
+import { useApi } from '../hooks/useApi';
 
 function EditContest() {
   const { contestId } = useParams();
+  const { makeRequest } = useApi();
   const [form, setForm] = useState({
     name: '',
     start_points: '',
@@ -18,26 +20,9 @@ function EditContest() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    fetch(`${config.backendUrl}api/v1/contest/info-editor?contest_id=${contestId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      credentials: 'include',
-    })
-      .then(async res => {
-        if (!res.ok) {
-          let msg = 'Ошибка загрузки данных';
-          try {
-            const data = await res.json();
-            if (data && data.detail) msg = data.detail;
-          } catch {}
-          setError({ code: res.status, message: msg });
-          setLoading(false);
-          return;
-        }
-        const data = await res.json();
+    const fetchContestData = async () => {
+      try {
+        const data = await makeRequest(`${config.backendUrl}api/v1/contest/info-editor?contest_id=${contestId}`);
         if (data) {
           setForm({
             name: data.name || '',
@@ -50,12 +35,21 @@ function EditContest() {
           });
         }
         setLoading(false);
-      })
-      .catch(() => {
-        setError({ code: 'network', message: 'Ошибка сети' });
+      } catch (error) {
+        let msg = 'Ошибка загрузки данных';
+        if (error.message && error.message.includes('detail')) {
+          try {
+            const errorData = JSON.parse(error.message);
+            if (errorData.detail) msg = errorData.detail;
+          } catch {}
+        }
+        setError({ code: 'network', message: msg });
         setLoading(false);
-      });
-  }, [contestId]);
+      }
+    };
+
+    fetchContestData();
+  }, [contestId, makeRequest]);
 
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
@@ -70,13 +64,8 @@ function EditContest() {
     setError(null);
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${config.backendUrl}api/v1/contest/`, {
+      await makeRequest(`${config.backendUrl}api/v1/contest/`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
         body: JSON.stringify({
           contestId: Number(contestId),
           name: form.name,
@@ -87,20 +76,20 @@ function EditContest() {
           ruleType: form.rule_type,
           flagUserCanHaveNegativePoints: form.flag_user_can_have_negative_points,
         }),
-        credentials: 'include',
       });
-      const data = await response.json();
       setLoading(false);
-      if (!response.ok) {
-        let msg = data && data.detail ? data.detail : response.statusText;
-        setError({ code: response.status, message: msg });
-        return;
-      }
       alert('Контест успешно обновлён!');
       window.location.href = '/my-contests';
-    } catch (err) {
+    } catch (error) {
       setLoading(false);
-      setError({ code: 'network', message: 'Ошибка сети' });
+      let msg = 'Ошибка сети';
+      if (error.message && error.message.includes('detail')) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.detail) msg = errorData.detail;
+        } catch {}
+      }
+      setError({ code: 'network', message: msg });
     }
   };
 
@@ -171,29 +160,22 @@ function EditContest() {
               setLoading(true);
               setError(null);
               try {
-                const token = localStorage.getItem('access_token');
-                const response = await fetch(`${config.backendUrl}api/v1/contest/?contest_id=${contestId}`, {
+                await makeRequest(`${config.backendUrl}api/v1/contest/?contest_id=${contestId}`, {
                   method: 'DELETE',
-                  headers: {
-                    'Authorization': token ? `Bearer ${token}` : '',
-                  },
-                  credentials: 'include',
                 });
                 setLoading(false);
-                if (!response.ok) {
-                  let msg = 'Ошибка удаления';
-                  try {
-                    const data = await response.json();
-                    if (data && data.detail) msg = data.detail;
-                  } catch {}
-                  setError({ code: response.status, message: msg });
-                  return;
-                }
                 alert('Контест успешно удалён!');
                 window.location.href = '/my-contests';
-              } catch (err) {
+              } catch (error) {
                 setLoading(false);
-                setError({ code: 'network', message: 'Ошибка сети' });
+                let msg = 'Ошибка сети';
+                if (error.message && error.message.includes('detail')) {
+                  try {
+                    const errorData = JSON.parse(error.message);
+                    if (errorData.detail) msg = errorData.detail;
+                  } catch {}
+                }
+                setError({ code: 'network', message: msg });
               }
             }
           }}

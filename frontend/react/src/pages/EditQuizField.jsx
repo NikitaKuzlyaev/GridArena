@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import config from '../config';
+import ErrorBlock from '../components/ErrorBlock.jsx';
+import { useApi } from '../hooks/useApi';
 
 function EditQuizField() {
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const contestId = searchParams.get('contest_id');
+  const { makeRequest } = useApi();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,9 +22,7 @@ function EditQuizField() {
   const [createMode, setCreateMode] = useState(false);
   const [createCell, setCreateCell] = useState(null); // {row, col}
 
-  // Получаем contest_id из query-параметров
-  const searchParams = new URLSearchParams(location.search);
-  const contestId = searchParams.get('contest_id');
+
 
   useEffect(() => {
     if (!contestId) {
@@ -28,36 +30,29 @@ function EditQuizField() {
       setLoading(false);
       return;
     }
-    const token = localStorage.getItem('access_token');
-    fetch(`${config.backendUrl}api/v1/quiz-field/info-editor?contest_id=${contestId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      credentials: 'include',
-    })
-      .then(async res => {
-        if (!res.ok) {
-          let msg = 'Ошибка загрузки данных';
-          try {
-            const data = await res.json();
-            if (data && data.detail) msg = data.detail;
-          } catch {}
-          setError({ code: res.status, message: msg });
-          setLoading(false);
-          return;
-        }
-        const data = await res.json();
+    
+    const fetchFieldData = async () => {
+      try {
+        const data = await makeRequest(`${config.backendUrl}api/v1/quiz-field/info-editor?contest_id=${contestId}`);
         setData(data);
         setRows(data.numberOfRows || 1);
         setCols(data.numberOfColumns || 1);
         setLoading(false);
-      })
-      .catch(() => {
-        setError({ code: 'network', message: 'Ошибка сети' });
+      } catch (error) {
+        let msg = 'Ошибка загрузки данных';
+        if (error.message && error.message.includes('detail')) {
+          try {
+            const errorData = JSON.parse(error.message);
+            if (errorData.detail) msg = errorData.detail;
+          } catch {}
+        }
+        setError({ code: 'network', message: msg });
         setLoading(false);
-      });
-  }, [contestId]);
+      }
+    };
+
+    fetchFieldData();
+  }, [contestId, makeRequest]);
 
   const handleRowsChange = (e) => {
     let value = Math.max(1, Math.min(8, Number(e.target.value)));
@@ -96,28 +91,17 @@ function EditQuizField() {
     setModalCardInfo(null);
     setEditForm(null);
     setEditErrors({});
-    const token = localStorage.getItem('access_token');
+    
     try {
-      const res = await fetch(`${config.backendUrl}api/v1/problem-card/info-editor?problem_card_id=${card.problemCardId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        credentials: 'include',
+      const info = await makeRequest(`${config.backendUrl}api/v1/problem-card/info-editor?problem_card_id=${card.problemCardId}`);
+      setModalCardInfo(info);
+      setEditForm({
+        categoryName: info.categoryName || '',
+        categoryPrice: info.categoryPrice || 0,
+        statement: (info.problem && info.problem.statement) || '',
+        answer: (info.problem && info.problem.answer) || '',
       });
-      if (!res.ok) {
-        setModalCardInfo({ error: 'Ошибка загрузки информации о карточке' });
-      } else {
-        const info = await res.json();
-        setModalCardInfo(info);
-        setEditForm({
-          categoryName: info.categoryName || '',
-          categoryPrice: info.categoryPrice || 0,
-          statement: (info.problem && info.problem.statement) || '',
-          answer: (info.problem && info.problem.answer) || '',
-        });
-      }
-    } catch {
+    } catch (error) {
       setModalCardInfo({ error: 'Ошибка сети при загрузке карточки' });
     }
     setModalLoading(false);
@@ -143,100 +127,88 @@ function EditQuizField() {
 
   // Сохранение изменений
   const handleEditSave = async () => {
-    if (!modalCardInfo || !editForm) return;
     const errors = validateEditForm(editForm);
-    setEditErrors(errors);
-    if (Object.keys(errors).length > 0) return;
-    setEditSaving(true);
-    const token = localStorage.getItem('access_token');
+    if (Object.keys(errors).length > 0) {
+      setEditErrors(errors);
+      return;
+    }
+    setEditErrors({});
+    setModalLoading(true);
     try {
-      const res = await fetch(`${config.backendUrl}api/v1/problem-card/with-problem`, {
+      await makeRequest(`${config.backendUrl}api/v1/problem-card/with-problem`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        credentials: 'include',
         body: JSON.stringify({
-          problem_card_id: modalCardInfo.problemCardId,
-          category_name: editForm.categoryName,
-          category_price: editForm.categoryPrice,
-          statement: editForm.statement,
-          answer: editForm.answer,
-          problem_id: modalCardInfo.problem?.problemId,
+          problemCardId: modalCard.problemCardId,
+          categoryName: editForm.categoryName,
+          categoryPrice: Number(editForm.categoryPrice),
+          problem: {
+            statement: editForm.statement,
+            answer: editForm.answer,
+          },
         }),
       });
-      if (!res.ok) {
-        let msg = 'Ошибка сохранения';
-        try {
-          const err = await res.json();
-          if (err && err.detail) msg = err.detail;
-        } catch {}
-        setEditErrors({ global: msg });
-        setEditSaving(false);
-        return;
-      }
-      // Успех — закрыть модалку и перезагрузить
       setModalCard(null);
       setModalCardInfo(null);
       setEditForm(null);
       setEditErrors({});
-      setEditSaving(false);
+      // Перезагружаем данные
       window.location.reload();
-    } catch {
-      setEditErrors({ global: 'Ошибка сети при сохранении' });
-      setEditSaving(false);
+    } catch (error) {
+      let msg = 'Ошибка сохранения';
+      if (error.message && error.message.includes('detail')) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.detail) msg = errorData.detail;
+        } catch {}
+      }
+      setEditErrors({ general: msg });
     }
+    setModalLoading(false);
   };
 
   // Создание новой карточки
   const handleCreateSave = async () => {
-    if (!editForm || !createCell || !data) return;
     const errors = validateEditForm(editForm);
-    setEditErrors(errors);
-    if (Object.keys(errors).length > 0) return;
-    setEditSaving(true);
-    const token = localStorage.getItem('access_token');
+    if (Object.keys(errors).length > 0) {
+      setEditErrors(errors);
+      return;
+    }
+    setEditErrors({});
+    setModalLoading(true);
     try {
-      const res = await fetch(`${config.backendUrl}api/v1/problem-card/with-problem`, {
+      await makeRequest(`${config.backendUrl}api/v1/problem-card/with-problem`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        credentials: 'include',
         body: JSON.stringify({
-          quiz_field_id: data.quizFieldId,
+          contestId: Number(contestId),
           row: createCell.row,
           column: createCell.col,
-          category_name: editForm.categoryName,
-          category_price: editForm.categoryPrice,
-          statement: editForm.statement,
-          answer: editForm.answer,
-          problem_id: null,
+          categoryName: editForm.categoryName,
+          categoryPrice: Number(editForm.categoryPrice),
+          problem: {
+            statement: editForm.statement,
+            answer: editForm.answer,
+          },
         }),
       });
-      if (!res.ok) {
-        let msg = 'Ошибка создания';
-        try {
-          const err = await res.json();
-          if (err && err.detail) msg = err.detail;
-        } catch {}
-        setEditErrors({ global: msg });
-        setEditSaving(false);
-        return;
-      }
-      // Успех — закрыть модалку и перезагрузить
-      setCreateMode(false);
-      setCreateCell(null);
+      setModalCard(null);
+      setModalCardInfo(null);
       setEditForm(null);
       setEditErrors({});
-      setEditSaving(false);
+      setCreateMode(false);
+      setCreateCell(null);
+      // Перезагружаем данные
       window.location.reload();
-    } catch {
-      setEditErrors({ global: 'Ошибка сети при создании' });
-      setEditSaving(false);
+    } catch (error) {
+      let msg = 'Ошибка создания';
+      if (error.message && error.message.includes('detail')) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.detail) msg = errorData.detail;
+        } catch {}
+      }
+      setEditErrors({ general: msg });
     }
+    setModalLoading(false);
   };
 
   return (
@@ -274,30 +246,15 @@ function EditQuizField() {
             style={{ marginBottom: 24, padding: '8px 24px', fontSize: 16, borderRadius: 6, background: '#1677ff', color: '#fff', border: 'none', cursor: 'pointer' }}
             onClick={async () => {
               if (!data) return;
-              const token = localStorage.getItem('access_token');
               try {
-                const res = await fetch(`${config.backendUrl}api/v1/quiz-field/`, {
+                await makeRequest(`${config.backendUrl}api/v1/quiz-field/`, {
                   method: 'PATCH',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : '',
-                  },
-                  credentials: 'include',
                   body: JSON.stringify({
                     quiz_field_id: data.quizFieldId,
                     number_of_rows: rows,
                     number_of_columns: cols,
                   }),
                 });
-                if (!res.ok) {
-                  let msg = 'Ошибка сохранения';
-                  try {
-                    const err = await res.json();
-                    if (err && err.detail) msg = err.detail;
-                  } catch {}
-                  alert(msg);
-                  return;
-                }
                 window.location.reload();
               } catch {
                 alert('Ошибка сети при сохранении');
