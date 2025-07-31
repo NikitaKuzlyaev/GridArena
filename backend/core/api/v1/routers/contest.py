@@ -463,6 +463,7 @@ async def contest_submissions(
 
     result: ContestSubmissions = (
         await contest_service.contest_submissions(
+            user_id=user.id,
             contest_id=contest_id,
         )
     )

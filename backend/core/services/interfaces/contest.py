@@ -25,11 +25,13 @@ class IContestService(Protocol):
 
     async def contest_submissions(
             self,
+            user_id: int,
             contest_id: int,
     ) -> ContestSubmissions:
         """
         Получить все отправленные решения для указанного контеста.
 
+        :param user_id: Идентификатор пользователя, совершающего операцию.
         :param contest_id: Идентификатор контеста.
         :return: Объект с информацией о решениях в контесте.
         """

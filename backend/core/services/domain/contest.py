@@ -13,8 +13,9 @@ from backend.core.schemas.contest import (
     ContestSubmissions,
     ArrayContestSubmissions,
 )
+from backend.core.schemas.permission import PermissionPromise
+from backend.core.services.access_policies.contest import ContestAccessPolicy
 from backend.core.services.interfaces.contest import IContestService
-from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
 from backend.core.utilities.loggers.log_decorator import log_calls
 
@@ -23,18 +24,31 @@ class ContestService(IContestService):
     def __init__(
             self,
             uow: UnitOfWork,
-            permission_service: IPermissionService,
+            access_policy: ContestAccessPolicy = ContestAccessPolicy(),
+            # permission_service: IPermissionService,
     ):
         self.uow = uow
-        self.permission_service = permission_service
+        self.access_policy = access_policy
+        # self.permission_service = permission_service
 
     @log_calls
     async def contest_submissions(
             self,
+            user_id: int,
             contest_id: int,
             show_last_n_submissions: int = 30,
     ) -> ContestSubmissions:
+
         async with self.uow:
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_view_contest_submissions(
+                    uow=self.uow,
+                    user_id=user_id,
+                    contest_id=contest_id,
+                    raise_if_none=True,
+                )
+            )
+
             contest: Contest | None = (
                 await self.uow.contest_repo.get_contest_by_id(contest_id=contest_id)
             )
