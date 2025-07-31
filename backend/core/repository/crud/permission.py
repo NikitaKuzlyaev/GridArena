@@ -1,6 +1,5 @@
 from sqlalchemy import select
 
-from backend.core.dependencies.repository import get_repository
 from backend.core.models.permission import (
     Permission,
     PermissionActionType,
@@ -57,11 +56,16 @@ class PermissionCRUDRepository(BaseCRUDRepository):
             permission_type=PermissionActionType(permission_type),
         )
         self.async_session.add(instance=permission)
-        await self.async_session.commit()
-        await self.async_session.refresh(instance=permission)
+        await self.async_session.flush()
+        # await self.async_session.commit()
+        # await self.async_session.refresh(instance=permission)
         return permission
 
+
+"""
+Пример вызова
 
 permission_repo = get_repository(
     repo_type=PermissionCRUDRepository
 )
+"""

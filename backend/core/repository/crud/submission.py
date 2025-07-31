@@ -8,7 +8,6 @@ from sqlalchemy import (
     func,
 )
 
-from backend.core.dependencies.repository import get_repository
 from backend.core.models.submission import Submission
 from backend.core.repository.crud.base import BaseCRUDRepository
 from backend.core.utilities.loggers.log_decorator import log_calls
@@ -29,8 +28,9 @@ class SubmissionCRUDRepository(BaseCRUDRepository):
             )
         )
         self.async_session.add(instance=submission)
-        await self.async_session.commit()
-        await self.async_session.refresh(instance=submission)
+        await self.async_session.flush()
+        # await self.async_session.commit()
+        # await self.async_session.refresh(instance=submission)
         return submission
 
     async def get_attempts_count_grouped_by_selected_problem_id(
@@ -70,6 +70,10 @@ class SubmissionCRUDRepository(BaseCRUDRepository):
         return res.scalars().all()
 
 
+"""
+Пример вызова
+
 submission_repo = get_repository(
     repo_type=SubmissionCRUDRepository
 )
+"""

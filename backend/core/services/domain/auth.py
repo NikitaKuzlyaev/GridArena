@@ -10,6 +10,8 @@ from backend.core.utilities.exceptions.database import (
 from backend.core.utilities.loggers.log_decorator import log_calls
 
 
+# todo: жесть тут грязно и как же этот "сервис" отличается от остальных
+
 @log_calls
 async def register_site_user(
         data: SiteUserCreate,
@@ -27,18 +29,18 @@ async def register_site_user(
         raise EntityAlreadyExists("Пользователь с таким username уже существует в указанном домене")
 
 
-@log_calls
-async def register_contest_user(
-        data: SiteUserCreate,
-        user_repo: UserCRUDRepository,
-) -> User:
-    user: User = (
-        await user_repo.create_site_user(
-            username=data.username,
-            password=data.password,
-        )
-    )
-    return user
+# @log_calls
+# async def register_contest_user(
+#         data: SiteUserCreate,
+#         user_repo: UserCRUDRepository,
+# ) -> User:
+#     user: User = (
+#         await user_repo.create_site_user(
+#             username=data.username,
+#             password=data.password,
+#         )
+#     )
+#     return user
 
 
 @log_calls

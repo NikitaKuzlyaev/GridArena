@@ -1,27 +1,22 @@
 from fastapi import Depends
 
-from backend.core.dependencies.repository import get_repository
-from backend.core.repository.crud.contest import ContestCRUDRepository
-from backend.core.repository.crud.contestant import ContestantCRUDRepository
-from backend.core.repository.crud.selected_problem import SelectedProblemCRUDRepository
-from backend.core.repository.crud.user import UserCRUDRepository
+from backend.core.repository.crud.uow import (
+    UnitOfWork,
+    get_unit_of_work,
+)
 from backend.core.services.domain.contestant import ContestantService
 from backend.core.services.interfaces.contestant import IContestantService
 from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.providers.permission import get_permission_service
+from backend.core.utilities.loggers.log_decorator import log_calls
 
 
+@log_calls
 def get_contestant_service(
-        contest_repo: ContestCRUDRepository = Depends(get_repository(ContestCRUDRepository)),
-        contestant_repo: ContestantCRUDRepository = Depends(get_repository(ContestantCRUDRepository)),
+        uow: UnitOfWork = Depends(get_unit_of_work),
         permission_service: IPermissionService = Depends(get_permission_service),
-        user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
-        selected_problem_repo: SelectedProblemCRUDRepository = Depends(get_repository(SelectedProblemCRUDRepository)),
 ) -> IContestantService:
     return ContestantService(
-        contest_repo=contest_repo,
-        contestant_repo=contestant_repo,
+        uow=uow,
         permission_service=permission_service,
-        user_repo=user_repo,
-        selected_problem_repo=selected_problem_repo,
     )

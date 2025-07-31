@@ -3,7 +3,6 @@ from sqlalchemy import (
     update,
 )
 
-from backend.core.dependencies.repository import get_repository
 from backend.core.models import Problem
 from backend.core.repository.crud.base import BaseCRUDRepository
 from backend.core.utilities.loggers.log_decorator import log_calls
@@ -36,8 +35,9 @@ class ProblemCRUDRepository(BaseCRUDRepository):
             )
         )
         self.async_session.add(instance=problem)
-        await self.async_session.commit()
-        await self.async_session.refresh(instance=problem)
+        await self.async_session.flush()
+        # await self.async_session.commit()
+        # await self.async_session.refresh(instance=problem)
         return problem
 
     @log_calls
@@ -56,7 +56,8 @@ class ProblemCRUDRepository(BaseCRUDRepository):
             )
             .execution_options(synchronize_session="fetch")
         )
-        await self.async_session.commit()
+        await self.async_session.flush()
+        # await self.async_session.commit()
 
         result = await self.async_session.execute(
             select(Problem)
@@ -65,6 +66,10 @@ class ProblemCRUDRepository(BaseCRUDRepository):
         return result.scalar_one_or_none()
 
 
+"""
+Пример вызова
+
 problem_repo = get_repository(
     repo_type=ProblemCRUDRepository
 )
+"""

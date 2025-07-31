@@ -2,7 +2,6 @@ import uuid
 
 from sqlalchemy import select
 
-from backend.core.dependencies.repository import get_repository
 from backend.core.models.user import User
 from backend.core.repository.crud.base import BaseCRUDRepository
 from backend.core.services.security import (
@@ -38,9 +37,10 @@ class UserCRUDRepository(BaseCRUDRepository):
             hashed_password=hash_password(password),
             uuid=str(uuid.uuid4())
         )
-        self.async_session.add(user)
-        await self.async_session.commit()
-        await self.async_session.refresh(user)
+        self.async_session.add(instance=user)
+        # await self.async_session.flush()
+        await self.async_session.commit()  # Оставить!
+        await self.async_session.refresh(user)  # Оставить!
 
         return user
 
@@ -67,9 +67,10 @@ class UserCRUDRepository(BaseCRUDRepository):
             hashed_password=hash_password(password),
             uuid=str(uuid.uuid4())
         )
-        self.async_session.add(user)
-        await self.async_session.commit()
-        await self.async_session.refresh(user)
+        self.async_session.add(instance=user)
+        await self.async_session.flush()
+        # await self.async_session.commit()
+        # await self.async_session.refresh(user)
 
         return user
 
@@ -90,6 +91,7 @@ class UserCRUDRepository(BaseCRUDRepository):
         if not user or not verify_password(password, user.hashed_password):
             raise TokenException("Invalid credentials")
 
+        # todo: что это делает тут? переместить позже
         return create_access_token({"sub": user.uuid})
 
     @log_calls
@@ -137,6 +139,10 @@ class UserCRUDRepository(BaseCRUDRepository):
         return res.scalars().one_or_none()
 
 
+"""
+Пример вызова
+
 user_repo = get_repository(
     repo_type=UserCRUDRepository
 )
+"""

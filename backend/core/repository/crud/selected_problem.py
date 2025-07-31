@@ -6,7 +6,6 @@ from typing import (
 
 from sqlalchemy import select
 
-from backend.core.dependencies.repository import get_repository
 from backend.core.models import (
     SelectedProblem,
     ProblemCard,
@@ -80,8 +79,9 @@ class SelectedProblemCRUDRepository(BaseCRUDRepository):
             )
         )
         self.async_session.add(instance=selected_problem)
-        await self.async_session.commit()
-        await self.async_session.refresh(instance=selected_problem)
+        await self.async_session.flush()
+        # await self.async_session.commit()
+        # await self.async_session.refresh(instance=selected_problem)
         return selected_problem
 
     async def get_selected_problem_by_contestant_and_problem_card(
@@ -100,6 +100,10 @@ class SelectedProblemCRUDRepository(BaseCRUDRepository):
         return res
 
 
+"""
+Пример вызова
+
 selected_problem_repo = get_repository(
     repo_type=SelectedProblemCRUDRepository
 )
+"""

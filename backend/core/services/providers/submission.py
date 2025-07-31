@@ -1,38 +1,16 @@
 from fastapi import Depends
 
-from backend.core.dependencies.repository import get_repository
-from backend.core.repository.crud.contest import ContestCRUDRepository
-from backend.core.repository.crud.contestant import ContestantCRUDRepository
-from backend.core.repository.crud.problem import ProblemCRUDRepository
-from backend.core.repository.crud.problem_card import ProblemCardCRUDRepository
-from backend.core.repository.crud.quiz import QuizFieldCRUDRepository
-from backend.core.repository.crud.selected_problem import SelectedProblemCRUDRepository
-from backend.core.repository.crud.submission import SubmissionCRUDRepository
-from backend.core.repository.crud.transaction import TransactionCRUDRepository
-from backend.core.repository.crud.user import UserCRUDRepository
+from backend.core.repository.crud.uow import (
+    UnitOfWork,
+    get_unit_of_work,
+)
 from backend.core.services.domain.submission import SubmissionService
 from backend.core.services.interfaces.submission import ISubmissionService
 
 
 def get_submission_service(
-        submission_repo: SubmissionCRUDRepository = Depends(get_repository(SubmissionCRUDRepository)),
-        selected_problem_repo: SelectedProblemCRUDRepository = Depends(get_repository(SelectedProblemCRUDRepository)),
-        problem_card_repo: ProblemCardCRUDRepository = Depends(get_repository(ProblemCardCRUDRepository)),
-        contestant_repo: ContestantCRUDRepository = Depends(get_repository(ContestantCRUDRepository)),
-        user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
-        transaction_repo: TransactionCRUDRepository = Depends(get_repository(TransactionCRUDRepository)),
-        contest_repo: ContestCRUDRepository = Depends(get_repository(ContestCRUDRepository)),
-        problem_repo: ProblemCRUDRepository = Depends(get_repository(ProblemCRUDRepository)),
-        quiz_field_repo: QuizFieldCRUDRepository = Depends(get_repository(QuizFieldCRUDRepository)),
+        uow: UnitOfWork = Depends(get_unit_of_work),
 ) -> ISubmissionService:
     return SubmissionService(
-        submission_repo=submission_repo,
-        selected_problem_repo=selected_problem_repo,
-        problem_card_repo=problem_card_repo,
-        contestant_repo=contestant_repo,
-        user_repo=user_repo,
-        transaction_repo=transaction_repo,
-        contest_repo=contest_repo,
-        problem_repo=problem_repo,
-        quiz_field_repo=quiz_field_repo,
+        uow=uow,
     )

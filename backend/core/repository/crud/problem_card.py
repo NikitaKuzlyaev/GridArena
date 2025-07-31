@@ -6,7 +6,6 @@ from sqlalchemy import (
     Row,
 )
 
-from backend.core.dependencies.repository import get_repository
 from backend.core.models import (
     Problem,
     ProblemCard,
@@ -48,8 +47,9 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
             )
         )
         self.async_session.add(instance=problem_card)
-        await self.async_session.commit()
-        await self.async_session.refresh(instance=problem_card)
+        await self.async_session.flush()
+        # await self.async_session.commit()
+        # await self.async_session.refresh(instance=problem_card)
         return problem_card, problem
 
     @log_calls
@@ -80,7 +80,8 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
             )
             .execution_options(synchronize_session="fetch")
         )
-        await self.async_session.commit()
+        await self.async_session.flush()
+        # await self.async_session.commit()
 
         result = await self.async_session.execute(
             select(ProblemCard)
@@ -183,8 +184,9 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
             )
         )
         self.async_session.add(instance=problem_card)
-        await self.async_session.commit()
-        await self.async_session.refresh(instance=problem_card)
+        await self.async_session.flush()
+        # await self.async_session.commit()
+        # await self.async_session.refresh(instance=problem_card)
         return problem_card
 
     @log_calls
@@ -203,7 +205,8 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
             )
             .execution_options(synchronize_session="fetch")
         )
-        await self.async_session.commit()
+        await self.async_session.flush()
+        # await self.async_session.commit()
 
         result = await self.async_session.execute(
             select(ProblemCard)
@@ -212,6 +215,10 @@ class ProblemCardCRUDRepository(BaseCRUDRepository):
         return result.scalar_one_or_none()
 
 
+"""
+Пример вызова
+
 problem_card_repo = get_repository(
     repo_type=ProblemCardCRUDRepository
 )
+"""

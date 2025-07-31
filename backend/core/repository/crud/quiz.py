@@ -3,7 +3,6 @@ from sqlalchemy import (
     update,
 )
 
-from backend.core.dependencies.repository import get_repository
 from backend.core.models import QuizField
 from backend.core.repository.crud.base import BaseCRUDRepository
 
@@ -25,7 +24,8 @@ class QuizFieldCRUDRepository(BaseCRUDRepository):
             )
             .execution_options(synchronize_session="fetch")
         )
-        await self.async_session.commit()
+        await self.async_session.flush()
+        # await self.async_session.commit()
 
         result = await self.async_session.execute(
             select(QuizField)
@@ -67,11 +67,16 @@ class QuizFieldCRUDRepository(BaseCRUDRepository):
             )
         )
         self.async_session.add(instance=quiz_field)
-        await self.async_session.commit()
-        await self.async_session.refresh(instance=quiz_field)
+        await self.async_session.flush()
+        # await self.async_session.commit()
+        # await self.async_session.refresh(instance=quiz_field)
         return quiz_field
 
+
+"""
+Пример вызова
 
 quiz_field_repo = get_repository(
     repo_type=QuizFieldCRUDRepository
 )
+"""

@@ -3,7 +3,6 @@ from sqlalchemy import (
     select,
 )
 
-from backend.core.dependencies.repository import get_repository
 from backend.core.models import (
     SelectedProblem,
     Contestant,
@@ -57,14 +56,14 @@ class TransactionCRUDRepository(BaseCRUDRepository):
                 answer=answer,
                 verdict=SubmissionVerdict(verdict),
             )
-            self.async_session.add(submission)
-
-            await self.async_session.commit()
-            await self.async_session.refresh(submission)
+            self.async_session.add(instance=submission)
+            await self.async_session.flush()
+            # await self.async_session.commit()
+            # await self.async_session.refresh(submission)
             return submission
 
         except Exception as e:
-            await self.async_session.rollback()
+            # await self.async_session.rollback()
             raise
 
     @log_calls
@@ -113,17 +112,21 @@ class TransactionCRUDRepository(BaseCRUDRepository):
                 contestant_id=contestant_id,
                 status=SelectedProblemStatusType.ACTIVE,
             )
-            self.async_session.add(selected_problem)
-
-            await self.async_session.commit()
-            await self.async_session.refresh(selected_problem)
+            self.async_session.add(instance=selected_problem)
+            await self.async_session.flush()
+            # await self.async_session.commit()
+            # await self.async_session.refresh(selected_problem)
             return selected_problem
 
         except Exception:
-            await self.async_session.rollback()
+            # await self.async_session.rollback()
             raise
 
+
+"""
+Пример вызова
 
 transaction_repo = get_repository(
     repo_type=TransactionCRUDRepository
 )
+"""

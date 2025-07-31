@@ -2,7 +2,6 @@ from typing import Sequence
 
 from sqlalchemy import select
 
-from backend.core.dependencies.repository import get_repository
 from backend.core.models import (
     Contestant,
     User,
@@ -52,8 +51,9 @@ class ContestantCRUDRepository(BaseCRUDRepository):
                 points=points,
             )
         )
-        self.async_session.add(contestant)
-        await self.async_session.commit()
+        self.async_session.add(instance=contestant)
+        await self.async_session.flush()
+        # await self.async_session.commit()
 
         return contestant
 
@@ -71,6 +71,10 @@ class ContestantCRUDRepository(BaseCRUDRepository):
         return result
 
 
+"""
+Пример вызова
+
 contestant_repo = get_repository(
     repo_type=ContestantCRUDRepository
 )
+"""

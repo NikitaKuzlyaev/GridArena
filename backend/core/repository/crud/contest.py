@@ -9,7 +9,6 @@ from sqlalchemy import (
     func,
 )
 
-from backend.core.dependencies.repository import get_repository
 from backend.core.models import (
     Contest,
     Permission,
@@ -108,7 +107,7 @@ class ContestCRUDRepository(BaseCRUDRepository):
             delete(Contest)
             .where(Contest.id == contest_id)
         )
-        await self.async_session.commit()
+        # await self.async_session.commit()
 
     async def get_contest_by_user_id(
             self,
@@ -147,7 +146,7 @@ class ContestCRUDRepository(BaseCRUDRepository):
             start_points=start_points,
             number_of_slots_for_problems=number_of_slots_for_problems,
         )
-        self.async_session.add(contest)
+        self.async_session.add(instance=contest)
         await self.async_session.flush()
 
         quiz_field = QuizField(
@@ -155,14 +154,14 @@ class ContestCRUDRepository(BaseCRUDRepository):
             number_of_rows=1,
             number_of_columns=1,
         )
-        self.async_session.add(quiz_field)
+        self.async_session.add(instance=quiz_field)
         await self.async_session.flush()
 
         problem = Problem(
             statement="-",
             answer="-",
         )
-        self.async_session.add(problem)
+        self.async_session.add(instance=problem)
         await self.async_session.flush()
 
         problem_card = ProblemCard(
@@ -173,9 +172,10 @@ class ContestCRUDRepository(BaseCRUDRepository):
             row=1,
             column=1,
         )
-        self.async_session.add(problem_card)
+        self.async_session.add(instance=problem_card)
+        await self.async_session.flush()
 
-        await self.async_session.refresh(contest)
+        # await self.async_session.refresh(contest)
         return contest
 
     @log_calls
@@ -197,8 +197,10 @@ class ContestCRUDRepository(BaseCRUDRepository):
             )
         )
         self.async_session.add(instance=new_contest)
-        await self.async_session.commit()
-        await self.async_session.refresh(instance=new_contest)
+        await self.async_session.flush()
+
+        # await self.async_session.commit()
+        # await self.async_session.refresh(instance=new_contest)
         return new_contest
 
     @log_calls
@@ -227,7 +229,8 @@ class ContestCRUDRepository(BaseCRUDRepository):
             )
             .execution_options(synchronize_session="fetch")
         )
-        await self.async_session.commit()
+        await self.async_session.flush()
+        # await self.async_session.commit()
 
         result = await self.async_session.execute(
             select(Contest)
@@ -255,6 +258,10 @@ class ContestCRUDRepository(BaseCRUDRepository):
         return result
 
 
+"""
+Пример вызова
+
 contest_repo = get_repository(
     repo_type=ContestCRUDRepository
 )
+"""
