@@ -14,8 +14,10 @@ from backend.core.schemas.contestant import (
     ContestantPreviewInfo,
     ContestantInfoInContest
 )
+from backend.core.services.interfaces.contest import IContestService
 from backend.core.services.interfaces.contestant import IContestantService
 from backend.core.services.interfaces.permission import IPermissionService
+from backend.core.services.providers.contest import get_contest_service
 from backend.core.services.providers.contestant import get_contestant_service
 from backend.core.services.providers.permission import get_permission_service
 from backend.core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
@@ -40,8 +42,7 @@ router = fastapi.APIRouter(prefix="/contestant", tags=["contestant"])
 async def create_contestant(
         params: ContestantInCreate = Body(...),
         user: User = Depends(get_user),
-        contestant_service: IContestantService = Depends(get_contestant_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
+        contest_service: IContestService = Depends(get_contest_service),
 ) -> ContestantId:
     """
     Создаёт нового участника для указанного контеста.
@@ -57,8 +58,7 @@ async def create_contestant(
             - contest_id: ID контеста, для которого регистрируется участник
             - points: начальный баланс участника
         user (User): Текущий авторизованный пользователь (из JWT).
-        contestant_service (IContestantService): Сервис для работы с участниками.
-        permission_service (IPermissionService): Сервис для проверки прав.
+        contest_service (IContestService): Сервис для работы с контестом.
 
     Returns:
         ContestantId: Объект с полем `id` — идентификатором созданного участника.
@@ -68,12 +68,10 @@ async def create_contestant(
         EntityDoesNotExist: Если контест с указанным `contest_id` не существует.
         EntityAlreadyExists: Если пользователь с указанным `username` уже существует в этом домене.
     """
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=params.contest_id),
-    ])
 
     result: ContestantId = (
-        await contestant_service.create_contestant(
+        await contest_service.create_contestant(
+            user_id=user.id,
             **params.model_dump(),
         )
     )
@@ -96,7 +94,6 @@ async def create_contestant(
 async def preview_contestant_info(
         user: User = Depends(get_user),
         contestant_service: IContestantService = Depends(get_contestant_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ContestantPreviewInfo:
     """
     Получает превью о контесте и участии в нём текущего пользователя.
@@ -106,7 +103,6 @@ async def preview_contestant_info(
     Args:
         user (User): Авторизованный пользователь (определяется по JWT-токену).
         contestant_service (IContestantService): Сервис для получения данных участника.
-        permission_service (IPermissionService): Сервис проверки прав доступа
 
     Returns:
         ContestantPreviewInfo: Модель с информацией:
@@ -193,7 +189,6 @@ async def view_contestants(
         contest_id: int = Query(...),
         user: User = Depends(get_user),
         contestant_service: IContestantService = Depends(get_contestant_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ArrayContestantInfoForEditor:
     """
     Получает список всех участников указанного контеста для редактирования.
@@ -205,7 +200,6 @@ async def view_contestants(
         contest_id (int): ID контеста, участники которого запрашиваются.
         user (User): Авторизованный пользователь (определяется по JWT).
         contestant_service (IContestantService): Сервис для получения данных об участниках.
-        permission_service (IPermissionService): Сервис для проверки прав доступа.
 
     Returns:
         ArrayContestantInfoForEditor: Объект, содержащий список участников в поле `body`,
@@ -215,9 +209,6 @@ async def view_contestants(
         PermissionDenied: Если у пользователя нет прав на редактирование контеста.
         EntityDoesNotExist: Если контест с указанным ID не существует.
     """
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=contest_id),
-    ])
 
     result: ArrayContestantInfoForEditor = (
         await contestant_service.get_contestants_in_contest(

@@ -1,8 +1,20 @@
-from datetime import datetime
-from typing import Any, Tuple
+from datetime import datetime, timezone
+from typing import (
+    Any,
+    Tuple,
+    Optional,
+)
 
-from backend.core.models import Contest, User, Contestant
-from backend.core.models.permission import PermissionActionType, PermissionResourceType, Permission
+from backend.core.models import (
+    Contest,
+    User,
+    Contestant,
+)
+from backend.core.models.permission import (
+    PermissionActionType,
+    PermissionResourceType,
+    Permission,
+)
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.permission import PermissionPromise
 from backend.core.services.access_policies.base import AccessPolicy
@@ -11,24 +23,6 @@ from backend.core.utilities.exceptions.permission import PermissionDenied
 
 
 class ContestAccessPolicy(AccessPolicy):
-
-    async def _get_user_and_contest(
-            self,
-            uow: UnitOfWork,
-            user_id: int,
-            contest_id: int,
-            raise_if_none: bool = True,
-    ) -> Tuple[User, Contest] | None:
-        async with uow:
-            user: User | None = await uow.user_repo.get_user_by_id(user_id=user_id)
-            if user is None:  # Пользователь не аутентифицирован
-                return self._raise_if(raise_if_none, f"User is not authenticated.")
-
-            contest: Contest | None = (await uow.contest_repo.get_contest_by_id(contest_id=contest_id))
-            if contest is None:  # Контест не существует
-                return self._raise_if(raise_if_none, f"Contest does not exists.", EntityDoesNotExist)
-
-            return user, contest
 
     async def base_check(
             self,
@@ -78,7 +72,7 @@ class ContestAccessPolicy(AccessPolicy):
             user, contest = user_and_contest
 
             # Запрещаем доступ, если контест уже закончился
-            current_time = datetime.now()
+            current_time = datetime.now(timezone.utc)
             if not contest.started_at < current_time < contest.closed_at:
                 return self._raise_if(
                     raise_if_none, f"Out of time: the contest has not started yet or has already ended.")

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Sequence, Optional
 
-from backend.core.models import Contest
+from backend.core.models import Contest, Contestant, User
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.contest import (
     ContestId,
@@ -13,10 +13,11 @@ from backend.core.schemas.contest import (
     ContestSubmissions,
     ArrayContestSubmissions,
 )
+from backend.core.schemas.contestant import ContestantId
 from backend.core.schemas.permission import PermissionPromise
 from backend.core.services.access_policies.contest import ContestAccessPolicy
 from backend.core.services.interfaces.contest import IContestService
-from backend.core.utilities.exceptions.database import EntityDoesNotExist
+from backend.core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
 from backend.core.utilities.loggers.log_decorator import log_calls
 
 
@@ -24,7 +25,7 @@ class ContestService(IContestService):
     def __init__(
             self,
             uow: UnitOfWork,
-            access_policy: Optional[ContestAccessPolicy],
+            access_policy: Optional[ContestAccessPolicy] = None,
     ):
         self.uow = uow
         self.access_policy: ContestAccessPolicy = access_policy or ContestAccessPolicy()
@@ -266,4 +267,57 @@ class ContestService(IContestService):
                     ) for contest in contests
                 ]
             )
+            return res
+
+    @log_calls
+    async def create_contestant(
+            self,
+            user_id: int,
+            contest_id: int,
+            username: str,
+            password: str,
+            name: str,
+            points: int,
+    ) -> ContestantId:
+        async with self.uow:
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_manage_contest(
+                    uow=self.uow, user_id=user_id, contest_id=contest_id, raise_if_none=True, ))
+
+            contest: Contest | None = (
+                await self.uow.contest_repo.get_contest_by_id(
+                    contest_id=contest_id,
+                )
+            )
+            if not contest:
+                raise EntityDoesNotExist("contest not found")
+
+            user: User | None = (
+                await self.uow.user_repo.get_user_by_username_and_domain(
+                    username=username,
+                    domain_number=contest_id,
+                )
+            )
+            if user:
+                raise EntityAlreadyExists("user already exists")
+
+            user: User = (
+                await self.uow.user_repo.create_contest_user(
+                    domain_number=contest_id,
+                    username=username,
+                    password=password,
+                )
+            )
+            contestant: Contestant = (
+                await self.uow.contestant_repo.create_contestant(
+                    user_id=user.id,
+                    name=name,
+                    points=points,
+                )
+            )
+            res = ContestantId(
+                contestant_id=contestant.id,
+            )
+
             return res

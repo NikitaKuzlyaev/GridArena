@@ -58,23 +58,3 @@ class IContestantService(Protocol):
         :return: Список информации об участниках контеста.
         """
         ...
-
-    async def create_contestant(
-            self,
-            contest_id: int,
-            username: str,
-            password: str,
-            name: str,
-            points: int,
-    ) -> ContestantId:
-        """
-        Создать нового участника контеста.
-
-        :param contest_id: Идентификатор контеста.
-        :param username: Имя пользователя участника.
-        :param password: Пароль участника.
-        :param name: Отображаемое имя участника.
-        :param points: Начальное количество баллов.
-        :return: Объект с идентификатором созданного участника.
-        """
-        ...

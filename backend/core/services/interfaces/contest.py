@@ -15,6 +15,7 @@ from backend.core.schemas.contest import (
     ContestStandings,
     ContestSubmissions,
 )
+from backend.core.schemas.contestant import ContestantId
 
 
 class IContestService(Protocol):
@@ -173,5 +174,27 @@ class IContestService(Protocol):
 
         :param user_id: Идентификатор пользователя.
         :return: Список краткой информации о контестах пользователя.
+        """
+        ...
+
+    async def create_contestant(
+            self,
+            user_id: int,
+            contest_id: int,
+            username: str,
+            password: str,
+            name: str,
+            points: int,
+    ) -> ContestantId:
+        """
+        Получить список контестов, связанных с пользователем (где пользователь - редактор).
+
+        :param user_id: Идентификатор пользователя (инициатора запроса).
+        :param contest_id: Идентификатор контеста.
+        :param username: Имя (логин) пользователя.
+        :param password: Пароль пользователя.
+        :param name: Имя (полное название) пользователя.
+        :param points: Начальный баланс пользователя.
+        :return: Объект с идентификатором нового пользователя.
         """
         ...

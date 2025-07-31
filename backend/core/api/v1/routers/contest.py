@@ -159,7 +159,6 @@ async def delete_contest(
         contest_id: int = Query(...),
         user: User = Depends(get_user),
         contest_service: IContestService = Depends(get_contest_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> None:
     """
     Удаляет контест по его ID.
@@ -253,7 +252,6 @@ async def contest_info_for_editor(
         contest_id: int = Query(...),
         user: User = Depends(get_user),
         contest_service: IContestService = Depends(get_contest_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ContestInfoForEditor:
     """
     Получает полную информацию о контесте для редактора (администратора/организатора).
@@ -354,7 +352,6 @@ async def contest_standings(
         contest_id: int = Query(...),
         user: User = Depends(get_user),
         contest_service: IContestService = Depends(get_contest_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ContestStandings:
     """
     Возвращает таблицу результатов (турнирную таблицу) контеста.
@@ -413,7 +410,6 @@ async def contest_submissions(
         contest_id: int = Query(...),
         user: User = Depends(get_user),
         contest_service: IContestService = Depends(get_contest_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ContestSubmissions:
     """
     Возвращает список посылок участников указанного контеста.
