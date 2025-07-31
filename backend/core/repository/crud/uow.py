@@ -36,20 +36,59 @@ class UnitOfWork(BaseCRUDRepository):
     def __init__(self, session: AsyncSession):
         """
         Инициализация uow с передачей сессии.
-        Все CRUD-репозитории получают одну и ту же сессию.
+        Все CRUD-репозитории при инициализации получают одну и ту же сессию.
         """
         self._session = session
-        self.contest_repo: ContestCRUDRepository = ContestCRUDRepository(session)
-        self.contestant_repo: ContestantCRUDRepository = ContestantCRUDRepository(session)
-        self.selected_problem_repo: SelectedProblemCRUDRepository = SelectedProblemCRUDRepository(session)
-        self.user_repo: UserCRUDRepository = UserCRUDRepository(session)
-        self.permission_repo: PermissionCRUDRepository = PermissionCRUDRepository(session)
-        self.problem_card_repo: ProblemCardCRUDRepository = ProblemCardCRUDRepository(session)
-        self.problem_repo: ProblemCRUDRepository = ProblemCRUDRepository(session)
-        self.quiz_field_repo: QuizFieldCRUDRepository = QuizFieldCRUDRepository(session)
-        self.submission_repo: SubmissionCRUDRepository = SubmissionCRUDRepository(session)
-        self.transaction_repo: TransactionCRUDRepository = TransactionCRUDRepository(session)
-        self.domain_repo: DomainCRUDRepository = DomainCRUDRepository(session)
+        self._repos = {}
+
+    def _get_repo(self, repo_cls):
+        if repo_cls not in self._repos:
+            self._repos[repo_cls] = repo_cls(self._session)
+        return self._repos[repo_cls]
+
+    @property
+    def contest_repo(self) -> ContestCRUDRepository:
+        return self._get_repo(ContestCRUDRepository)
+
+    @property
+    def contestant_repo(self) -> ContestantCRUDRepository:
+        return self._get_repo(ContestantCRUDRepository)
+
+    @property
+    def selected_problem_repo(self) -> SelectedProblemCRUDRepository:
+        return self._get_repo(SelectedProblemCRUDRepository)
+
+    @property
+    def user_repo(self) -> UserCRUDRepository:
+        return self._get_repo(UserCRUDRepository)
+
+    @property
+    def permission_repo(self) -> PermissionCRUDRepository:
+        return self._get_repo(PermissionCRUDRepository)
+
+    @property
+    def problem_card_repo(self) -> ProblemCardCRUDRepository:
+        return self._get_repo(ProblemCardCRUDRepository)
+
+    @property
+    def problem_repo(self) -> ProblemCRUDRepository:
+        return self._get_repo(ProblemCRUDRepository)
+
+    @property
+    def quiz_field_repo(self) -> QuizFieldCRUDRepository:
+        return self._get_repo(QuizFieldCRUDRepository)
+
+    @property
+    def submission_repo(self) -> SubmissionCRUDRepository:
+        return self._get_repo(SubmissionCRUDRepository)
+
+    @property
+    def transaction_repo(self) -> TransactionCRUDRepository:
+        return self._get_repo(TransactionCRUDRepository)
+
+    @property
+    def domain_repo(self) -> DomainCRUDRepository:
+        return self._get_repo(DomainCRUDRepository)
 
     async def __aenter__(self) -> "UnitOfWork":
         """
