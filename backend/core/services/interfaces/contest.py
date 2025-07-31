@@ -39,11 +39,13 @@ class IContestService(Protocol):
 
     async def contest_standings(
             self,
+            user_id: int,
             contest_id: int,
     ) -> ContestStandings:
         """
         Получить турнирную таблицу (статистику) по контесту.
 
+        :param user_id: Идентификатор пользователя, совершающего операцию.
         :param contest_id: Идентификатор контеста.
         :return: Объект с турнирной таблицей контеста.
         """

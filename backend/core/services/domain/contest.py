@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Sequence
+from typing import Sequence, Optional
 
 from backend.core.models import Contest
 from backend.core.repository.crud.uow import UnitOfWork
@@ -24,12 +24,10 @@ class ContestService(IContestService):
     def __init__(
             self,
             uow: UnitOfWork,
-            access_policy: ContestAccessPolicy = ContestAccessPolicy(),
-            # permission_service: IPermissionService,
+            access_policy: Optional[ContestAccessPolicy],
     ):
         self.uow = uow
-        self.access_policy = access_policy
-        # self.permission_service = permission_service
+        self.access_policy: ContestAccessPolicy = access_policy or ContestAccessPolicy()
 
     @log_calls
     async def contest_submissions(
@@ -38,30 +36,21 @@ class ContestService(IContestService):
             contest_id: int,
             show_last_n_submissions: int = 30,
     ) -> ContestSubmissions:
-
         async with self.uow:
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
             permission: PermissionPromise = (
                 await self.access_policy.can_user_view_contest_submissions(
-                    uow=self.uow,
-                    user_id=user_id,
-                    contest_id=contest_id,
-                    raise_if_none=True,
-                )
-            )
+                    uow=self.uow, user_id=user_id, contest_id=contest_id, raise_if_none=True, ))
 
-            contest: Contest | None = (
+            contest: Contest = (
                 await self.uow.contest_repo.get_contest_by_id(contest_id=contest_id)
-            )
-            if not contest:
-                raise EntityDoesNotExist("contest not found")
-
+            )  # Существование contest проверено в access_policy
             submissions_in_contest = (
                 await self.uow.contest_repo.get_contest_submissions(
                     contest_id=contest_id,
                     show_last_n_submissions=show_last_n_submissions,
                 )
             )
-
             res = ContestSubmissions(
                 contest_id=contest.id,
                 name=contest.name,
@@ -83,21 +72,23 @@ class ContestService(IContestService):
     # )
     async def contest_standings(
             self,
+            user_id: int,
             contest_id: int,
     ) -> ContestStandings:
         async with self.uow:
-            contest: Contest | None = (
-                await self.uow.contest_repo.get_contest_by_id(contest_id=contest_id)
-            )
-            if not contest:
-                raise EntityDoesNotExist("contest not found")
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_view_contest_standing(
+                    uow=self.uow, user_id=user_id, contest_id=contest_id, raise_if_none=True, ))
 
+            contest: Contest = (
+                await self.uow.contest_repo.get_contest_by_id(contest_id=contest_id)
+            )  # Существование contest проверено в access_policy
             contestant_in_standings = (
                 await self.uow.contest_repo.get_contestant_in_standings(
                     contest_id=contest_id,
                 )
             )
-
             res = ContestStandings(
                 contest_id=contest.id,
                 name=contest.name,
@@ -107,7 +98,6 @@ class ContestService(IContestService):
                     body=[i for i in contestant_in_standings],
                 ),
             )
-
             return res
 
     @log_calls
@@ -121,6 +111,11 @@ class ContestService(IContestService):
             number_of_slots_for_problems: int,
     ) -> ContestId:
         async with self.uow:
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_create_contests(
+                    uow=self.uow, user_id=user_id, raise_if_none=True, ))
+
             contest = (
                 await self.uow.contest_repo.create_full_contest(
                     name=name,
@@ -142,17 +137,15 @@ class ContestService(IContestService):
             contest_id: int,
     ) -> None:
         async with self.uow:
-            contest: Contest = (
-                await self.uow.contest_repo.get_contest_by_id(
-                    contest_id=contest_id,
-                )
-            )
-            if not contest:
-                raise EntityDoesNotExist("contest not found")
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_delete_contest(
+                    uow=self.uow, user_id=user_id, contest_id=contest_id, raise_if_none=True, ))
 
-            await self.uow.contest_repo.delete_contest(
-                contest_id=contest_id,
-            )
+            contest: Contest = (
+                await self.uow.contest_repo.get_contest_by_id(contest_id=contest_id, )
+            )  # Существование contest проверено в access_policy
+            await self.uow.contest_repo.delete_contest(contest_id=contest_id, )
             return None
 
     @log_calls
@@ -162,13 +155,14 @@ class ContestService(IContestService):
             contest_id: int,
     ) -> ContestInfoForEditor:
         async with self.uow:
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_manage_contest(
+                    uow=self.uow, user_id=user_id, contest_id=contest_id, raise_if_none=True, ))
+
             contest: Contest = (
-                await self.uow.contest_repo.get_contest_by_id(
-                    contest_id=contest_id,
-                )
-            )
-            if not contest:
-                raise EntityDoesNotExist("contest not found")
+                await self.uow.contest_repo.get_contest_by_id(contest_id=contest_id, )
+            )  # Существование contest проверено в access_policy
 
             res = ContestInfoForEditor(
                 contest_id=contest_id,
@@ -193,6 +187,11 @@ class ContestService(IContestService):
             number_of_slots_for_problems: int,
     ) -> ContestId:
         async with self.uow:
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_create_contests(
+                    uow=self.uow, user_id=user_id, raise_if_none=True, ))
+
             contest = (
                 await self.uow.contest_repo.create_contest(
                     name=name,
@@ -221,7 +220,12 @@ class ContestService(IContestService):
             flag_user_can_have_negative_points: bool,
     ) -> ContestId:
         async with self.uow:
-            contest: Contest | None = (
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_manage_contest(
+                    uow=self.uow, user_id=user_id, contest_id=contest_id, raise_if_none=True, ))
+
+            contest: Contest = (
                 await self.uow.contest_repo.update_contest(
                     contest_id=contest_id,
                     name=name,
@@ -232,10 +236,7 @@ class ContestService(IContestService):
                     rule_type=rule_type,
                     flag_user_can_have_negative_points=flag_user_can_have_negative_points,
                 )
-            )
-            if not contest:
-                raise EntityDoesNotExist("")
-
+            )  # Существование contest проверено в access_policy
             res = ContestId(
                 contest_id=contest.id,
             )
@@ -247,10 +248,13 @@ class ContestService(IContestService):
             user_id: int,
     ) -> ArrayContestShortInfo:
         async with self.uow:
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_create_contests(
+                    uow=self.uow, user_id=user_id, raise_if_none=True, ))
+
             contests: Sequence[Contest] = (
-                await self.uow.contest_repo.get_user_contests(
-                    user_id=user_id,
-                )
+                await self.uow.contest_repo.get_user_contests(user_id=user_id, )
             )
             res = ArrayContestShortInfo(
                 body=[

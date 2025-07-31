@@ -1,5 +1,7 @@
 from typing import Protocol, Any
 
+from backend.core.utilities.exceptions.permission import PermissionDenied
+
 
 class AccessPolicy(Protocol):
     """
@@ -15,3 +17,8 @@ class AccessPolicy(Protocol):
     пользователя к ресурсам, предоставляемых реализацией IContestService (например, ContestService)
     """
     ...
+
+    @staticmethod
+    def _raise_if(condition: bool, msg: str, ex_type: type[Exception] = PermissionDenied) -> None:
+        if condition:
+            raise ex_type(msg)

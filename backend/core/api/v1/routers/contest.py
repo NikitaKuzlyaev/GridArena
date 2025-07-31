@@ -74,20 +74,19 @@ async def create_contest(
         - Поля проходят валидацию по типу, длине, диапазону (Field)
         - Даты проверяются на корректность порядка (через @model_validator)
     """
+
     res: ContestId = (
         await contest_service.create_full_contest(
             user_id=user.id,
             **params.model_dump(),
         )
     )
-
     await permission_service.give_permission_for_admin_contest(
         user_id=user.id, contest_id=res.contest_id,
     )
     await permission_service.give_permission_for_edit_contest(
         user_id=user.id, contest_id=res.contest_id,
     )
-
     return res
 
 
@@ -135,6 +134,7 @@ async def update_contest(
         - Все поля проходят строгую валидацию (диапазоны, длина)
         - Даты проверяются на корректность порядка
     """
+
     result: ContestId = (
         await contest_service.update_contest(
             user_id=user.id,
@@ -186,9 +186,6 @@ async def delete_contest(
     Примечание:
         Удаление — необратимая операция. Все данные контеста будут безвозвратно удалены.
     """
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_admin_contest(user_id=user.id, contest_id=contest_id),
-    ])
 
     await contest_service.delete_contest(
         user_id=user.id,
@@ -230,6 +227,7 @@ async def view_contests(
     Raises:
         todo: add later
     """
+
     result: ArrayContestShortInfo = (
         await contest_service.get_user_contests(
             user_id=user.id,
@@ -283,9 +281,6 @@ async def contest_info_for_editor(
         PermissionDenied: Если у пользователя нет прав на редактирование контеста (возвращает 403).
         EntityDoesNotExist: Если контест с указанным ID не существует (возвращает 404).
     """
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=contest_id),
-    ])
 
     result: ContestInfoForEditor = (
         await contest_service.contest_info_for_editor(
@@ -332,6 +327,7 @@ async def contest_info_for_contestant(
         PermissionDenied: Если пользователь не является участником контеста (возвращает 403).
         EntityDoesNotExist: Если контест с указанным ID не существует (возвращает 404).
     """
+
     result: ContestInfoForContestant = (
         await contest_service.contest_info_for_contestant(
             user_id=user.id,
@@ -391,14 +387,9 @@ async def contest_standings(
         EntityDoesNotExist: Если контест с указанным ID не существует (возвращает 404).
     """
 
-    # Для просмотра положения пользователь должен быть или редактором контеста, или участником
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_view_contest_standings(
-            user_id=user.id, contest_id=contest_id),
-    ])
-
     result: ContestStandings = (
         await contest_service.contest_standings(
+            user_id=user.id,
             contest_id=contest_id,
         )
     )
@@ -454,12 +445,6 @@ async def contest_submissions(
         PermissionDenied: Если у пользователя нет прав на просмотр (возвращает 403).
         EntityDoesNotExist: Если контест с указанным ID не существует (возвращает 404).
     """
-
-    # Для просмотра посылок пользователь должен быть или редактором контеста, или участником
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_view_contest_standings(  # Внимание!! проверка на <..standings>
-            user_id=user.id, contest_id=contest_id),
-    ])
 
     result: ContestSubmissions = (
         await contest_service.contest_submissions(

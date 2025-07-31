@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Tuple
 
 from backend.core.models import Contest, User, Contestant
 from backend.core.models.permission import PermissionActionType, PermissionResourceType, Permission
@@ -12,24 +12,34 @@ from backend.core.utilities.exceptions.permission import PermissionDenied
 
 class ContestAccessPolicy(AccessPolicy):
 
-    def _raise_if(self, condition: bool, msg: str, ex_type: type[Exception] = PermissionDenied) -> None:
-        if condition:
-            raise ex_type(msg)
-
-    async def can_user_view_contest(
+    async def _get_user_and_contest(
             self,
             uow: UnitOfWork,
             user_id: int,
             contest_id: int,
             raise_if_none: bool = True,
-    ) -> PermissionPromise | None:
-
+    ) -> Tuple[User, Contest] | None:
         async with uow:
             user: User | None = await uow.user_repo.get_user_by_id(user_id=user_id)
-            if user is None:
-                # Пользователь не аутентифицирован
-                return self._raise_if(
-                    raise_if_none, f"User is not authenticated.")
+            if user is None:  # Пользователь не аутентифицирован
+                return self._raise_if(raise_if_none, f"User is not authenticated.")
+
+            contest: Contest | None = (await uow.contest_repo.get_contest_by_id(contest_id=contest_id))
+            if contest is None:  # Контест не существует
+                return self._raise_if(raise_if_none, f"Contest does not exists.", EntityDoesNotExist)
+
+            return user, contest
+
+    async def base_check(
+            self,
+            uow: UnitOfWork,
+            user_id: int,
+            contest_id: int,
+            raise_if_none: bool = True,
+    ) -> Tuple[User, Contest] | None:
+        async with uow:
+            user_and_contest: Tuple[User, Contest] = await self._get_user_and_contest(uow, user_id, contest_id)
+            user, contest = user_and_contest
 
             if user.domain_number == 0:
                 # Пользователь принадлежит к домену сайта - может быть менеджером,
@@ -50,19 +60,28 @@ class ContestAccessPolicy(AccessPolicy):
                 # Пользователь принадлежит к домену контеста - является участником,
                 # должен видеть только свой контест
                 if user.domain_number != contest_id:
-                    return self._raise_if(
-                        raise_if_none, f"User is not participating in this contest.")
+                    return self._raise_if(raise_if_none, f"User is not participating in this contest.")
 
-                contest: Contest | None = (await uow.contest_repo.get_contest_by_id(contest_id=contest_id))
-                if contest is None:
-                    return self._raise_if(
-                        raise_if_none, f"Contest does not exists.", EntityDoesNotExist)
+            return user, contest
 
-                # Запрещаем доступ, если контест уже закончился
-                current_time = datetime.now()
-                if not contest.started_at < current_time < contest.closed_at:
-                    return self._raise_if(
-                        raise_if_none, f"Out of time: the contest has not started yet or has already ended.")
+    async def can_user_view_contest(
+            self,
+            uow: UnitOfWork,
+            user_id: int,
+            contest_id: int,
+            raise_if_none: bool = True,
+            **kwargs,
+    ) -> PermissionPromise | None:
+
+        async with uow:
+            user_and_contest: Tuple[User, Contest] = await self.base_check(uow, user_id, contest_id, raise_if_none)
+            user, contest = user_and_contest
+
+            # Запрещаем доступ, если контест уже закончился
+            current_time = datetime.now()
+            if not contest.started_at < current_time < contest.closed_at:
+                return self._raise_if(
+                    raise_if_none, f"Out of time: the contest has not started yet or has already ended.")
 
             return PermissionPromise()
 
@@ -73,8 +92,78 @@ class ContestAccessPolicy(AccessPolicy):
             contest_id: int,
             raise_if_none: bool = True,
     ) -> PermissionPromise | None:
-
         # todo: временное решение
-
         res = await self.can_user_view_contest(uow, user_id, contest_id, raise_if_none)
         return res
+
+    async def can_user_view_contest_standing(
+            self,
+            uow: UnitOfWork,
+            user_id: int,
+            contest_id: int,
+            raise_if_none: bool = True,
+    ) -> PermissionPromise | None:
+        # todo: временное решение
+        res = await self.can_user_view_contest(uow, user_id, contest_id, raise_if_none)
+        return res
+
+    async def can_user_create_contests(
+            self,
+            uow: UnitOfWork,
+            user_id: int,
+            raise_if_none: bool = True,
+    ) -> PermissionPromise | None:
+        user: User | None = await uow.user_repo.get_user_by_id(user_id=user_id)
+        if user is None:  # Пользователь не аутентифицирован
+            return self._raise_if(raise_if_none, f"User is not authenticated.")
+
+        if user.domain_number != 0:
+            return self._raise_if(raise_if_none, f"Yser of this domain cannot create contests.")
+
+        return PermissionPromise()
+
+    async def can_user_delete_contest(
+            self,
+            uow: UnitOfWork,
+            user_id: int,
+            contest_id: int,
+            raise_if_none: bool = True,
+    ) -> PermissionPromise | None:
+        user_and_contest: Tuple[User, Contest] = await self.base_check(uow, user_id, contest_id, raise_if_none)
+        user, contest = user_and_contest
+
+        permission: Permission | None = (
+            await uow.permission_repo.check_permission(
+                user_id=user_id,
+                resource_type=PermissionResourceType.CONTEST.value,
+                permission_type=PermissionActionType.ADMIN.value,
+                resource_id=contest_id,
+            )
+        )
+        if permission is None:
+            return self._raise_if(raise_if_none, "Permission denied: user is not the admin of this contest.")
+
+        return PermissionPromise()
+
+    async def can_user_manage_contest(
+            self,
+            uow: UnitOfWork,
+            user_id: int,
+            contest_id: int,
+            raise_if_none: bool = True,
+    ) -> PermissionPromise | None:
+        user_and_contest: Tuple[User, Contest] = await self.base_check(uow, user_id, contest_id, raise_if_none)
+        user, contest = user_and_contest
+
+        permission: Permission | None = (
+            await uow.permission_repo.check_permission(
+                user_id=user_id,
+                resource_type=PermissionResourceType.CONTEST.value,
+                permission_type=PermissionActionType.EDIT.value,
+                resource_id=contest_id,
+            )
+        )
+        if permission is None:
+            return self._raise_if(raise_if_none, "Permission denied: user is not the manager of this contest.")
+
+        return PermissionPromise()
