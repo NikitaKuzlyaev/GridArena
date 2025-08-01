@@ -9,7 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from backend.core.api.v1.routers import routers as routers_v1
 
-app = FastAPI()
+app = FastAPI(root_path='/api')
 
 origins = [
     "http://localhost:5173",
@@ -53,4 +53,4 @@ async def profile_request(request: Request, call_next):
 
 
 for router in routers_v1:
-    app.include_router(router=router, prefix="/api/v1")
+    app.include_router(router=router, prefix="/v1")
