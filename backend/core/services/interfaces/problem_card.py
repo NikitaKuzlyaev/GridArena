@@ -21,6 +21,7 @@ class IProblemCardService(Protocol):
 
     async def create_problem_card_with_problem(
             self,
+            user_id: int,
             quiz_field_id: int,
             row: int,
             column: int,
@@ -32,6 +33,7 @@ class IProblemCardService(Protocol):
         """
         Создать новую карточку задачи и задачу одновременно.
 
+        :param user_id: Идентификатор пользователя (редактора).
         :param quiz_field_id: Идентификатор поля.
         :param row: Номер строки на поле.
         :param column: Номер столбца на поле.
@@ -45,6 +47,7 @@ class IProblemCardService(Protocol):
 
     async def update_problem_card_with_problem(
             self,
+            user_id: int,
             problem_card_id: int,
             problem_id: int,
             category_name: str,
@@ -55,6 +58,7 @@ class IProblemCardService(Protocol):
         """
         Обновить карточку задачи и связанную с ней задачу.
 
+        :param user_id: Идентификатор пользователя (редактора).
         :param problem_card_id: Идентификатор карточки задачи.
         :param problem_id: Идентификатор задачи.
         :param category_name: Новое название категории.
@@ -67,6 +71,7 @@ class IProblemCardService(Protocol):
 
     async def create_problem_card(
             self,
+            user_id: int,
             problem_id: int,
             category_name: str,
             category_price: int,
@@ -77,6 +82,7 @@ class IProblemCardService(Protocol):
         """
         Создать новую карточку задачи для существующей задачи.
 
+        :param user_id: Идентификатор пользователя (редактора).
         :param problem_id: Идентификатор задачи.
         :param category_name: Название категории.
         :param category_price: Цена категории (баллы).
@@ -89,6 +95,7 @@ class IProblemCardService(Protocol):
 
     async def update_problem_card(
             self,
+            user_id: int,
             problem_card_id: int,
             category_name: str,
             category_price: int,
@@ -96,6 +103,7 @@ class IProblemCardService(Protocol):
         """
         Обновить параметры карточки задачи.
 
+        :param user_id: Идентификатор пользователя (редактора).
         :param problem_card_id: Идентификатор карточки задачи.
         :param category_name: Новое название категории.
         :param category_price: Новая цена категории.

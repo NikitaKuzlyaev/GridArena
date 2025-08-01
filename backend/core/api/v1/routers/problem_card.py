@@ -15,9 +15,7 @@ from backend.core.schemas.problem_card import (
     ProblemCardWithProblemUpdateRequest,
     ProblemCardWithProblemCreateRequest,
 )
-from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.interfaces.problem_card import IProblemCardService
-from backend.core.services.providers.permission import get_permission_service
 from backend.core.services.providers.problem_card import get_problem_card_service
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
 from backend.core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
@@ -41,7 +39,6 @@ async def update_problem_card(
         params: ProblemCardUpdateRequest = Body(...),
         user: User = Depends(get_user),
         problem_card_service: IProblemCardService = Depends(get_problem_card_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> JSONResponse:
     """
     Обновляет категорию и стоимость карточки задачи (problem card).
@@ -55,7 +52,6 @@ async def update_problem_card(
             - category_price: новая стоимость задачи (от 0 до 10000 баллов)
         user (User): Авторизованный пользователь (определяется по JWT).
         problem_card_service (IProblemCardService): Сервис для обновления карточки.
-        permission_service (IPermissionService): Сервис для проверки прав на редактирование.
 
     Returns:
         JSONResponse: Объект с обновлённым ID карточки в поле `body`
@@ -68,13 +64,10 @@ async def update_problem_card(
         Изменение стоимости может повлиять на начисление баллов при решении.
         Логика применения изменений на идущем контесте может быть непредсказуемой. (может меняться)
     """
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_edit_problem_card(
-            user_id=user.id, problem_card_id=params.problem_card_id),
-    ])
 
     result: ProblemCardId = (
         await problem_card_service.update_problem_card(
+            user_id=user.id,
             **params.model_dump(),
         )
     )
@@ -98,7 +91,6 @@ async def problem_card_info_for_editor(
         problem_card_id: int = Query(...),
         user: User = Depends(get_user),
         problem_card_service: IProblemCardService = Depends(get_problem_card_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ProblemCardInfoForEditor:
     """
     Получает полную информацию о карточке задачи для редактора (администратора/организатора).
@@ -110,7 +102,6 @@ async def problem_card_info_for_editor(
         problem_card_id (int): ID карточки задачи, информация о которой запрашивается (в query).
         user (User): Авторизованный пользователь (определяется по JWT).
         problem_card_service (IProblemCardService): Сервис для получения данных карточки.
-        permission_service (IPermissionService): Сервис для проверки прав на редактирование.
 
     Returns:
         ProblemCardInfoForEditor: Объект с полной информацией:
@@ -132,10 +123,6 @@ async def problem_card_info_for_editor(
         Ответ содержит чувствительные данные (ответ на задачу), поэтому доступ строго ограничен.
         Изменения на идущем контесте могут быть непредсказуемыми! (логика может меняться со временем)
     """
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_edit_problem_card(
-            user_id=user.id, problem_card_id=problem_card_id),
-    ])
 
     result: ProblemCardInfoForEditor = (
         await problem_card_service.problem_card_info_for_editor(
@@ -163,7 +150,6 @@ async def problem_card_update_with_problem(
         params: ProblemCardWithProblemUpdateRequest = Body(...),
         user: User = Depends(get_user),
         problem_card_service: IProblemCardService = Depends(get_problem_card_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ProblemCardId:
     """
     Обновляет карточку задачи и связанные с ней данные задачи (условие и ответ) в одном запросе.
@@ -184,7 +170,6 @@ async def problem_card_update_with_problem(
             - answer: новый правильный ответ (до 32 символов)
         user (User): Авторизованный пользователь (определяется по JWT).
         problem_card_service (IProblemCardService): Сервис для обновления карточки и задачи.
-        permission_service (IPermissionService): Проверка прав на редактирование карточки и задачи.
 
     Returns:
         ProblemCardId: Объект с подтверждением обновления:
@@ -196,15 +181,10 @@ async def problem_card_update_with_problem(
         EntityDoesNotExist:
             - Если карточка или задача с указанным ID не существуют (возвращает 404).
     """
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_edit_problem_card(
-            user_id=user.id, problem_card_id=params.problem_card_id),
-        lambda: permission_service.check_permission_for_edit_problem(
-            user_id=user.id, problem_id=params.problem_id),
-    ])
 
     result: ProblemCardId = (
         await problem_card_service.update_problem_card_with_problem(
+            user_id=user.id,
             **params.model_dump(),
         )
     )
@@ -228,7 +208,6 @@ async def problem_card_create_with_problem(
         params: ProblemCardWithProblemCreateRequest = Body(...),
         user: User = Depends(get_user),
         problem_card_service: IProblemCardService = Depends(get_problem_card_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ProblemCardId:
     """
     Создаёт новую карточку задачи и связанную с ней задачу в одном запросе.
@@ -245,7 +224,6 @@ async def problem_card_create_with_problem(
             - answer: правильный ответ (до 32 символов)
         user (User): Авторизованный пользователь (определяется по JWT).
         problem_card_service (IProblemCardService): Сервис для создания карточки и задачи.
-        permission_service (IPermissionService): Проверка прав на редактирование поля.
 
     Returns:
         ProblemCardId: Объект с ID созданной карточки:
@@ -257,13 +235,10 @@ async def problem_card_create_with_problem(
         EntityDoesNotExist:
             - Если поле викторины (quiz_field_id) не существует (возвращает 404).
     """
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_edit_quiz_field(
-            user_id=user.id, quiz_field_id=params.quiz_field_id),
-    ])
 
     result: ProblemCardId = (
         await problem_card_service.create_problem_card_with_problem(
+            user_id=user.id,
             **params.model_dump(),
         )
     )
