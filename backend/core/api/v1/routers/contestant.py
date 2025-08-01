@@ -16,10 +16,8 @@ from backend.core.schemas.contestant import (
 )
 from backend.core.services.interfaces.contest import IContestService
 from backend.core.services.interfaces.contestant import IContestantService
-from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.providers.contest import get_contest_service
 from backend.core.services.providers.contestant import get_contestant_service
-from backend.core.services.providers.permission import get_permission_service
 from backend.core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
 from backend.core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
 from backend.core.utilities.exceptions.permission import PermissionDenied

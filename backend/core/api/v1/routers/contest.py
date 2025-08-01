@@ -19,9 +19,7 @@ from backend.core.schemas.contest import (
     ContestSubmissions
 )
 from backend.core.services.interfaces.contest import IContestService
-from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.providers.contest import get_contest_service
-from backend.core.services.providers.permission import get_permission_service
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
 from backend.core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
 from backend.core.utilities.exceptions.permission import PermissionDenied
@@ -42,7 +40,6 @@ async def create_contest(
         params: ContestCreateRequest = Body(...),
         user: User = Depends(get_user),
         contest_service: IContestService = Depends(get_contest_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> ContestId:
     """
     Создаёт новый контест с заданными параметрами.
@@ -81,12 +78,7 @@ async def create_contest(
             **params.model_dump(),
         )
     )
-    await permission_service.give_permission_for_admin_contest(
-        user_id=user.id, contest_id=res.contest_id,
-    )
-    await permission_service.give_permission_for_edit_contest(
-        user_id=user.id, contest_id=res.contest_id,
-    )
+
     return res
 
 

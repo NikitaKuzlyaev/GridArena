@@ -27,7 +27,6 @@ from backend.core.schemas.permission import PermissionPromise
 from backend.core.services.access_policies.contest import ContestAccessPolicy
 from backend.core.services.access_policies.contestant import ContestantAccessPolicy
 from backend.core.services.interfaces.contestant import IContestantService
-from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.utilities.exceptions.database import (
     EntityDoesNotExist,
     EntityAlreadyExists,

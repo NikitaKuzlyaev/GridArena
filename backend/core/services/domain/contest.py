@@ -9,6 +9,8 @@ from backend.core.models import (
     Contestant,
     User,
 )
+from backend.core.models.permission import PermissionResourceType, PermissionActionType
+from backend.core.repository.crud import uow
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.contest import (
     ContestId,
@@ -136,6 +138,21 @@ class ContestService(IContestService):
                     number_of_slots_for_problems=number_of_slots_for_problems,
                 )
             )
+            # Даем права менеджера
+            await self.uow.permission_repo.create_permission(
+                user_id=user_id,
+                resource_id=contest.id,
+                resource_type=PermissionResourceType.CONTEST.value,
+                permission_type=PermissionActionType.EDIT.value,
+            )
+            # Даем права администратора
+            await self.uow.permission_repo.create_permission(
+                user_id=user_id,
+                resource_id=contest.id,
+                resource_type=PermissionResourceType.CONTEST.value,
+                permission_type=PermissionActionType.ADMIN.value,
+            )
+
             res = ContestId(
                 contest_id=contest.id,
             )
