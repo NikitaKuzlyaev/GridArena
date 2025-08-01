@@ -71,7 +71,7 @@ async def buy_problem(
         - Доступность карточки
         - Баланс участника должен покрывать стоимость задачи
     """
-    # todo: проверка прав
+
     result: SelectedProblemId = (
         await selected_problem_service.buy_selected_problem(
             user_id=user.id,
@@ -133,6 +133,7 @@ async def get_contestant_selected_problems(
         Ответ включает только задачи, находящиеся в статусе "в работе" (SOLVING).
         Условие задачи возвращается, так как участник имеет право на его просмотр.
     """
+
     result: ArraySelectedProblemInfoForContestant = (
         await selected_problem_service.get_contestant_selected_problems(
             user_id=user.id,

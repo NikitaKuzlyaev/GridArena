@@ -1,6 +1,7 @@
 from typing import (
     Sequence,
     Tuple,
+    Optional,
 )
 
 from backend.core.models import (
@@ -15,12 +16,14 @@ from backend.core.models.contest import ContestRuleType
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.models.submission import SubmissionVerdict
 from backend.core.repository.crud.uow import UnitOfWork
+from backend.core.schemas.permission import PermissionPromise
 from backend.core.schemas.problem import ProblemInfoForContestant
 from backend.core.schemas.selected_problem import (
     SelectedProblemId,
     SelectedProblemInfoForContestant,
     ArraySelectedProblemInfoForContestant,
 )
+from backend.core.services.access_policies.selected_problem import SelectedProblemAccessPolicy
 from backend.core.services.interfaces.selected_problem import ISelectedProblemService
 from backend.core.utilities.exceptions.database import EntityAlreadyExists
 from backend.core.utilities.exceptions.logic import PossibleLimitOverflow
@@ -33,10 +36,12 @@ class SelectedProblemService(ISelectedProblemService):
     def __init__(
             self,
             uow: UnitOfWork,
+            access_policy: Optional[SelectedProblemAccessPolicy] = None,
     ):
         self.uow = uow
+        self.access_policy: SelectedProblemAccessPolicy = access_policy or SelectedProblemAccessPolicy()
 
-    async def get_remaining_number_of_attempts_for_selected_problems(
+    async def _get_remaining_number_of_attempts_for_selected_problems(
             self,
             selected_problem_ids: list[int],
             max_number_of_attempts: int = 3,
@@ -61,26 +66,26 @@ class SelectedProblemService(ISelectedProblemService):
             user_id: int,
     ) -> ArraySelectedProblemInfoForContestant:
         async with self.uow:
-            contestant: Contestant = (
-                await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id)
-            )
+            # Проверка прав не требуется. Все описано в логике ниже.
+            # Пользователь не может получить чужую информацию в принципе, так как жестко привязан своим domain_number
 
+            contestant: Contestant = (
+                await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id, )
+            )
             rows: Sequence[Tuple[SelectedProblem, ProblemCard, Problem]] = (
                 await self.uow.selected_problem_repo.get_selected_problem_with_problem_card_and_problem_of_contestant_by_id(
-                    contestant_id=contestant.id,
-                )
+                    contestant_id=contestant.id, )
             )
             contest: Contest = (
-                await self.uow.contest_repo.get_contest_by_user_id(user_id=user_id)
+                await self.uow.contest_repo.get_contest_by_user_id(user_id=user_id, )
             )
 
             attempts_by_selected_problem = {}
             if contest.rule_type == ContestRuleType.DEFAULT:
                 attempts_by_selected_problem: dict[int, int] = (
-                    await self.get_remaining_number_of_attempts_for_selected_problems(
+                    await self._get_remaining_number_of_attempts_for_selected_problems(
                         selected_problem_ids=[i[0].id for i in rows],  # Берем SelectedProblem.id из rows
-                        max_number_of_attempts=MAX_NUMBER_OF_ATTEMPTS,
-                    )
+                        max_number_of_attempts=MAX_NUMBER_OF_ATTEMPTS, )
                 )
 
             res = ArraySelectedProblemInfoForContestant(
@@ -111,34 +116,31 @@ class SelectedProblemService(ISelectedProblemService):
             problem_card_id: int,
     ) -> SelectedProblemId:
         async with self.uow:
-            user: User = (
-                await self.uow.user_repo.get_user_by_id(user_id=user_id)
-            )
-            contestant: Contestant = (
-                await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id)
-            )
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_contestant_buy_problem_card(
+                    uow=self.uow, user_id=user_id, problem_card_id=problem_card_id, raise_if_none=True, ))
+
+            user: User = await self.uow.user_repo.get_user_by_id(user_id=user_id, )
+            contestant: Contestant = await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id, )
             problem_card: ProblemCard = (
-                await self.uow.problem_card_repo.get_problem_card_by_id(problem_card_id=problem_card_id)
-            )
+                await self.uow.problem_card_repo.get_problem_card_by_id(problem_card_id=problem_card_id, ))
             selected_problem: SelectedProblem | None = (
                 await self.uow.selected_problem_repo.get_selected_problem_by_contestant_and_problem_card(
                     contestant_id=contestant.id,
-                    problem_card_id=problem_card_id,
-                )
+                    problem_card_id=problem_card_id, )
             )
             if selected_problem:
-                raise EntityAlreadyExists("selected problem already exists")
+                raise EntityAlreadyExists("Selected problem already exists")
 
             contest: Contest = (
                 await self.uow.contest_repo.get_contest_by_id(
-                    contest_id=user.domain_number
-                )
+                    contest_id=user.domain_number, )
             )
             active_selected_problems: Sequence[SelectedProblem] = (
                 await self.uow.selected_problem_repo.get_selected_problem_of_contestant_by_id(
                     contestant_id=contestant.id,
-                    filter_by_status=[SelectedProblemStatusType.ACTIVE.value],
-                )
+                    filter_by_status=[SelectedProblemStatusType.ACTIVE.value], )
             )
 
             if len(active_selected_problems) >= contest.number_of_slots_for_problems:
@@ -148,8 +150,7 @@ class SelectedProblemService(ISelectedProblemService):
                 selected_problem: SelectedProblem = (
                     await self.uow.transaction_repo.buy_problem(
                         contestant_id=contestant.id,
-                        problem_card_id=problem_card.id,
-                    )
+                        problem_card_id=problem_card.id, )
                 )
                 res = SelectedProblemId(
                     selected_problem_id=selected_problem.id,
