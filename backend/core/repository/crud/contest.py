@@ -47,8 +47,10 @@ class ContestCRUDRepository(BaseCRUDRepository):
                 Submission,
             )
             .join(User, Contestant.user_id == User.id)
-            .join(Contest, User.domain_number == Contest.id)
             .join(SelectedProblem, SelectedProblem.contestant_id == Contestant.id)
+            .join(ProblemCard, ProblemCard.id == SelectedProblem.problem_card_id)
+            .join(QuizField, QuizField.id == ProblemCard.quiz_field_id)
+            .join(Contest, Contest.id == QuizField.contest_id)
             .join(Submission, Submission.selected_problem_id == SelectedProblem.id)
             .where(Contest.id == contest_id)
             .order_by(Submission.created_at.desc())
@@ -67,6 +69,7 @@ class ContestCRUDRepository(BaseCRUDRepository):
                     category_price=problem_card.category_price,
                 ),
                 verdict=submission.verdict,
+                created_at=submission.created_at,
             ) for contestant, problem_card, submission in rows
         ]
         return res

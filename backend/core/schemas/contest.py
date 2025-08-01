@@ -111,6 +111,7 @@ class ContestSubmission(BaseSchemaModel):
     contestant_name: str
     problem_card: ProblemCardForSubmissionInfo
     verdict: SubmissionVerdict
+    created_at: datetime
 
 
 class ArrayContestantInStandings(BaseSchemaModel):

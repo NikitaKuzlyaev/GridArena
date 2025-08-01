@@ -15,6 +15,10 @@ function ContestSubmissions() {
     const fetchSubmissions = async () => {
       try {
         const data = await makeRequest(`${config.backendUrl}api/v1/contest/submissions?contest_id=${contestId}`);
+        // Сортируем посылки по времени создания (новые сначала)
+        if (data.submissions && data.submissions.body) {
+          data.submissions.body.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        }
         setSubmissions(data);
       } catch (error) {
         console.error('Ошибка при загрузке посылок:', error);
@@ -105,6 +109,15 @@ function ContestSubmissions() {
                       fontWeight: 600,
                       fontSize: 14,
                     }}>
+                      Время
+                    </th>
+                    <th style={{
+                      padding: '12px 16px',
+                      textAlign: 'center',
+                      borderBottom: '2px solid #dee2e6',
+                      fontWeight: 600,
+                      fontSize: 14,
+                    }}>
                       Вердикт
                     </th>
                   </tr>
@@ -135,6 +148,14 @@ function ContestSubmissions() {
                         fontWeight: 500,
                       }}>
                         {submission.problemCard.categoryPrice}
+                      </td>
+                      <td style={{
+                        padding: '12px 16px',
+                        textAlign: 'center',
+                        fontSize: 14,
+                        fontWeight: 500,
+                      }}>
+                        {new Date(submission.createdAt).toLocaleString('ru-RU')}
                       </td>
                       <td style={{
                         padding: '12px 16px',
