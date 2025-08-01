@@ -1,4 +1,3 @@
-from backend.core.models import Problem
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.problem import ProblemId
 
@@ -16,24 +15,16 @@ class ProblemService(IProblemService):
     @log_calls
     async def create_problem(
             self,
+            user_id: int,
             statement: str,
             answer: str,
     ) -> ProblemId:
-        async with self.uow:
-            problem: Problem = (
-                await self.uow.problem_repo.create_problem(
-                    statement=statement,
-                    answer=answer,
-                )
-            )
-            res = ProblemId(
-                problem_id=problem.id,
-            )
-            return res
+        raise NotImplementedError("method not implemented")
 
     @log_calls
     async def update_problem(
             self,
+            user_id: int,
             problem_id: int,
             statement: str,
             answer: str,

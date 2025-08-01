@@ -17,12 +17,14 @@ class IProblemService(Protocol):
 
     async def create_problem(
             self,
+            user_id: int,
             statement: str,
             answer: str,
     ) -> ProblemId:
         """
         Создать новую задачу.
 
+        :param user_id: Идентификатор пользователя.
         :param statement: Условие задачи.
         :param answer: Ответ на задачу.
         :return: Объект с идентификатором созданной задачи.
@@ -31,6 +33,7 @@ class IProblemService(Protocol):
 
     async def update_problem(
             self,
+            user_id: int,
             problem_id: int,
             statement: str,
             answer: str,
@@ -38,6 +41,7 @@ class IProblemService(Protocol):
         """
         Обновить существующую задачу.
 
+        :param user_id: Идентификатор пользователя.
         :param problem_id: Идентификатор задачи.
         :param statement: Новое условие задачи.
         :param answer: Новый ответ на задачу.
