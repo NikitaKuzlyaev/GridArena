@@ -48,6 +48,7 @@ class IQuizFieldService(Protocol):
 
     async def create_quiz_field(
             self,
+            user_id: int,
             contest_id: int,
             number_of_rows: int,
             number_of_columns: int,
@@ -55,6 +56,7 @@ class IQuizFieldService(Protocol):
         """
         Создать новое поле.
 
+        :param user_id: Идентификатор пользователя (редактора).
         :param contest_id: Идентификатор контеста.
         :param number_of_rows: Количество строк.
         :param number_of_columns: Количество столбцов.
@@ -64,6 +66,7 @@ class IQuizFieldService(Protocol):
 
     async def update_quiz_field(
             self,
+            user_id: int,
             quiz_field_id: int,
             number_of_rows: int,
             number_of_columns: int,
@@ -71,6 +74,7 @@ class IQuizFieldService(Protocol):
         """
         Обновить параметры поля.
 
+        :param user_id: Идентификатор пользователя (редактора).
         :param quiz_field_id: Идентификатор поля.
         :param number_of_rows: Новое количество строк.
         :param number_of_columns: Новое количество столбцов.

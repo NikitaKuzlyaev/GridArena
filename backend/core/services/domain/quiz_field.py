@@ -1,6 +1,7 @@
 from typing import (
     Sequence,
     Tuple,
+    Optional,
 )
 
 from sqlalchemy import Row
@@ -16,6 +17,7 @@ from backend.core.models import (
 )
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.repository.crud.uow import UnitOfWork
+from backend.core.schemas.permission import PermissionPromise
 from backend.core.schemas.problem import ProblemId
 from backend.core.schemas.problem_card import (
     ProblemCardInfo,
@@ -27,6 +29,7 @@ from backend.core.schemas.quiz_field import (
     QuizFieldInfoForEditor,
     QuizFieldInfoForContestant,
 )
+from backend.core.services.access_policies.quiz_field import QuizFieldAccessPolicy
 from backend.core.services.interfaces.quiz_field import IQuizFieldService
 from backend.core.utilities.exceptions.data_structures import UndefinedMapping
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
@@ -37,8 +40,10 @@ class QuizFieldService(IQuizFieldService):
     def __init__(
             self,
             uow: UnitOfWork,
+            access_policy: Optional[QuizFieldAccessPolicy] = None,
     ):
         self.uow = uow
+        self.access_policy: QuizFieldAccessPolicy = access_policy or QuizFieldAccessPolicy()
 
     @log_calls
     async def quiz_field_info_for_contestant(
@@ -46,6 +51,9 @@ class QuizFieldService(IQuizFieldService):
             user_id,
     ) -> QuizFieldInfoForContestant:
         async with self.uow:
+            # Проверка прав не требуется. Все описано в логике ниже.
+            # Пользователь не может получить чужую информацию в принципе, так как жестко привязан своим domain_number
+
             user: User = (
                 await self.uow.user_repo.get_user_by_id(
                     user_id=user_id,
@@ -148,10 +156,14 @@ class QuizFieldService(IQuizFieldService):
             contest_id,
     ) -> QuizFieldInfoForEditor:
         async with self.uow:
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_manage_contest(
+                    uow=self.uow, user_id=user_id, contest_id=contest_id, raise_if_none=True, ))
+
             quiz_field: QuizField | None = (
                 await self.uow.quiz_field_repo.get_quiz_field_by_contest_id(
-                    contest_id=contest_id,
-                )
+                    contest_id=contest_id, )
             )
             if not quiz_field:
                 raise EntityDoesNotExist("quiz_field with such contest_id not found")
@@ -183,11 +195,17 @@ class QuizFieldService(IQuizFieldService):
     @log_calls
     async def create_quiz_field(
             self,
+            user_id: int,
             contest_id: int,
             number_of_rows: int,
             number_of_columns: int,
     ) -> QuizFieldId:
         async with self.uow:
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_manage_contest(
+                    uow=self.uow, user_id=user_id, contest_id=contest_id, raise_if_none=True, ))
+
             quiz_field: QuizField = (
                 await self.uow.quiz_field_repo.create_quiz_field(
                     contest_id=contest_id,
@@ -203,20 +221,23 @@ class QuizFieldService(IQuizFieldService):
     @log_calls
     async def update_quiz_field(
             self,
+            user_id: int,
             quiz_field_id: int,
             number_of_rows: int,
             number_of_columns: int,
     ) -> QuizFieldId:
         async with self.uow:
-            quiz_field: QuizField | None = (
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_edit_quiz_field(
+                    uow=self.uow, user_id=user_id, quiz_field_id=quiz_field_id, raise_if_none=True, ))
+
+            quiz_field: QuizField = (
                 await self.uow.quiz_field_repo.update_quiz_field(
                     quiz_field_id=quiz_field_id,
                     number_of_rows=number_of_rows,
-                    number_of_columns=number_of_columns,
-                )
-            )
-            if not quiz_field:
-                raise EntityDoesNotExist("quiz_field with such quiz_field_id not found")
+                    number_of_columns=number_of_columns, )
+            )  # Существование quiz_field проверено в access_policy
 
             res = QuizFieldId(
                 quiz_field_id=quiz_field.id,

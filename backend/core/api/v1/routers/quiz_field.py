@@ -13,9 +13,7 @@ from backend.core.schemas.quiz_field import (
     QuizFieldInfoForEditor,
     QuizFieldInfoForContestant,
 )
-from backend.core.services.interfaces.permission import IPermissionService
 from backend.core.services.interfaces.quiz_field import IQuizFieldService
-from backend.core.services.providers.permission import get_permission_service
 from backend.core.services.providers.quiz_field import get_quiz_field_service
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
 from backend.core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
@@ -31,6 +29,7 @@ router = fastapi.APIRouter(prefix="/quiz-field", tags=["quiz-field"])
 )
 @async_http_exception_mapper(
     mapping={
+        PermissionDenied: (403, None),
         EntityDoesNotExist: (404, None),
     }
 )
@@ -71,6 +70,7 @@ async def update_quiz_field(
 
     result: QuizFieldId = (
         await quiz_service.update_quiz_field(
+            user_id=user.id,
             **params.model_dump(),
         )
     )
@@ -94,7 +94,6 @@ async def quiz_field_info_for_editor(
         contest_id: int = Query(...),
         user: User = Depends(get_user),
         quiz_field_service: IQuizFieldService = Depends(get_quiz_field_service),
-        permission_service: IPermissionService = Depends(get_permission_service),
 ) -> QuizFieldInfoForEditor:
     """
     Получает полную информацию о поле для редактора контеста.
@@ -106,7 +105,6 @@ async def quiz_field_info_for_editor(
         contest_id (int): ID контеста, поле которого запрашивается (в query).
         user (User): Авторизованный пользователь (определяется по JWT).
         quiz_field_service (IQuizFieldService): Сервис для получения данных поля.
-        permission_service (IPermissionService): Сервис для проверки прав на редактирование контеста.
 
     Returns:
         QuizFieldInfoForEditor: Объект с информацией:
@@ -128,9 +126,6 @@ async def quiz_field_info_for_editor(
         Этот эндпоинт используется в интерфейсе редактирования контеста для отображения
         и настройки сетки задач. Включает только публичные метаданные карточек — ответы задач не возвращаются.
     """
-    await permission_service.raise_if_not_all([
-        lambda: permission_service.check_permission_for_edit_contest(user_id=user.id, contest_id=contest_id),
-    ])
 
     result: QuizFieldInfoForEditor = (
         await quiz_field_service.quiz_field_info_for_editor(
