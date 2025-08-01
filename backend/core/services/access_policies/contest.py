@@ -1,14 +1,9 @@
 from datetime import datetime, timezone
-from typing import (
-    Any,
-    Tuple,
-    Optional,
-)
+from typing import Tuple
 
 from backend.core.models import (
     Contest,
     User,
-    Contestant,
 )
 from backend.core.models.permission import (
     PermissionActionType,
@@ -18,8 +13,6 @@ from backend.core.models.permission import (
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.permission import PermissionPromise
 from backend.core.services.access_policies.base import AccessPolicy
-from backend.core.utilities.exceptions.database import EntityDoesNotExist
-from backend.core.utilities.exceptions.permission import PermissionDenied
 
 
 class ContestAccessPolicy(AccessPolicy):

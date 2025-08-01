@@ -1,7 +1,14 @@
 from datetime import datetime
-from typing import Sequence, Optional
+from typing import (
+    Sequence,
+    Optional,
+)
 
-from backend.core.models import Contest, Contestant, User
+from backend.core.models import (
+    Contest,
+    Contestant,
+    User,
+)
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.contest import (
     ContestId,
@@ -17,7 +24,10 @@ from backend.core.schemas.contestant import ContestantId
 from backend.core.schemas.permission import PermissionPromise
 from backend.core.services.access_policies.contest import ContestAccessPolicy
 from backend.core.services.interfaces.contest import IContestService
-from backend.core.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
+from backend.core.utilities.exceptions.database import (
+    EntityDoesNotExist,
+    EntityAlreadyExists,
+)
 from backend.core.utilities.loggers.log_decorator import log_calls
 
 
