@@ -61,8 +61,6 @@ async def check_submission(
         - Операция может повлиять на счёт участника (начисление/списание баллов) в зависимости от правил контеста.
     """
 
-    # todo: проверка доступа
-
     result: SubmissionId = (
         await submission_service.check_submission(
             user_id=user.id,

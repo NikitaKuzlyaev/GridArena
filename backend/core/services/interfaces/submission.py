@@ -30,15 +30,3 @@ class ISubmissionService(Protocol):
         :return: Объект с идентификатором отправки решения.
         """
         ...
-
-    async def get_possible_reward(
-            self,
-            selected_problem_id: int,
-    ) -> int:
-        """
-        Получить возможную награду за выбранную задачу.
-
-        :param selected_problem_id: Идентификатор выбранной задачи.
-        :return: Возможная награда (баллы).
-        """
-        ...

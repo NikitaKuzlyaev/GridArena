@@ -29,7 +29,7 @@ class SubmissionService(ISubmissionService):
     ):
         self.uow = uow
 
-    def get_verdict(
+    def _get_verdict(
             self,
             contestant_answer: str,
             problem_answer: str,
@@ -46,41 +46,40 @@ class SubmissionService(ISubmissionService):
             answer: str,
     ) -> SubmissionId:
         async with self.uow:
-            contestant: Contestant = (
-                await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id)
-            )
+            # Проверка прав не требуется. Все описано в логике ниже.
+            # Пользователь не может получить чужую информацию в принципе, так как жестко привязан своим domain_number
+
+            contestant: Contestant = await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id, )
             selected_problem: SelectedProblem = (
-                await self.uow.selected_problem_repo.get_selected_problem_by_id(selected_problem_id=selected_problem_id)
+                await self.uow.selected_problem_repo.get_selected_problem_by_id(
+                    selected_problem_id=selected_problem_id, )
             )
             problem_card: ProblemCard = (
                 await self.uow.problem_card_repo.get_problem_card_by_id(
-                    problem_card_id=selected_problem.problem_card_id)
+                    problem_card_id=selected_problem.problem_card_id, )
             )
-            problem: Problem = (
-                await self.uow.problem_repo.get_problem_by_id(problem_id=problem_card.problem_id)
-            )
+            problem: Problem = await self.uow.problem_repo.get_problem_by_id(problem_id=problem_card.problem_id, )
+
             # Участник не может отправлять посылки не по своим купленным задачам
             if contestant.id != selected_problem.contestant_id:
                 raise PermissionDenied("Участник не может отправлять посылки не по своим купленным задачам")
 
-            is_answer_correct = self.get_verdict(
+            is_answer_correct = self._get_verdict(
                 contestant_answer=answer,
                 problem_answer=problem.answer,
             )
 
-            verdict = (SubmissionVerdict.ACCEPTED.value if is_answer_correct
-                       else SubmissionVerdict.WRONG.value)
+            verdict = SubmissionVerdict.ACCEPTED.value if is_answer_correct else SubmissionVerdict.WRONG.value
 
             possible_reward = 0
 
             if verdict == SubmissionVerdict.ACCEPTED.value:
                 possible_reward: int = (
-                    await self.get_possible_reward(
-                        selected_problem_id=selected_problem.id,
-                    )
+                    await self._get_possible_reward(
+                        selected_problem_id=selected_problem.id, )
                 )
 
-            next_status = await self.get_next_selected_problem_status(
+            next_status = await self._get_next_selected_problem_status(
                 selected_problem_id=selected_problem.id,
                 is_next_answer_correct=is_answer_correct,
             )
@@ -92,31 +91,31 @@ class SubmissionService(ISubmissionService):
                     answer=answer,
                     verdict=verdict,
                     points_delta=possible_reward,
-                    selected_problem_change_status=next_status.value,
-                )
+                    selected_problem_change_status=next_status.value, )
             )
             res = SubmissionId(
                 submission_id=submission.id,
             )
             return res
 
-    async def get_possible_reward(
+    async def _get_possible_reward(
             self,
             selected_problem_id: int,
     ) -> int:
         async with self.uow:
             selected_problem: SelectedProblem = (
-                await self.uow.selected_problem_repo.get_selected_problem_by_id(selected_problem_id=selected_problem_id)
+                await self.uow.selected_problem_repo.get_selected_problem_by_id(
+                    selected_problem_id=selected_problem_id, )
             )
             problem_card: ProblemCard = (
                 await self.uow.problem_card_repo.get_problem_card_by_id(
-                    problem_card_id=selected_problem.problem_card_id)
+                    problem_card_id=selected_problem.problem_card_id, )
             )
             quiz_field: QuizField = (
-                await self.uow.quiz_field_repo.get_quiz_field_by_id(quiz_field_id=problem_card.quiz_field_id)
+                await self.uow.quiz_field_repo.get_quiz_field_by_id(quiz_field_id=problem_card.quiz_field_id, )
             )
             contest: Contest = (
-                await self.uow.contest_repo.get_contest_by_id(contest_id=quiz_field.contest_id)
+                await self.uow.contest_repo.get_contest_by_id(contest_id=quiz_field.contest_id, )
             )
 
             # Награда за решение доступна только если задача активна (доступна для решения)
@@ -138,7 +137,7 @@ class SubmissionService(ISubmissionService):
             )
             return max_reward
 
-    async def get_next_selected_problem_status(
+    async def _get_next_selected_problem_status(
             self,
             selected_problem_id: int,
             is_next_answer_correct: bool,
