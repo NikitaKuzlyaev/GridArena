@@ -7,6 +7,9 @@ function ContestSubmissions() {
   const [searchParams] = useSearchParams();
   const contestId = searchParams.get('contest_id');
   const [submissions, setSubmissions] = useState(null);
+  const [showUserOnly, setShowUserOnly] = useState(false);
+  const [initialShowUserOnly, setInitialShowUserOnly] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const { makeRequest, loading } = useApi();
 
   useEffect(() => {
@@ -14,7 +17,7 @@ function ContestSubmissions() {
     
     const fetchSubmissions = async () => {
       try {
-        const data = await makeRequest(`${config.backendUrl}api/v1/contest/submissions?contest_id=${contestId}`);
+        const data = await makeRequest(`${config.backendUrl}api/v1/contest/submissions?contest_id=${contestId}&show_user_only=${showUserOnly}`);
         // Сортируем посылки по времени создания (новые сначала)
         if (data.submissions && data.submissions.body) {
           data.submissions.body.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -28,9 +31,83 @@ function ContestSubmissions() {
     fetchSubmissions();
   }, [contestId, makeRequest]);
 
+  // Отслеживаем изменения состояния чекбокса
+  useEffect(() => {
+    setHasChanges(showUserOnly !== initialShowUserOnly);
+  }, [showUserOnly, initialShowUserOnly]);
+
+  const handleApplyFilter = async () => {
+    if (!contestId) return;
+    
+    try {
+      const data = await makeRequest(`${config.backendUrl}api/v1/contest/submissions?contest_id=${contestId}&show_user_only=${showUserOnly}`);
+      // Сортируем посылки по времени создания (новые сначала)
+      if (data.submissions && data.submissions.body) {
+        data.submissions.body.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      }
+      setSubmissions(data);
+      setInitialShowUserOnly(showUserOnly);
+      setHasChanges(false);
+    } catch (error) {
+      console.error('Ошибка при загрузке посылок:', error);
+    }
+  };
+
   return (
     <div style={{ maxWidth: 1000, margin: '32px auto', padding: '0 16px' }}>
       <h1 style={{ textAlign: 'center', marginBottom: 32 }}>Посылки</h1>
+      
+      {/* Фильтры */}
+      <div style={{
+        background: 'white',
+        padding: '20px',
+        borderRadius: '8px',
+        marginBottom: '24px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        flexWrap: 'wrap'
+      }}>
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          fontWeight: 500
+        }}>
+          <input
+            type="checkbox"
+            checked={showUserOnly}
+            onChange={(e) => setShowUserOnly(e.target.checked)}
+            style={{
+              width: '16px',
+              height: '16px',
+              cursor: 'pointer'
+            }}
+          />
+          Показывать только мои попытки
+        </label>
+        
+        <button
+          onClick={handleApplyFilter}
+          disabled={!hasChanges}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: hasChanges ? '#667eea' : '#ccc',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: hasChanges ? 'pointer' : 'not-allowed',
+            fontSize: '14px',
+            fontWeight: 500,
+            transition: 'background-color 0.2s'
+          }}
+        >
+          Применить
+        </button>
+      </div>
       
       {loading && (
         <div style={{ textAlign: 'center', padding: 20 }}>

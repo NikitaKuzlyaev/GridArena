@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import (
     Sequence,
-    List,
+    List, Tuple,
 )
 
 from sqlalchemy import (
@@ -42,7 +42,7 @@ class ContestCRUDRepository(BaseCRUDRepository):
             self,
             contest_id: int,
             show_last_n_submissions: int,
-            filter_by_user: List[int] | None = None,
+            filter_by_user: Tuple[int, ...] | None = None,
     ) -> Sequence[ContestSubmission]:
         stmt = (
             select(
@@ -62,7 +62,7 @@ class ContestCRUDRepository(BaseCRUDRepository):
         )
 
         if filter_by_user is not None:
-            stmt.where(Contestant.user_id.in_(filter_by_user))
+            stmt = stmt.where(Contestant.user_id.in_(filter_by_user))
 
         res = await self.async_session.execute(stmt)
 
