@@ -9,4 +9,4 @@ class SubmissionId(BaseSchemaModel):
 
 class SubmissionCreateRequest(BaseSchemaModel):
     selected_problem_id: int
-    answer: str = Field(..., max_length=32)
+    answer: str = Field(..., min_length=1, max_length=32)

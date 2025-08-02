@@ -6,8 +6,11 @@ from fastapi import (
 )
 from pyinstrument import Profiler
 from starlette.middleware.cors import CORSMiddleware
-
+from starlette.responses import Response
 from backend.core.api.v1.routers import routers as routers_v1
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from backend.metrics.middleware import MetricsMiddleware
 
 app = FastAPI(root_path='/api')
 
@@ -24,6 +27,13 @@ app.add_middleware(
     allow_methods=["*"],  # или ['GET', 'POST', ...]
     allow_headers=["*"],  # или ['Content-Type', 'Authorization']
 )
+
+app.add_middleware(MetricsMiddleware)
+
+
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 # @app.middleware("http")
@@ -54,3 +64,8 @@ async def profile_request(request: Request, call_next):
 
 for router in routers_v1:
     app.include_router(router=router, prefix="/v1")
+
+
+# uvicorn backend.main:app --host 0.0.0.0 --port 8000
+# uvicorn backend.main:app --host localhost --port 8000
+# uvicorn backend.main:app --host 127.0.0.1 --port 8000
