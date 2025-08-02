@@ -47,6 +47,7 @@ class ContestService(IContestService):
             self,
             user_id: int,
             contest_id: int,
+            show_user_only: bool = False,
             show_last_n_submissions: int = 30,
     ) -> ContestSubmissions:
         async with self.uow:
@@ -61,6 +62,7 @@ class ContestService(IContestService):
             submissions_in_contest = (
                 await self.uow.contest_repo.get_contest_submissions(
                     contest_id=contest_id,
+                    filter_by_user=[user_id,] if show_user_only else None,
                     show_last_n_submissions=show_last_n_submissions,
                 )
             )

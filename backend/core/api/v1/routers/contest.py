@@ -57,7 +57,6 @@ async def create_contest(
             - number_of_slots_for_problems: количество задач, которые участник может держать одновременно (1–5)
         user (User): Авторизованный пользователь, создающий контест (определяется по JWT).
         contest_service (IContestService): Сервис для создания контеста.
-        permission_service (IPermissionService): Сервис для выдачи прав на управление контестом.
 
     Returns:
         ContestId: Объект с единственным полем:
@@ -162,7 +161,6 @@ async def delete_contest(
         contest_id (int): ID контеста, который необходимо удалить (передаётся в query-параметре).
         user (User): Авторизованный пользователь (определяется по JWT).
         contest_service (IContestService): Сервис для удаления контеста.
-        permission_service (IPermissionService): Сервис для проверки прав администратора.
 
     Returns:
         None: Успешный ответ без тела (204 No Content).
@@ -255,7 +253,6 @@ async def contest_info_for_editor(
         contest_id (int): ID контеста, информация о котором запрашивается (передаётся в query).
         user (User): Авторизованный пользователь (определяется по JWT).
         contest_service (IContestService): Сервис для получения данных контеста.
-        permission_service (IPermissionService): Сервис для проверки прав на редактирование.
 
     Returns:
         ContestInfoForEditor: Объект с полной информацией о контесте:
@@ -355,7 +352,6 @@ async def contest_standings(
         contest_id (int): ID контеста, таблица которого запрашивается (в query-параметре).
         user (User): Авторизованный пользователь (определяется по JWT).
         contest_service (IContestService): Сервис для получения данных таблицы.
-        permission_service (IPermissionService): Сервис для проверки прав доступа.
 
     Returns:
         ContestStandings: Объект с информацией:
@@ -400,6 +396,7 @@ async def contest_standings(
 )
 async def contest_submissions(
         contest_id: int = Query(...),
+        show_user_only: bool = Query(False),
         user: User = Depends(get_user),
         contest_service: IContestService = Depends(get_contest_service),
 ) -> ContestSubmissions:
@@ -410,9 +407,9 @@ async def contest_submissions(
 
     Args:
         contest_id (int): ID контеста, посылки которого запрашиваются (передаётся в query).
+        show_user_only(bool): Флаг: отдавать только посылки пользователя (по умолчанию - нет).
         user (User): Авторизованный пользователь (определяется по JWT).
         contest_service (IContestService): Сервис для получения данных о посылках.
-        permission_service (IPermissionService): Сервис для проверки прав доступа.
 
     Returns:
         ContestSubmissions: Объект с информацией:
@@ -438,6 +435,7 @@ async def contest_submissions(
         await contest_service.contest_submissions(
             user_id=user.id,
             contest_id=contest_id,
+            show_user_only=show_user_only,
         )
     )
     result = result.model_dump()

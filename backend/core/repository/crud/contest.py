@@ -1,5 +1,8 @@
 from datetime import datetime
-from typing import Sequence
+from typing import (
+    Sequence,
+    List,
+)
 
 from sqlalchemy import (
     select,
@@ -39,8 +42,9 @@ class ContestCRUDRepository(BaseCRUDRepository):
             self,
             contest_id: int,
             show_last_n_submissions: int,
+            filter_by_user: List[int] | None = None,
     ) -> Sequence[ContestSubmission]:
-        res = await self.async_session.execute(
+        stmt = (
             select(
                 Contestant,
                 ProblemCard,
@@ -56,6 +60,11 @@ class ContestCRUDRepository(BaseCRUDRepository):
             .order_by(Submission.created_at.desc())
             .limit(show_last_n_submissions)
         )
+
+        if filter_by_user is not None:
+            stmt.where(Contestant.user_id.in_(filter_by_user))
+
+        res = await self.async_session.execute(stmt)
 
         rows = res.all()
 

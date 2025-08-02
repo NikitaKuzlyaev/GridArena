@@ -28,12 +28,14 @@ class IContestService(Protocol):
             self,
             user_id: int,
             contest_id: int,
+            show_user_only: bool,
     ) -> ContestSubmissions:
         """
         Получить все отправленные решения для указанного контеста.
 
         :param user_id: Идентификатор пользователя, совершающего операцию.
         :param contest_id: Идентификатор контеста.
+        :param show_user_only: Флаг: отдавать только посылки пользователя (по умолчанию - нет).
         :return: Объект с информацией о решениях в контесте.
         """
         ...
