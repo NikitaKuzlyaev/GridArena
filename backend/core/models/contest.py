@@ -5,6 +5,7 @@ from sqlalchemy import (
     String,
     DateTime,
     Integer,
+    Index,
     CheckConstraint,
     Enum,
     Boolean,
@@ -20,9 +21,16 @@ from backend.core.database.connection import Base
 
 
 class ContestRuleType(enum.Enum):
+    """
+    Тип правил контеста. Бизнес-логика типа правил должна определяться в сервисном слое.
+
+    В зависимости от типа правил может меняться логика начисления наград, проверки ответа и пр.
+    Правила контеста одинаковы для всех участников.
+    """
+
+    # Стандартные правила. 3 попытки на задачу, неограниченное время (но ограниченное в рамках контеста),
+    # решение с первой попытки приносит x2 баллов от цены покупки, со второй - x1.5, с третьей - x1.
     DEFAULT = "DEFAULT"
-    BURNING_ALL = "BURNING_ALL"
-    BURNING_SELECTED = "BURNING_SELECTED"
 
 
 class Contest(Base):
@@ -31,6 +39,7 @@ class Contest(Base):
     __table_args__ = (
         CheckConstraint("start_points BETWEEN 0 AND 10000", name="check_start_points"),
         CheckConstraint("number_of_slots_for_problems BETWEEN 1 AND 5", name="check_number_of_slots"),
+        Index("idx_contest_id", "id"),
     )
 
     quiz_field: Mapped["QuizField"] = relationship(
@@ -41,24 +50,24 @@ class Contest(Base):
     )
 
     id: Mapped[int] = mapped_column(
-        primary_key=True
+        primary_key=True,
     )
 
     name: Mapped[str] = mapped_column(
         String(length=256),
         unique=False,
-        nullable=False
+        nullable=False,
     )
 
     started_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=sqlalchemy_functions.now()
+        server_default=sqlalchemy_functions.now(),
     )
 
     closed_at: Mapped[datetime.datetime | None] = mapped_column(
         DateTime(timezone=True),
-        nullable=False
+        nullable=False,
     )
 
     start_points: Mapped[int] = mapped_column(
@@ -84,5 +93,5 @@ class Contest(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=sqlalchemy_functions.now()
+        server_default=sqlalchemy_functions.now(),
     )

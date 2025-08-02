@@ -20,7 +20,8 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 #target_metadata = None
 
-from backend.core.database import Base
+from backend.core.models import *
+from backend.core.database.connection import Base
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

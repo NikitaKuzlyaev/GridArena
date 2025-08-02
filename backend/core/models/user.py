@@ -3,6 +3,7 @@ import uuid
 
 from sqlalchemy import (
     String,
+    Index,
     DateTime,
     Integer,
     UniqueConstraint,
@@ -18,8 +19,12 @@ from backend.core.database.connection import Base
 
 class User(Base):
     __tablename__ = "user"
+
     __table_args__ = (
         UniqueConstraint("domain_number", "username", name="uq_user_domain_username"),
+        Index("idx_user_domain_number", "domain_number"),
+        Index("idx_user_username", "username"),
+        Index("idx_user_id", "id"),
     )
 
     id: Mapped[int] = mapped_column(

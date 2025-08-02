@@ -7,6 +7,8 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     CheckConstraint,
+    UniqueConstraint,
+    Index,
 )
 from sqlalchemy.orm import (
     Mapped,
@@ -23,31 +25,34 @@ class ProblemCard(Base):
 
     __table_args__ = (
         CheckConstraint("category_price BETWEEN 0 AND 10000", name="check_category_price"),
+        UniqueConstraint("row", "column", "quiz_field_id", name="uq_problem_card_position"),
+        Index("idx_problem_card_id", "id"),
+        Index("idx_problem_card_problem_id", "problem_id"),
     )
 
     problem: Mapped[Optional["Problem"]] = relationship(
         back_populates="problem_cards",
         passive_deletes=True,
-        uselist=False
+        uselist=False,
     )
 
     quiz_field: Mapped["QuizField"] = relationship(
-        back_populates="problem_cards"
+        back_populates="problem_cards",
     )
 
     id: Mapped[int] = mapped_column(
-        primary_key=True
+        primary_key=True,
     )
 
     problem_id: Mapped[int] = mapped_column(
         ForeignKey("problem.id", ondelete="SET NULL"),
-        nullable=True
+        nullable=True,
     )
 
     category_name: Mapped[str] = mapped_column(
         String(length=32),
         unique=False,
-        nullable=False
+        nullable=False,
     )
 
     category_price: Mapped[int] = mapped_column(
@@ -57,21 +62,21 @@ class ProblemCard(Base):
 
     quiz_field_id: Mapped[int] = mapped_column(
         ForeignKey("quiz_field.id", ondelete="CASCADE"),
-        nullable=False
+        nullable=False,
     )
 
     row: Mapped[int] = mapped_column(
         Integer,
-        nullable=False
+        nullable=False,
     )
 
     column: Mapped[int] = mapped_column(
         Integer,
-        nullable=False
+        nullable=False,
     )
 
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=sqlalchemy_functions.now()
+        server_default=sqlalchemy_functions.now(),
     )

@@ -6,6 +6,7 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     CheckConstraint,
+    Index,
 )
 from sqlalchemy.orm import (
     Mapped,
@@ -20,8 +21,13 @@ from backend.core.database.connection import Base
 class QuizField(Base):
     __tablename__ = "quiz_field"
 
+    __table_args__ = (
+        Index("idx_quiz_field_id", "id"),
+        Index("idx_quiz_field_contest_id", "contest_id"),
+    )
+
     contest: Mapped["Contest"] = relationship(
-        back_populates="quiz_field"
+        back_populates="quiz_field",
     )
 
     problem_cards: Mapped[List["ProblemCard"]] = relationship(
@@ -31,29 +37,29 @@ class QuizField(Base):
     )
 
     id: Mapped[int] = mapped_column(
-        primary_key=True
+        primary_key=True,
     )
 
     contest_id: Mapped[int] = mapped_column(
         ForeignKey("contest.id", ondelete="CASCADE"),
         nullable=False,
-        unique=True
+        unique=True,
     )
 
     number_of_rows: Mapped[int] = mapped_column(
         Integer,
         CheckConstraint("number_of_rows BETWEEN 1 AND 8"),
-        nullable=False
+        nullable=False,
     )
 
     number_of_columns: Mapped[int] = mapped_column(
         Integer,
         CheckConstraint("number_of_columns BETWEEN 1 AND 8"),
-        nullable=False
+        nullable=False,
     )
 
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=sqlalchemy_functions.now()
+        server_default=sqlalchemy_functions.now(),
     )
