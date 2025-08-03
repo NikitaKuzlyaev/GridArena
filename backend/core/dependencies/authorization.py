@@ -27,20 +27,37 @@ async def get_user(
         token_blacklist_handler: ITokenBlacklistHandler = Depends(get_token_blacklist_handler),
         user_repo: UserCRUDRepository = Depends(get_repository(UserCRUDRepository)),
 ) -> User:
+    """
+    Извлекает пользователя из JWT-токена, проверяя его валидность и отсутствие токенов в чёрном списке.
+
+    Используется как зависимость в защищённых эндпоинтах FastAPI для получения
+    текущего аутентифицированного пользователя.
+
+    Args:
+        token (str): JWT-токен, полученный через схему авторизации (обычно из заголовка Authorization).
+        token_blacklist_handler (ITokenBlacklistHandler): Хендлер, проверяющий, находится ли токен в чёрном списке.
+        user_repo (UserCRUDRepository): Репозиторий для получения данных пользователя из БД.
+
+    Returns:
+        User: Объект пользователя, соответствующий токену.
+
+    Raises:
+        HTTPException 401: Если токен отсутствует, недействителен, находится в чёрном списке или не содержит нужных данных.
+        HTTPException 404: Если пользователь с UUID из токена не найден.
+    """
+
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     is_token_in_blacklist: bool = (
-        await token_blacklist_handler.check_token_in_blacklist(
-            token=token,
-        )
+        await token_blacklist_handler.check_token_in_blacklist(token=token, )
     )
     if is_token_in_blacklist:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     try:
         payload = decode_token(token=token)
-        user_uuid: str = payload.get("sub")
+        user_uuid: str | None = payload.get("sub")
 
         if user_uuid is None:
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
@@ -50,7 +67,7 @@ async def get_user(
                 user_uuid=user_uuid,
                 user_repo=user_repo,
             )
-        )
+        )  # Если пользователь не найден, то поднимется исключение от `auth_service.get_user_by_uuid`
 
         return user
 
@@ -84,7 +101,6 @@ async def get_user_with_access_token(
                 user_repo=user_repo,
             )
         )
-
         return user, token
 
     except EntityDoesNotExist:

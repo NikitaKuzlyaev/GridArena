@@ -1,6 +1,13 @@
-from typing import Protocol, Any, Tuple, Optional
+from typing import (
+    Protocol,
+    Tuple,
+    Optional,
+)
 
-from backend.core.models import Contest, User
+from backend.core.models import (
+    Contest,
+    User,
+)
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
 from backend.core.utilities.exceptions.permission import PermissionDenied
@@ -19,7 +26,6 @@ class AccessPolicy(Protocol):
     Например, ContestAccessPolicy(AccessPolicy) - класс, определяющий методы проверки доступа
     пользователя к ресурсам, предоставляемых реализацией IContestService (например, ContestService)
     """
-    ...
 
     @staticmethod
     def _raise_if(condition: bool, msg: str, ex_type: type[Exception] = PermissionDenied) -> None:

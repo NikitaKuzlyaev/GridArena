@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import (
     Sequence,
-    List, Tuple,
+    List,
+    Tuple,
 )
 
 from sqlalchemy import (
@@ -65,7 +66,6 @@ class ContestCRUDRepository(BaseCRUDRepository):
             stmt = stmt.where(Contestant.user_id.in_(filter_by_user))
 
         res = await self.async_session.execute(stmt)
-
         rows = res.all()
 
         res = [
@@ -119,7 +119,6 @@ class ContestCRUDRepository(BaseCRUDRepository):
             delete(Contest)
             .where(Contest.id == contest_id)
         )
-        # await self.async_session.commit()
 
     async def get_contest_by_user_id(
             self,
@@ -187,7 +186,6 @@ class ContestCRUDRepository(BaseCRUDRepository):
         self.async_session.add(instance=problem_card)
         await self.async_session.flush()
 
-        # await self.async_session.refresh(contest)
         return contest
 
     @log_calls
@@ -211,8 +209,6 @@ class ContestCRUDRepository(BaseCRUDRepository):
         self.async_session.add(instance=new_contest)
         await self.async_session.flush()
 
-        # await self.async_session.commit()
-        # await self.async_session.refresh(instance=new_contest)
         return new_contest
 
     @log_calls
@@ -242,7 +238,6 @@ class ContestCRUDRepository(BaseCRUDRepository):
             .execution_options(synchronize_session="fetch")
         )
         await self.async_session.flush()
-        # await self.async_session.commit()
 
         result = await self.async_session.execute(
             select(Contest)

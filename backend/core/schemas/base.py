@@ -10,6 +10,19 @@ from backend.core.utilities.formatters.field_formatter import format_dict_key_to
 
 
 class BaseSchemaModel(BaseModel):
+    """
+    Базовая модель Pydantic для схем с общими настройками.
+
+    Особенности:
+    - Позволяет создавать модель из атрибутов объектов (from_attributes=True).
+    - Валидация данных при присвоении значений (validate_assignment=True).
+    - Автоматическое заполнение полей по алиасам (populate_by_name=True).
+    - Кастомное кодирование datetime в ISO формат при сериализации в JSON.
+    - Генерация алиасов в camelCase из snake_case (alias_generator).
+
+    Используется как базовый класс для всех схем данных в проекте.
+    """
+
     model_config = ConfigDict(
         from_attributes=True,
         validate_assignment=True,

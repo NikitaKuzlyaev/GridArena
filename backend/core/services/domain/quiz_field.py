@@ -54,37 +54,26 @@ class QuizFieldService(IQuizFieldService):
             # Проверка прав не требуется. Все описано в логике ниже.
             # Пользователь не может получить чужую информацию в принципе, так как жестко привязан своим domain_number
 
-            user: User = (
-                await self.uow.user_repo.get_user_by_id(
-                    user_id=user_id,
-                )
-            )
-            contest_id = user.domain_number
+            user: User = await self.uow.user_repo.get_user_by_id(user_id=user_id, )
 
-            contest: Contest = (
-                await self.uow.contest_repo.get_contest_by_id(
-                    contest_id=contest_id,
-                )
-            )
+            contest_id = user.domain_number
+            contest: Contest = await self.uow.contest_repo.get_contest_by_id(contest_id=contest_id, )
+
             quiz_field: QuizField = (
                 await self.uow.quiz_field_repo.get_quiz_field_by_contest_id(
-                    contest_id=contest_id,
-                )
+                    contest_id=contest_id, )
             )
             problem_cards_with_problem: Sequence[Row[Tuple[ProblemCard, Problem]]] = (
                 await self.uow.problem_card_repo.get_tuple_problem_cards_with_problem_by_quiz_field_id(
-                    quiz_field_id=quiz_field.id,
-                )
+                    quiz_field_id=quiz_field.id, )
             )
             contestant: Contestant = (
                 await self.uow.contestant_repo.get_contestant_by_user_id(
-                    user_id=user_id,
-                )
+                    user_id=user_id, )
             )
             selected_problems: Sequence[SelectedProblem] = (
                 await self.uow.selected_problem_repo.get_selected_problem_of_contestant_by_id(
-                    contestant_id=contestant.id,
-                )
+                    contestant_id=contestant.id, )
             )
             selected_problems_statuses = {
                 sp.problem_card_id: sp.status for sp in selected_problems
@@ -170,8 +159,7 @@ class QuizFieldService(IQuizFieldService):
 
             problem_cards_with_problem: Sequence[Row[Tuple[ProblemCard, Problem]]] = (
                 await self.uow.problem_card_repo.get_tuple_problem_cards_with_problem_by_quiz_field_id(
-                    quiz_field_id=quiz_field.id,
-                )
+                    quiz_field_id=quiz_field.id,)
             )
             res = QuizFieldInfoForEditor(
                 quiz_field_id=quiz_field.id,

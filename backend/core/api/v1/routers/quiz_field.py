@@ -66,8 +66,6 @@ async def update_quiz_field(
         Изменения на идущем контесте могут быть непредсказуемыми! (логика может меняться со временем)
     """
 
-    # todo: добавить проверку прав
-
     result: QuizFieldId = (
         await quiz_service.update_quiz_field(
             user_id=user.id,
@@ -184,6 +182,7 @@ async def quiz_field_info_for_contestant(
     Примечание:
         Ответ содержит только ту информацию, которая разрешена к показу участнику.
     """
+
     result: QuizFieldInfoForContestant = (
         await quiz_field_service.quiz_field_info_for_contestant(
             user_id=user.id,

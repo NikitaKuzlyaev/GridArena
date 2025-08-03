@@ -5,7 +5,8 @@ from datetime import (
 )
 from typing import (
     Sequence,
-    Tuple, Optional,
+    Tuple,
+    Optional,
 )
 
 from backend.core.models import (
@@ -39,9 +40,7 @@ class ContestantService(IContestantService):
             self,
             uow: UnitOfWork,
             access_policy: Optional[ContestantAccessPolicy] = None,
-            # permission_service: IPermissionService,
     ):
-        # self.permission_service = permission_service
         self.uow = uow
         self.access_policy: ContestantAccessPolicy = access_policy or ContestantAccessPolicy()
 
@@ -51,24 +50,19 @@ class ContestantService(IContestantService):
             user_id: int
     ) -> Tuple[User, Contestant, Contest]:
         async with self.uow:
-            user: User | None = (
-                await self.uow.user_repo.get_user_by_id(
-                    user_id=user_id, )
-            )
+            user: User | None = await self.uow.user_repo.get_user_by_id(user_id=user_id, )
             if not user:
                 raise EntityDoesNotExist("user not found")
 
             contestant: Contestant | None = (
                 await self.uow.contestant_repo.get_contestant_by_user_id(
-                    user_id=user_id, )
-            )
+                    user_id=user_id, ))
             if not contestant:
                 raise EntityDoesNotExist("contestant was not found")
 
             contest: Contest | None = (
                 await self.uow.contest_repo.get_contest_by_id(
-                    contest_id=user.domain_number, )
-            )
+                    contest_id=user.domain_number, ))
             if not contest:
                 raise EntityDoesNotExist("contest was not found")
 

@@ -1,4 +1,7 @@
-from datetime import datetime, timezone
+from datetime import (
+    datetime,
+    timezone,
+)
 from typing import Tuple
 
 from backend.core.models import (
@@ -57,7 +60,6 @@ class ContestAccessPolicy(AccessPolicy):
             user_id: int,
             contest_id: int,
             raise_if_none: bool = True,
-            **kwargs,
     ) -> PermissionPromise | None:
 
         async with uow:
@@ -116,8 +118,7 @@ class ContestAccessPolicy(AccessPolicy):
             contest_id: int,
             raise_if_none: bool = True,
     ) -> PermissionPromise | None:
-        user_and_contest: Tuple[User, Contest] = await self.base_check(uow, user_id, contest_id, raise_if_none)
-        user, contest = user_and_contest
+        await self.base_check(uow, user_id, contest_id, raise_if_none)
 
         permission: Permission | None = (
             await uow.permission_repo.check_permission(
@@ -139,8 +140,7 @@ class ContestAccessPolicy(AccessPolicy):
             contest_id: int,
             raise_if_none: bool = True,
     ) -> PermissionPromise | None:
-        user_and_contest: Tuple[User, Contest] = await self.base_check(uow, user_id, contest_id, raise_if_none)
-        user, contest = user_and_contest
+        await self.base_check(uow, user_id, contest_id, raise_if_none)
 
         permission: Permission | None = (
             await uow.permission_repo.check_permission(

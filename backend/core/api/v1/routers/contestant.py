@@ -116,6 +116,7 @@ async def preview_contestant_info(
         PermissionDenied: Если у пользователя нет доступа к данным.
         EntityDoesNotExist: Если участник или связанный контест не найдены.
     """
+
     res: ContestantPreviewInfo = (
         await contestant_service.get_contestant_preview(
             user_id=user.id,
@@ -162,6 +163,7 @@ async def preview_contestant_info(
         PermissionDenied: Если у пользователя нет доступа к данным.
         EntityDoesNotExist: Если участник или его участие в контесте не найдено.
     """
+
     res: ContestantInfoInContest = (
         await contestant_service.get_contestant_info_in_contest(
             user_id=user.id,

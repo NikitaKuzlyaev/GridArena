@@ -13,10 +13,8 @@ from backend.core.schemas.base import BaseSchemaModel
 
 class ContestCreateRequest(BaseSchemaModel):
     name: str = Field(..., max_length=256)
-
     started_at: datetime
     closed_at: datetime
-
     start_points: int = Field(
         ..., ge=0, le=10000,
         description="Стартовый баланс",
@@ -35,12 +33,9 @@ class ContestCreateRequest(BaseSchemaModel):
 
 class ContestUpdateRequest(BaseSchemaModel):
     contest_id: int
-
     name: str = Field(..., max_length=256)
-
     started_at: datetime
     closed_at: datetime
-
     start_points: int = Field(
         ..., ge=0, le=10000,
         description="Стартовый баланс",
@@ -49,7 +44,6 @@ class ContestUpdateRequest(BaseSchemaModel):
         ..., ge=1, le=5,
         description="Сколько задач разрешено держать одновременно (1–5)",
     )
-
     rule_type: ContestRuleType
     flag_user_can_have_negative_points: bool
 
@@ -100,6 +94,19 @@ class ContestantInStandings(BaseSchemaModel):
     rank: int
 
 
+class ArrayContestantInStandings(BaseSchemaModel):
+    body: Sequence[ContestantInStandings]
+
+
+class ContestStandings(BaseSchemaModel):
+    contest_id: int
+    name: str
+    started_at: datetime
+    closed_at: datetime
+    standings: ArrayContestantInStandings
+    use_cache: bool = Field(default=False)
+
+
 class ProblemCardForSubmissionInfo(BaseSchemaModel):
     problem_card_id: int
     category_name: str
@@ -114,21 +121,8 @@ class ContestSubmission(BaseSchemaModel):
     created_at: datetime
 
 
-class ArrayContestantInStandings(BaseSchemaModel):
-    body: Sequence[ContestantInStandings]
-
-
 class ArrayContestSubmissions(BaseSchemaModel):
     body: Sequence[ContestSubmission]
-
-
-class ContestStandings(BaseSchemaModel):
-    contest_id: int
-    name: str
-    started_at: datetime
-    closed_at: datetime
-    standings: ArrayContestantInStandings
-    use_cache: bool = Field(default=False)
 
 
 class ContestSubmissions(BaseSchemaModel):

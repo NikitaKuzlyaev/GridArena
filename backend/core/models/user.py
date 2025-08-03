@@ -28,34 +28,34 @@ class User(Base):
     )
 
     id: Mapped[int] = mapped_column(
-        primary_key=True
+        primary_key=True,
     )
 
     domain_number: Mapped[int] = mapped_column(
         Integer,
-        nullable=False
+        nullable=False,
     )
 
     username: Mapped[str] = mapped_column(
         String(64),
         unique=False,
-        nullable=False
+        nullable=False,
     )
 
     uuid: Mapped[str] = mapped_column(
         String(36),
         default=lambda: str(uuid.uuid4()),
         unique=True,
-        nullable=False
+        nullable=False,
     )
 
     hashed_password: Mapped[str] = mapped_column(
         String(128),
-        nullable=False
+        nullable=False,
     )
 
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=sqlalchemy_functions.now()
+        server_default=sqlalchemy_functions.now(),
     )

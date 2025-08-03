@@ -9,8 +9,10 @@ from backend.core.models import (
     Contestant,
     User,
 )
-from backend.core.models.permission import PermissionResourceType, PermissionActionType
-from backend.core.repository.crud import uow
+from backend.core.models.permission import (
+    PermissionResourceType,
+    PermissionActionType,
+)
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.contest import (
     ContestId,

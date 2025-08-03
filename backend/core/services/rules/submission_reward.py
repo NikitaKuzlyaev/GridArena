@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from backend.core.models.contest import ContestRuleType
 
 
@@ -7,8 +5,6 @@ def calculate_max_submission_reward(
         number_of_tries_before: int,
         cost_of_problem_card: int,
         contest_rule_type: ContestRuleType,
-        time_contest_start: datetime | None = None,
-        time_selected_problem_create: datetime | None = None,
 ) -> int:
     if contest_rule_type == ContestRuleType.DEFAULT:
         if number_of_tries_before == 0:

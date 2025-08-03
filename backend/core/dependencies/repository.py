@@ -16,6 +16,19 @@ T = TypeVar("T", bound=BaseCRUDRepository)
 
 @log_calls
 def get_repository(repo_type: Type[T]) -> Callable[[AsyncSession], T]:
+    """
+    Фабрика зависимости для внедрения репозиториев в ручки FastAPI.
+
+    Принимает тип репозитория, унаследованный от BaseCRUDRepository, и возвращает функцию-зависимость,
+    которая создаёт экземпляр репозитория с переданной асинхронной сессией.
+
+    Args:
+        repo_type (Type[T]): Класс репозитория, который необходимо внедрить. Должен быть подклассом BaseCRUDRepository.
+
+    Returns:
+        Callable[[AsyncSession], T]: Функция, совместимая с Depends, создающая экземпляр репозитория.
+    """
+
     def _get_repo(
             async_session: AsyncSession = Depends(get_async_session),
     ) -> T:

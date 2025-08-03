@@ -34,6 +34,7 @@ router = fastapi.APIRouter(prefix="/contest", tags=["contest"])
 )
 @async_http_exception_mapper(
     mapping={
+        PermissionDenied: (403, None),
     }
 )
 async def create_contest(
@@ -88,6 +89,7 @@ async def create_contest(
 )
 @async_http_exception_mapper(
     mapping={
+        PermissionDenied: (403, None),
         EntityDoesNotExist: (404, None),
     }
 )
@@ -144,6 +146,7 @@ async def update_contest(
 @async_http_exception_mapper(
     mapping={
         PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
     }
 )
 async def delete_contest(
@@ -191,6 +194,7 @@ async def delete_contest(
 )
 @async_http_exception_mapper(
     mapping={
+        PermissionDenied: (403, None),
     }
 )
 async def view_contests(

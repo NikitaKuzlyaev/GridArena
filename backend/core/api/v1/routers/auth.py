@@ -26,7 +26,7 @@ from backend.core.services.domain.auth import verify_refresh_token
 from backend.core.services.security import (
     REFRESH_TOKEN_EXPIRE_MINUTES,
     create_refresh_token,
-    create_access_token
+    create_access_token,
 )
 from backend.core.utilities.exceptions.auth import TokenException
 from backend.core.utilities.exceptions.database import EntityAlreadyExists
@@ -70,6 +70,7 @@ async def register(
     Raises:
         EntityAlreadyExists: Если пользователь с таким username уже существует (код 409).
     """
+
     user: User = (
         await auth_service.register_site_user(
             data=data,
@@ -131,6 +132,7 @@ async def login_for_access_token(
         Параметры secure=True и samesite="none" требуются для работы через HTTPS и кросс-доменных запросов.
         В режиме отладки могут быть изменены на менее строгие значения.
     """
+
     access_token: str = (
         await auth_service.authenticate_user(
             domain_number=form_data.domain_number,
@@ -204,6 +206,7 @@ async def refresh_access_token(
     Примечание:
         Сам refresh-токен не обновляется — используется существующий с тем же сроком жизни.
     """
+
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Refresh token missing.")
@@ -218,7 +221,7 @@ async def refresh_access_token(
         raise HTTPException(status_code=401, detail="User not found.")
 
     new_access_token = create_access_token(
-        data={"sub": user.uuid}
+        data={"sub": user.uuid},
     )
     res = Token(
         access_token=new_access_token,
@@ -271,6 +274,7 @@ async def move_user_tokens_to_blacklist(
         После успешного выполнения клиент должен удалить refresh_token из куки
         (рекомендуется дополнительным Set-Cookie с пустым значением и max_age=0).
     """
+
     user, access_token = user_with_access_token
 
     refresh_token = request.cookies.get("refresh_token")

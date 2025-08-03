@@ -49,7 +49,7 @@ class ProblemCardStatus(str, Enum):
 
 class ProblemCardInfo(BaseSchemaModel):
     problem_card_id: int
-    problem: ProblemId  # ProblemInfoForEditor
+    problem: ProblemId
     row: int
     column: int
     category_price: int

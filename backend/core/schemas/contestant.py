@@ -14,6 +14,10 @@ class ContestantInfo(BaseSchemaModel):
     points: int
 
 
+class ArrayContestantInfoForEditor(BaseSchemaModel):
+    body: Sequence[ContestantInfo]
+
+
 class ContestantPreviewInfo(BaseSchemaModel):
     contestant_id: int
     contestant_name: str
@@ -38,7 +42,3 @@ class ContestantInCreate(BaseSchemaModel):
     name: str
     contest_id: int
     points: int
-
-
-class ArrayContestantInfoForEditor(BaseSchemaModel):
-    body: Sequence[ContestantInfo]

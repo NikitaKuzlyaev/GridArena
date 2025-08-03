@@ -50,7 +50,8 @@ class SelectedProblem(Base):
     )
 
     status: Mapped[SelectedProblemStatusType] = mapped_column(
-        Enum(SelectedProblemStatusType),
+        Enum(SelectedProblemStatusType, default="ACTIVE"),
+        nullable=False,
     )
 
     created_at: Mapped[datetime.datetime] = mapped_column(

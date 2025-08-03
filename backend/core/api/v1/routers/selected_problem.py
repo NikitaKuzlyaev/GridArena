@@ -30,13 +30,13 @@ router = fastapi.APIRouter(prefix="/selected-problem", tags=["selected-problem"]
     mapping={
         PermissionDenied: (403, None),
         EntityDoesNotExist: (404, None),
-        PossibleLimitOverflow: (403, None),
+        PossibleLimitOverflow: (422, None),
     }
 )
 async def buy_problem(
         params: SelectedProblemBuyRequest = Body(...),
         user: User = Depends(get_user),
-        selected_problem_service: ISelectedProblemService = Depends(get_selected_problem_service)
+        selected_problem_service: ISelectedProblemService = Depends(get_selected_problem_service),
 ) -> SelectedProblemId:
     """
     Выбирает («покупает») задачу для решения участником.
@@ -96,7 +96,7 @@ async def buy_problem(
 )
 async def get_contestant_selected_problems(
         user: User = Depends(get_user),
-        selected_problem_service: ISelectedProblemService = Depends(get_selected_problem_service)
+        selected_problem_service: ISelectedProblemService = Depends(get_selected_problem_service),
 ) -> ArraySelectedProblemInfoForContestant:
     """
     Получает список всех выбранных («купленных») задач текущего участника.

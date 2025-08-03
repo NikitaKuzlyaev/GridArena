@@ -13,7 +13,9 @@ from backend.core.schemas.submission import (
 )
 from backend.core.services.interfaces.submission import ISubmissionService
 from backend.core.services.providers.submission import get_submission_service
+from backend.core.utilities.exceptions.database import EntityDoesNotExist
 from backend.core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
+from backend.core.utilities.exceptions.permission import PermissionDenied
 
 router = fastapi.APIRouter(prefix="/submission", tags=["submission"])
 
@@ -25,6 +27,10 @@ router = fastapi.APIRouter(prefix="/submission", tags=["submission"])
 )
 @async_http_exception_mapper(
     mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+        # todo: не логики проверки того, что пользователь может оправить посылку
+        #  по уже решенной задаче или по задаче, где он превысил допустимое число попыток
     }
 )
 async def check_submission(

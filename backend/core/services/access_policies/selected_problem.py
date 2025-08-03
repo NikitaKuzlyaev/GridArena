@@ -1,9 +1,6 @@
-from backend.core.models import QuizField
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.permission import PermissionPromise
-from backend.core.services.access_policies.contest import ContestAccessPolicy
 from backend.core.services.access_policies.problem_card import ProblemCardAccessPolicy
-from backend.core.utilities.exceptions.database import EntityDoesNotExist
 
 
 class SelectedProblemAccessPolicy(ProblemCardAccessPolicy):

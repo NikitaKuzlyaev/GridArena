@@ -29,20 +29,6 @@ async def register_site_user(
         raise EntityAlreadyExists("Пользователь с таким username уже существует в указанном домене")
 
 
-# @log_calls
-# async def register_contest_user(
-#         data: SiteUserCreate,
-#         user_repo: UserCRUDRepository,
-# ) -> User:
-#     user: User = (
-#         await user_repo.create_site_user(
-#             username=data.username,
-#             password=data.password,
-#         )
-#     )
-#     return user
-
-
 @log_calls
 async def verify_refresh_token(
         token: str,
