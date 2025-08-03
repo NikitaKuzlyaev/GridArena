@@ -10,6 +10,7 @@ import FallingFlowers from './FallingFlowers';
 import pinkGif from './pink-gif.gif';
 import pinkGif2 from './pink-gif-2.gif';
 import { useApi } from '../hooks/useApi';
+import Icon from '../components/Icon';
 
 function SolveContest() {
   const [searchParams] = useSearchParams();
@@ -27,6 +28,8 @@ function SolveContest() {
   const holdTimeouts = useRef({});
   const holdIntervals = useRef({});
   const [contestantInfo, setContestantInfo] = useState(null);
+  const [contestInfo, setContestInfo] = useState(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // Определяем класс для фона в зависимости от темы
   const theme = localStorage.getItem('selected_theme') || 'light';
@@ -135,6 +138,15 @@ function SolveContest() {
 
   const { makeRequest, loading: apiLoading } = useApi();
 
+  // Таймер для обновления текущего времени
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     if (!contestId) {
       setLoading(true);
@@ -162,6 +174,16 @@ function SolveContest() {
       }
     };
 
+    // Запрос к API для получения информации о конкурсе
+    const fetchContestInfo = async () => {
+      try {
+        const data = await makeRequest(`${config.backendUrl}api/v1/contest/info-contestant`);
+        setContestInfo(data);
+      } catch (error) {
+        console.error('Ошибка при загрузке информации о конкурсе:', error);
+      }
+    };
+
     // Новый запрос к API для получения своих выбранных задач
     const fetchMyProblems = async () => {
       try {
@@ -182,6 +204,7 @@ function SolveContest() {
 
     fetchFieldData();
     fetchContestantInfo();
+    fetchContestInfo();
     fetchMyProblems();
   }, [contestId, makeRequest]);
 
@@ -189,6 +212,42 @@ function SolveContest() {
     if (!fieldData || !fieldData.problemCards) return null;
     return fieldData.problemCards.find(card => card.row === row && card.column === col);
   };
+
+  // Функции для работы с временем
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('ru-RU', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getTimeLeft = () => {
+    if (!contestInfo || !contestInfo.closedAt) return null;
+    
+    const closedAt = new Date(contestInfo.closedAt);
+    const timeLeft = closedAt - currentTime;
+    
+    if (timeLeft <= 0) return { hours: 0, minutes: 0, seconds: 0, isOver: true };
+    
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    
+    return { hours, minutes, seconds, isOver: false };
+  };
+
+  const timeLeft = getTimeLeft();
 
   if (loading || apiLoading) {
     return (
@@ -265,7 +324,7 @@ function SolveContest() {
             marginBottom: '12px',
             fontSize: '28px'
           }}>
-            🏆 Соревнование #{contestId}
+            🏆 {contestInfo?.name || `Соревнование #${contestId}`}
           </h1>
 
           {fieldData ? (
@@ -419,13 +478,13 @@ function SolveContest() {
                       {myProblemsRuleType === 'DEFAULT' && myProblemsMaxAttempts && (
                         <div style={{ display: 'flex', gap: 2, marginLeft: 16 }}>
                           {Array.from({ length: myProblemsMaxAttempts }).map((_, idx) => (
-                            <i
+                            <Icon
                               key={idx}
-                              className={`bi ${idx < problem.attemptsRemaining ? 'bi-heart-fill' : 'bi-heart'}`}
+                              name={idx < problem.attemptsRemaining ? 'heart-fill' : 'heart'}
                               style={{
-                                color: idx < problem.attemptsRemaining ? '#e63946' : '#bdbdbd',
-                                fontSize: 16,
-                                verticalAlign: 'middle',
+                                width: '16px',
+                                height: '16px',
+                                filter: idx < problem.attemptsRemaining ? 'brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%)' : 'brightness(0) saturate(100%) invert(80%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(89%) contrast(86%)',
                               }}
                             />
                           ))}
@@ -505,6 +564,37 @@ function SolveContest() {
           flexDirection: 'column',
           gap: 12,
         }}>
+          {/* Информация о времени */}
+          {contestInfo && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>⏰ Время конкурса</div>
+              <div style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 8 }}>
+                <div><b>Начало:</b> {formatDate(new Date(contestInfo.startedAt))}</div>
+                <div><b>Окончание:</b> {formatDate(new Date(contestInfo.closedAt))}</div>
+              </div>
+              
+              {/* Обратный отсчет */}
+              {timeLeft && (
+                <div style={{ 
+                  padding: 8, 
+                  borderRadius: 6, 
+                  background: timeLeft.isOver ? '#fee2e2' : '#fef3c7',
+                  border: `1px solid ${timeLeft.isOver ? '#fecaca' : '#fde68a'}`,
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 4 }}>
+                    {timeLeft.isOver ? 'Конкурс завершен' : 'Осталось времени'}
+                  </div>
+                  {!timeLeft.isOver && (
+                    <div style={{ fontSize: 18, fontWeight: 600, fontFamily: 'monospace' }}>
+                      {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>Информация об участнике</div>
           {contestantInfo ? (
             <div style={{ fontSize: 15, lineHeight: 1.7 }}>

@@ -2,6 +2,8 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    SERVER_TIMEZONE_UTC_DELTA: int = 7  # UTC+7
+
     MAIN_ASYNC_DATABASE_URI: str = "postgresql+asyncpg://postgres:2476@localhost:5432/quiz"
 
     REDIS_KV_SIMPLE_CACHE_HOST: str = 'localhost'

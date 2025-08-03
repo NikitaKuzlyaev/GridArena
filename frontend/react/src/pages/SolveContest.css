@@ -1,6 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap&subset=cyrillic');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap&subset=cyrillic');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap&subset=cyrillic');
+/* Используем системные шрифты вместо Google Fonts для ускорения загрузки */
 
 /* Стили для страницы SolveContest с поддержкой тем */
 
@@ -235,11 +233,11 @@
   font-family: 'Segoe UI', Arial, sans-serif;
 }
 .font-varela {
-  font-family: 'Varela Round', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
 }
 .font-jetbrains {
-  font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
 }
 .font-inter {
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
 } 

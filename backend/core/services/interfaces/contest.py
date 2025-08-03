@@ -78,22 +78,20 @@ class IContestService(Protocol):
 
     async def contest_info_for_contestant(
             self,
-            user_id,
-            contest_id,
+            user_id: int,
     ) -> ContestInfoForContestant:
         """
         Получить информацию о контесте для участника.
 
         :param user_id: Идентификатор пользователя (участника).
-        :param contest_id: Идентификатор контеста.
         :return: Информация о контеста для участника.
         """
         ...
 
     async def delete_contest(
             self,
-            user_id,
-            contest_id,
+            user_id: int,
+            contest_id: int,
     ) -> None:
         """
         Удалить контест.
@@ -105,8 +103,8 @@ class IContestService(Protocol):
 
     async def contest_info_for_editor(
             self,
-            user_id,
-            contest_id,
+            user_id: int,
+            contest_id: int,
     ) -> ContestInfoForEditor:
         """
         Получить информацию о контесте для редактора (создателя/организатора).

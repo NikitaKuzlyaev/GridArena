@@ -22,7 +22,7 @@ from backend.core.schemas.contest import (
     ContestStandings,
     ArrayContestantInStandings,
     ContestSubmissions,
-    ArrayContestSubmissions,
+    ArrayContestSubmissions, ContestInfoForContestant,
 )
 from backend.core.schemas.contestant import ContestantId
 from backend.core.schemas.permission import PermissionPromise
@@ -32,6 +32,7 @@ from backend.core.utilities.exceptions.database import (
     EntityDoesNotExist,
     EntityAlreadyExists,
 )
+from backend.core.utilities.exceptions.permission import PermissionDenied
 from backend.core.utilities.loggers.log_decorator import log_calls
 
 
@@ -81,12 +82,13 @@ class ContestService(IContestService):
 
             return res
 
+    '''@lazy_cache_optimizer.decorator_fabric(
+        get_from_cache_not_later_than_s=5,
+        result_cached_time_s=10,
+        refresh_cache_if_ttl_less_than_s=5,
+    )'''
+
     @log_calls
-    # @lazy_cache_optimizer.decorator_fabric(
-    #     get_from_cache_not_later_than_s=5,
-    #     result_cached_time_s=10,
-    #     refresh_cache_if_ttl_less_than_s=5,
-    # )
     async def contest_standings(
             self,
             user_id: int,
@@ -159,6 +161,37 @@ class ContestService(IContestService):
 
             res = ContestId(
                 contest_id=contest.id,
+            )
+            return res
+
+    async def contest_info_for_contestant(
+            self,
+            user_id: int,
+    ) -> ContestInfoForContestant:
+        async with self.uow:
+            # todo: а почему не  async with self.uow as session ?
+            #       и далее: await session.user_repo.get_user_by_id(user_id=user_id)
+
+            user: User | None = await self.uow.user_repo.get_user_by_id(user_id=user_id)
+            if user is None:
+                raise PermissionDenied("User not found")
+
+            contest_id = user.domain_number
+
+            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
+            permission: PermissionPromise = (
+                await self.access_policy.can_user_view_contest(
+                    uow=self.uow, user_id=user_id, contest_id=contest_id, raise_if_none=True, ))
+
+            contest: Contest = (
+                await self.uow.contest_repo.get_contest_by_id(contest_id=contest_id, )
+            )  # Существование contest проверено в access_policy
+
+            res = ContestInfoForContestant(
+                contest_id=contest.id,
+                name=contest.name,
+                started_at=contest.started_at,
+                closed_at=contest.closed_at,
             )
             return res
 

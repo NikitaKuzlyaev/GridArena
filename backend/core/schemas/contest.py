@@ -9,6 +9,7 @@ from pydantic import (
 from backend.core.models.contest import ContestRuleType
 from backend.core.models.submission import SubmissionVerdict
 from backend.core.schemas.base import BaseSchemaModel
+from backend.core.utilities.server import get_server_time
 
 
 class ContestCreateRequest(BaseSchemaModel):
@@ -85,6 +86,10 @@ class ContestInfoForContestant(BaseSchemaModel):
     name: str
     started_at: datetime
     closed_at: datetime
+    # Серверное время. (Присваивается автоматически при создании экземпляра модели)
+    server_time: datetime = Field(
+        default_factory=lambda: get_server_time(with_server_timezone=True)
+    )
 
 
 class ContestantInStandings(BaseSchemaModel):

@@ -296,10 +296,9 @@ async def contest_info_for_editor(
     }
 )
 async def contest_info_for_contestant(
-        contest_id=Query(...),
         user: User = Depends(get_user),
         contest_service: IContestService = Depends(get_contest_service),
-) -> JSONResponse:
+) -> ContestInfoForContestant:
     """
     Получает базовую информацию о контесте для участника.
 
@@ -322,12 +321,11 @@ async def contest_info_for_contestant(
     result: ContestInfoForContestant = (
         await contest_service.contest_info_for_contestant(
             user_id=user.id,
-            contest_id=contest_id,
         )
     )
     result = result.model_dump()
 
-    return JSONResponse({'body': result})
+    return result
 
 
 @router.get(
