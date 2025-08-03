@@ -1,0 +1,44 @@
+/* Локальные шрифты вместо Google Fonts */
+
+/* Varela Round - используем системные шрифты */
+@font-face {
+  font-family: 'Varela Round';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Segoe UI'), local('Arial'), local('Helvetica'), sans-serif;
+}
+
+/* JetBrains Mono - используем системные моноширинные шрифты */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Consolas'), local('Monaco'), local('Courier New'), monospace;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Consolas'), local('Monaco'), local('Courier New'), monospace;
+}
+
+/* Inter - используем системные шрифты */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Segoe UI'), local('Arial'), local('Helvetica'), sans-serif;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Segoe UI'), local('Arial'), local('Helvetica'), sans-serif;
+} 
