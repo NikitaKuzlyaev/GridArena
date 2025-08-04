@@ -3,13 +3,13 @@
 /* Стили для страницы SolveContest с поддержкой тем */
 
 .theme-light body, .theme-light html {
-  background: #f6f8fa;
+  background: #ffffff;
 }
 .theme-dark body, .theme-dark html {
   background: #181c22;
 }
-.theme-green body, .theme-green html {
-  background: #e3ffe6;
+.theme-blue body, .theme-blue html {
+  background: #ffffff;
 }
 .theme-pink body, .theme-pink html {
   background: #ffe3f3;
@@ -21,7 +21,7 @@
 .theme-dark .solve-contest-root {
   color: #00ff00;
 }
-.theme-green .solve-contest-root {
+.theme-blue .solve-contest-root {
   color: #222;
 }
 .theme-pink .solve-contest-root {
@@ -34,12 +34,12 @@
   width: 100vw;
 }
 .solve-bg--light {
-  background: #f6f8fa;
-  --border-color: #bde0fe;
+  background: #ffffff;
+  --border-color: #000000;
   --main-text: #222;
-  --send-btn-bg: #1677ff;
+  --send-btn-bg: #0026ff;
   --send-btn-icon: #fff;
-  --input-placeholder: #888;
+  --input-placeholder: #2c2c2c;
 }
 .solve-bg--dark {
   background: #181c22;
@@ -49,13 +49,13 @@
   --send-btn-icon: #23272f;
   --input-placeholder: #aaa;
 }
-.solve-bg--green {
-  background: #e3ffe6;
-  --border-color: #2baf90;
-  --main-text: #222;
-  --send-btn-bg: #2baf90;
-  --send-btn-icon: #fff;
-  --input-placeholder: #4e7c6c;
+.solve-bg--blue {
+  background: #ffffff;
+  --border-color: #000000;
+  --main-text: #000000;
+  --send-btn-bg: #111111;
+  --send-btn-icon: #ff0000;
+  --input-placeholder: #000000;
 }
 .solve-bg--pink {
   background: #ffe3f3;
@@ -86,14 +86,25 @@
   opacity: 1;
 }
 
+
 /* Карточки задач игрового поля */
 .theme-light .problem-card {
   background: #fff;
   border: 1px solid #bde0fe;
 }
+.theme-blue .problem-card {
+  background: #fff;
+  border: 1px solid #bde0fe;
+}
+
 .theme-light .problem-card--OPEN {
   opacity: 0.6;
 }
+.theme-blue .problem-card--OPEN {
+  opacity: 0.6;
+}
+
+
 /* Новый стиль для CLOSED */
 .theme-light .problem-card--CLOSED {
   background: #e0e0e0;
@@ -102,33 +113,56 @@
   opacity: 0.3;
   cursor: not-allowed;
 }
-.theme-light .problem-card--SOLVING {
-  /* box-shadow: 0 0 0 3px #1677ff44; */
-  background-color: #ffb703;
-  /* border-color: #1677ff; */
+.theme-blue .problem-card--CLOSED {
+  background: #e0e0e0;
+  border-color: #bdbdbd;
+  color: #888;
+  opacity: 0.3;
+  cursor: not-allowed;
 }
+
+.theme-light .problem-card--SOLVING {
+  background-color: #fef3c7;
+}
+.theme-blue .problem-card--SOLVING {
+  background-color: #fef3c7;
+}
+
+
 .theme-light .problem-card--SOLVED {
   background: #e0ffe0;
-  border-color: #4caf50;
 }
+.theme-blue .problem-card--SOLVED {
+  background: #a0ffa0;
+  color: #00000057;
+}
+
+
 .theme-light .problem-card--FAILED {
   background: #fff0f0;
-  border-color: #e57373;
 }
 .theme-light .problem-card--REJECTED {
   background: #fff0f0;
-  border-color: #e57373;
 }
 
 /* Купленные задачи */
 .theme-light .bought-problem-card {
   background: #ffffff;
-  border: 1px solid #bde0fe;
+  border: 1px solid #e7e7e7;
   color: #222;
 }
+/* Купленные задачи */
+.theme-blue .bought-problem-card {
+  background: #ffffff;
+  border: 1px solid #000000;
+  color: #222;
+}
+
 .theme-light .bought-problem-card--OPEN {
   opacity: 0.6;
 }
+
+
 .theme-light .bought-problem-card--CLOSED {
   background: #e0e0e0;
   border-color: #bdbdbd;
@@ -136,75 +170,14 @@
   opacity: 0.3;
   cursor: not-allowed;
 }
-.theme-light .bought-problem-card--SOLVING {
-  border-color: #1677ff;
-}
-.theme-light .bought-problem-card--SOLVED {
-  background: #e0ffe0;
-  border-color: #4caf50;
-}
-.theme-light .bought-problem-card--FAILED {
-  background: #fff0f0;
-  border-color: #e57373;
-}
-.theme-light .bought-problem-card--REJECTED {
-  background: #fff0f0;
-  border-color: #e57373;
+.theme-blue .bought-problem-card--CLOSED {
+  background: #e0e0e0;
+  border-color: #bdbdbd;
+  color: #888;
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
-/* Активная карточка */
-.theme-light .problem-card--active {
-  box-shadow: 0 0 0 3px #1677ff44;
-  border-color: #1677ff;
-}
-.theme-dark .problem-card--active {
-  box-shadow: 0 0 0 3px #90caf944;
-  border-color: #90caf9;
-}
-.theme-green .problem-card--active {
-  box-shadow: 0 0 0 3px #2baf9044;
-  border-color: #2baf90;
-}
-.theme-pink .problem-card--active {
-  box-shadow: 0 0 0 3px #f48fb144;
-  border-color: #f48fb1;
-}
-
-/* Решённая карточка */
-.theme-light .problem-card--solved {
-  background: #e0ffe0;
-  border-color: #4caf50;
-}
-.theme-dark .problem-card--solved {
-  background: #294032;
-  border-color: #81c784;
-}
-.theme-green .problem-card--solved {
-  background: #b9fbc0;
-  border-color: #388e3c;
-}
-.theme-pink .problem-card--solved {
-  background: #f8bbd0;
-  border-color: #ad1457;
-}
-
-/* Карточка с ошибкой */
-.theme-light .problem-card--error {
-  background: #fff0f0;
-  border-color: #e57373;
-}
-.theme-dark .problem-card--error {
-  background: #3a2323;
-  border-color: #ef9a9a;
-}
-.theme-green .problem-card--error {
-  background: #ffeaea;
-  border-color: #e57373;
-}
-.theme-pink .problem-card--error {
-  background: #ffd6e0;
-  border-color: #e57373;
-}
 
 /* Кнопка отправки ответа */
 .solve-contest-root .send-answer-btn {

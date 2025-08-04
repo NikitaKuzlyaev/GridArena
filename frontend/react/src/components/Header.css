@@ -29,15 +29,16 @@
 }
 
 .header-title {
-  color: #023047;
+  color: #ff008c;
   text-decoration: none;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: bold;
   margin-right: 12px;
   transition: color 0.2s;
 }
 .header-title:hover {
-  color: #e63946;
+  color: #0026ff;
+  border-color: #000000;
 }
 
 .contests-btn {
@@ -73,15 +74,15 @@
 }
 
 .theme-light .header {
-  background: #000000;
+  background: #ffffff;
   color: #222;
 }
 .theme-dark .header {
   background: #181818;
   color: #eee;
 }
-.theme-green .header {
-  background: #b9fbc0;
+.theme-blue .header {
+  background: #ffffff;
   color: #222;
 }
 .theme-pink .header {

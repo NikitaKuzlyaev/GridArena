@@ -141,13 +141,13 @@ function Header() {
                   width: 40,
                   height: 40,
                   borderRadius: 8,
-                  border: selectedTheme === 'green' ? '3px solid #1677ff' : '2px solid #2BAF90',
-                  background: '#b9fbc0',
+                  border: selectedTheme === 'blue' ? '3px solid #1677ff' : '2px solidrgb(0, 0, 255)',
+                  background: '#0000ff',
                   cursor: 'pointer',
-                  boxShadow: selectedTheme === 'green' ? '0 0 0 2px #1677ff33' : 'none',
+                  boxShadow: selectedTheme === 'blue' ? '0 0 0 2px #1677ff33' : 'none',
                 }}
-                title="Зелёная тема"
-                onClick={() => { setSelectedTheme('green'); window.location.reload(); }}
+                title="Синяя тема"
+                onClick={() => { setSelectedTheme('blue'); window.location.reload(); }}
               />
               <button
                 style={{
