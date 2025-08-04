@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import (
     Sequence,
     Tuple,
@@ -15,9 +16,11 @@ from backend.core.models import (
     Contest,
 )
 from backend.core.models.contest import ContestRuleType
+from backend.core.models.contestant_log import ContestantLogLevelType
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.models.submission import SubmissionVerdict
 from backend.core.repository.crud.uow import UnitOfWork
+from backend.core.schemas.contestant_log import LogMessage
 from backend.core.schemas.permission import PermissionPromise
 from backend.core.schemas.problem import ProblemInfoForContestant
 from backend.core.schemas.selected_problem import (
@@ -157,7 +160,7 @@ class SelectedProblemService(ISelectedProblemService):
             return res
 
     @log_calls
-    async def buy_selected_problem(
+    async def buy_selected_problem(  # todo: метод перегружен. предпринять что-то для оптимизации
             self,
             user_id: int,
             problem_card_id: int,
@@ -199,6 +202,24 @@ class SelectedProblemService(ISelectedProblemService):
                         contestant_id=contestant.id,
                         problem_card_id=problem_card.id, )
                 )
+
+                # Делаем лог
+                await self.uow.contestant_log_repo.create_log(
+                    contestant_id=contestant.id,
+                    log_level=ContestantLogLevelType.INFO,
+                    content=LogMessage.balance_decrease(
+                        points=problem_card.category_price,
+                    ),
+                )
+                await self.uow.contestant_log_repo.create_log(
+                    contestant_id=contestant.id,
+                    log_level=ContestantLogLevelType.INFO,
+                    content=LogMessage.add_selected_problem(
+                        category_name=problem_card.category_name,
+                        category_price=problem_card.category_price
+                    ),
+                )
+
                 res = SelectedProblemId(
                     selected_problem_id=selected_problem.id,
                 )

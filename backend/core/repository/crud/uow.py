@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.repository.crud.contest import ContestCRUDRepository
 from backend.core.repository.crud.contestant import ContestantCRUDRepository
+from backend.core.repository.crud.contestant_log import ContestantLogCRUDRepository
 from backend.core.repository.crud.domain import DomainCRUDRepository
 from backend.core.repository.crud.permission import PermissionCRUDRepository
 from backend.core.repository.crud.problem import ProblemCRUDRepository
@@ -45,6 +46,10 @@ class UnitOfWork(BaseCRUDRepository):
         if repo_cls not in self._repos:
             self._repos[repo_cls] = repo_cls(self._session)
         return self._repos[repo_cls]
+
+    @property
+    def contestant_log_repo(self) -> ContestantLogCRUDRepository:
+        return self._get_repo(ContestantLogCRUDRepository)
 
     @property
     def contest_repo(self) -> ContestCRUDRepository:

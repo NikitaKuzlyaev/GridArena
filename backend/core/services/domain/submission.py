@@ -16,6 +16,7 @@ from backend.core.models import (
     QuizField,
     Contest,
 )
+from backend.core.models.contestant_log import ContestantLogLevelType
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.models.submission import (
     SubmissionVerdict,
@@ -23,6 +24,7 @@ from backend.core.models.submission import (
 )
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.base import BaseSchemaModel
+from backend.core.schemas.contestant_log import LogMessage
 from backend.core.schemas.submission import SubmissionId
 from backend.core.services.interfaces.submission import ISubmissionService
 from backend.core.services.rules.submission_reward import calculate_max_submission_reward
@@ -50,7 +52,7 @@ class SubmissionService(ISubmissionService):
         self.uow = uow
 
     @staticmethod
-    def _get_verdict(
+    def _are_strings_equal(
             contestant_answer: str,
             problem_answer: str,
     ):
@@ -73,6 +75,10 @@ class SubmissionService(ISubmissionService):
         except ValidationError:
             return False
 
+    # todo: реальная проверка ответа не должна блокировать основной поток -> проверять в воркере
+    #   Создавать только инстанс посылки и задачу в воркер. Пользователю отдавать статус "на проверке"
+    #   Это имеет смысл для расширяемости в будущем, даже если сейчас проверка относительно быстрая
+    #   (в планах сделать автогенерацию тестов и проверку ответов в свободной форме с помощью ллм)
     @log_calls
     async def check_submission(
             self,
@@ -111,7 +117,7 @@ class SubmissionService(ISubmissionService):
             # todo: добавить систему перепроверки? разрешить отправку повторного ответа? возвращать все submission?
             # Пока не предпринимаю никаких действий. Такой же ответ можно отправить повторно.
 
-            is_answer_correct = self._get_verdict(
+            is_answer_correct = self._are_strings_equal(
                 contestant_answer=answer,
                 problem_answer=problem.answer,
             )
@@ -130,6 +136,29 @@ class SubmissionService(ISubmissionService):
                 selected_problem_id=selected_problem.id,
                 is_next_answer_correct=is_answer_correct,
             )
+
+            if next_status == SelectedProblemStatusType.ACTIVE or next_status == SelectedProblemStatusType.FAILED:
+                # Пишем лог о том, что ответ неверный
+                await self.uow.contestant_log_repo.create_log(
+                    contestant_id=contestant.id,
+                    log_level=ContestantLogLevelType.INFO,
+                    content=LogMessage.wrong_answer(),
+                )
+            if next_status == SelectedProblemStatusType.FAILED:
+                # Пишем лог о том, что задача "сгорела"
+                ...
+            if next_status == SelectedProblemStatusType.SOLVED:
+                # Пишем лог о том, что ответ верный
+                await self.uow.contestant_log_repo.create_log(
+                    contestant_id=contestant.id,
+                    log_level=ContestantLogLevelType.INFO,
+                    content=LogMessage.correct_answer(),
+                )
+                await self.uow.contestant_log_repo.create_log(
+                    contestant_id=contestant.id,
+                    log_level=ContestantLogLevelType.INFO,
+                    content=LogMessage.balance_increase(points=possible_reward),
+                )
 
             submission: Submission = (
                 await self.uow.transaction_repo.create_submission(

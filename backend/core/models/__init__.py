@@ -7,3 +7,4 @@ from .quiz_field import QuizField
 from .selected_problem import SelectedProblem
 from .submission import Submission
 from .user import User
+from .contestant_log import ContestantLog
