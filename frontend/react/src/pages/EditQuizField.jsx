@@ -3,6 +3,45 @@ import { useSearchParams } from 'react-router-dom';
 import config from '../config';
 import ErrorBlock from '../components/ErrorBlock.jsx';
 import { useApi } from '../hooks/useApi';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
+import Icon from '../components/Icon';
+
+// Error Boundary для ReactMarkdown
+class MarkdownErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Markdown parsing error:', error);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.statement !== this.props.statement && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ color: 'red', fontSize: '14px' }}>
+          ошибка рендера условия
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 function EditQuizField() {
   const [searchParams] = useSearchParams();
@@ -22,7 +61,79 @@ function EditQuizField() {
   const [createMode, setCreateMode] = useState(false);
   const [createCell, setCreateCell] = useState(null); // {row, col}
 
+  // Добавляем CSS стили в head при монтировании компонента
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+      .preview-card {
+        background: #ffffff;
+        border: 1px solid #bde0fe;
+        color: #222;
+        border-radius: 10px;
+        padding: 18px;
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0 auto;
+        position: relative;
+        padding-top: 0;
+      }
+      
+      .preview-card .category-info {
+        font-size: 15px;
+        font-weight: 500;
+        color: #7b2ff2;
+        margin-bottom: 2px;
+      }
+      
+      .preview-card .date-info {
+        font-weight: 400;
+        color: #555;
+        font-size: 13px;
+      }
+      
+      .preview-card .statement {
+        margin-bottom: 16px;
+        text-align: left;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      
+      .preview-card .answer-input {
+        flex: 1;
+        padding: 8px;
+        border-radius: 2px;
+        border: 1px solid #bbb;
+        font-size: 14px;
+        background: #f5f5f5;
+        color: #888;
+      }
+      
+      .preview-card .send-btn {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        max-width: 36px;
+        max-height: 36px;
+        border-radius: 6px;
+        margin-left: 6px;
+        transition: background 0.2s;
+        outline: 1px dashed rgba(80, 94, 124, 0.5);
+        outline-offset: 0px;
+        background: #1677ff;
+        color: #fff;
+        border: none;
+        cursor: default;
+        opacity: 0.6;
+      }
+    `;
+    document.head.appendChild(styleElement);
 
+    // Удаляем стили при размонтировании
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   useEffect(() => {
     if (!contestId) {
@@ -76,10 +187,10 @@ function EditQuizField() {
       setCreateMode(true);
       setCreateCell({ row: rowIdx + 1, col: colIdx + 1 });
       setEditForm({
-        categoryName: '-',
+        categoryName: '',
         categoryPrice: 0,
-        statement: '-',
-        answer: '-',
+        statement: '',
+        answer: '',
       });
       setEditErrors({});
       setModalCard(null);
@@ -314,7 +425,17 @@ function EditQuizField() {
             }}
               onClick={() => { setModalCard(null); setModalCardInfo(null); setEditForm(null); setEditErrors({}); }}
             >
-              <div style={{ background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, position: 'relative', maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+                             <div style={{ 
+                 background: '#fff',
+                  padding: 16,
+                  boxSizing: 'border-box',
+                   borderRadius: 8,
+                    minWidth: '50%', 
+                    maxHeight: '90vh',
+                    position: 'relative', 
+                    maxWidth: '50%',
+                    overflowY: 'auto',
+                 }} onClick={e => e.stopPropagation()}>
                 <h2>Информация о карточке</h2>
                 {modalLoading && <div>Загрузка...</div>}
                 {!modalLoading && modalCardInfo && (
@@ -323,48 +444,111 @@ function EditQuizField() {
                   ) : (
                     <form onSubmit={e => { e.preventDefault(); handleEditSave(); }}>
                       <div style={{ marginBottom: 12 }}>
-                        <label style={{ display: 'block', fontWeight: 500 }}>Название категории:</label>
+                        <label style={{ display: 'block', fontWeight: 500, textAlign: 'left', }}>Название категории:</label>
                         <input
                           type="text"
                           value={editForm?.categoryName || ''}
                           maxLength={32}
                           onChange={e => setEditForm(f => ({ ...f, categoryName: e.target.value }))}
-                          style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                          style={{ width: '25%', padding: 6, borderRadius: 4, border: '1px solid #ccc', display:'block', }}
                         />
                         {editErrors.categoryName && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.categoryName}</div>}
                       </div>
                       <div style={{ marginBottom: 12 }}>
-                        <label style={{ display: 'block', fontWeight: 500 }}>Цена:</label>
+                        <label style={{ display: 'block', fontWeight: 500, textAlign: 'left',}}>Цена:</label>
                         <input
                           type="number"
                           min={0}
                           max={10000}
                           value={editForm?.categoryPrice}
                           onChange={e => setEditForm(f => ({ ...f, categoryPrice: Number(e.target.value) }))}
-                          style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                          style={{ width: '25%', padding: 6, borderRadius: 4, border: '1px solid #ccc', display:'block', }}
                         />
                         {editErrors.categoryPrice && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.categoryPrice}</div>}
                       </div>
                       <div style={{ marginBottom: 12 }}>
-                        <label style={{ display: 'block', fontWeight: 500 }}>Условие задачи:</label>
+                        <label style={{ display: 'block', fontWeight: 500, textAlign:'left', }}>Условие задачи:</label>
                         <textarea
                           value={editForm?.statement || ''}
                           maxLength={2048}
                           onChange={e => setEditForm(f => ({ ...f, statement: e.target.value }))}
-                          style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc', minHeight: 60 }}
+                          style={{ width: '75%', padding: 6, borderRadius: 4, border: '1px solid #ccc', minHeight: 120, display:'block', }}
                         />
                         {editErrors.statement && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.statement}</div>}
                       </div>
                       <div style={{ marginBottom: 12 }}>
-                        <label style={{ display: 'block', fontWeight: 500 }}>Ответ:</label>
+                        <label style={{ display: 'block', fontWeight: 500, textAlign:'left',  }}>Ответ:</label>
                         <input
                           type="text"
                           value={editForm?.answer || ''}
                           maxLength={32}
                           onChange={e => setEditForm(f => ({ ...f, answer: e.target.value }))}
-                          style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                          style={{ width: '25%', padding: 6, borderRadius: 4, border: '1px solid #ccc', display:'block', }}
                         />
                         {editErrors.answer && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.answer}</div>}
+                      </div>
+
+
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ display: 'block', fontWeight: 500, textAlign:'left',  }}>Предпросмотр:</label>
+
+                        <div className="preview-card" style={{width: '75%', display:'block',}}>
+                          {/* Верхний flex-блок: категория, дата */}
+                          <div style={{
+                            display: 'flex', 
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start', 
+                            marginBottom: 16, 
+                            marginTop: 16,
+                          }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                              <div className="category-info">
+                                {editForm?.categoryName && editForm?.categoryPrice ? 
+                                  `${editForm.categoryName} за ${editForm.categoryPrice}` : 
+                                  'Название категории'
+                                }
+                              </div>
+                              <div className="date-info">
+                                {new Date().toLocaleString()}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Условие задачи */}
+                          <div className="statement">
+                            {editForm?.statement ? (
+                              <MarkdownErrorBoundary statement={editForm?.statement}>
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkMath]}
+                                  rehypePlugins={[rehypeKatex]}
+                                >
+                                  {typeof editForm?.statement === 'string' ? editForm.statement : ''}
+                                </ReactMarkdown>
+                              </MarkdownErrorBoundary>
+                            ) : (
+                              <div style={{ color: '#888', fontStyle: 'italic' }}>
+                                Условие задачи не указано
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Поле для ответа */}
+                          <div style={{ display: 'flex', gap: 12 }}>
+                            <input
+                              type="text"
+                              placeholder="Ваш ответ"
+                              disabled
+                              className="answer-input"
+                            />
+                            <button
+                              className="send-btn"
+                              disabled
+                              title="Предпросмотр"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 512 512" version="1.1"><path d="M 330.027 181.570 C 231.866 231.882, 151.243 273.374, 150.863 273.773 C 150.483 274.173, 156.197 307.800, 163.560 348.500 C 170.922 389.200, 176.958 422.838, 176.973 423.251 C 177.006 424.156, 281 354.951, 281 354.024 C 281 353.668, 265.725 343.504, 247.055 331.438 C 228.385 319.372, 213.198 309.174, 213.305 308.777 C 213.412 308.379, 278.750 260.084, 358.500 201.456 C 503.398 94.933, 509.937 90.094, 509 90.094 C 508.725 90.094, 428.187 131.258, 330.027 181.570" stroke="none" fill-rule="evenodd"/><path d="M 255.749 140.925 C 115.635 169.934, 0.767 193.900, 0.484 194.182 C 0.202 194.464, 33.732 212.502, 74.996 234.265 L 150.020 273.836 304.260 194.845 C 507.201 90.913, 509.989 89.501, 506.500 92.381 C 504.850 93.743, 438.250 142.827, 358.500 201.456 C 278.750 260.084, 213.413 308.379, 213.307 308.777 C 213.200 309.174, 227.779 318.950, 245.704 330.500 C 263.629 342.050, 279.466 352.455, 280.897 353.621 C 282.329 354.788, 307.125 371.099, 336 389.868 L 388.500 423.994 389.856 420.747 C 392.409 414.632, 512 89.644, 512 88.821 C 512 88.370, 511.663 88.041, 511.250 88.090 C 510.837 88.140, 395.862 111.916, 255.749 140.925" stroke="none" fill-rule="evenodd"/></svg>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                       {editErrors.global && <div style={{ color: 'red', marginBottom: 8 }}>{editErrors.global}</div>}
                       <button
@@ -392,61 +576,133 @@ function EditQuizField() {
               left: 0,
               width: '100vw',
               height: '100vh',
-              background: 'rgba(0,0,0,0.3)',
+              background: 'rgba(0, 0, 0, 0.30)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 1000,
+              zIndex: 999,
             }}
               onClick={() => { setCreateMode(false); setCreateCell(null); setEditForm(null); setEditErrors({}); }}
             >
-              <div style={{ background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, position: 'relative', maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+              <div style={{ 
+                 background: '#fff',
+                 padding: 16,
+                 boxSizing: 'border-box',
+                  borderRadius: 8,
+                   minWidth: '50%', 
+                   maxHeight: '90vh',
+                   position: 'relative', 
+                   maxWidth: '50%',
+                   overflowY: 'auto',
+               }} onClick={e => e.stopPropagation()}>
                 <h2>Создание карточки</h2>
                 <form onSubmit={e => { e.preventDefault(); handleCreateSave(); }}>
                   <div style={{ marginBottom: 12 }}>
-                    <label style={{ display: 'block', fontWeight: 500 }}>Название категории:</label>
+                    <label style={{ display: 'block', fontWeight: 500, textAlign: 'left', }}>Название категории:</label>
                     <input
                       type="text"
                       value={editForm?.categoryName || ''}
                       maxLength={32}
                       onChange={e => setEditForm(f => ({ ...f, categoryName: e.target.value }))}
-                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                      style={{ width: '25%', padding: 6, borderRadius: 4, border: '1px solid #ccc', display:'block', }}
                     />
                     {editErrors.categoryName && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.categoryName}</div>}
                   </div>
                   <div style={{ marginBottom: 12 }}>
-                    <label style={{ display: 'block', fontWeight: 500 }}>Цена:</label>
+                    <label style={{ display: 'block', fontWeight: 500, textAlign:'left', }}>Цена:</label>
                     <input
                       type="number"
                       min={0}
                       max={10000}
                       value={editForm?.categoryPrice}
                       onChange={e => setEditForm(f => ({ ...f, categoryPrice: Number(e.target.value) }))}
-                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                      style={{ width: '25%', padding: 6, borderRadius: 4, border: '1px solid #ccc', display:'block', }}
                     />
                     {editErrors.categoryPrice && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.categoryPrice}</div>}
                   </div>
                   <div style={{ marginBottom: 12 }}>
-                    <label style={{ display: 'block', fontWeight: 500 }}>Условие задачи:</label>
+                    <label style={{ display: 'block', fontWeight: 500, textAlign:'left', }}>Условие задачи:</label>
                     <textarea
                       value={editForm?.statement || ''}
                       maxLength={2048}
                       onChange={e => setEditForm(f => ({ ...f, statement: e.target.value }))}
-                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc', minHeight: 60 }}
+                      style={{ width: '75%', padding: 6, borderRadius: 4, border: '1px solid #ccc', minHeight: 60, display: 'block', }}
                     />
                     {editErrors.statement && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.statement}</div>}
                   </div>
                   <div style={{ marginBottom: 12 }}>
-                    <label style={{ display: 'block', fontWeight: 500 }}>Ответ:</label>
+                    <label style={{ display: 'block', fontWeight: 500, textAlign: 'left', }}>Ответ:</label>
                     <input
                       type="text"
                       value={editForm?.answer || ''}
                       maxLength={32}
                       onChange={e => setEditForm(f => ({ ...f, answer: e.target.value }))}
-                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                      style={{ width: '25%', padding: 6, borderRadius: 4, border: '1px solid #ccc', display:'block', }}
                     />
                     {editErrors.answer && <div style={{ color: 'red', fontSize: 13 }}>{editErrors.answer}</div>}
                   </div>
+                  
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: 'block', fontWeight: 500, textAlign:'left', }}>Предпросмотр:</label>
+                    <div className="preview-card" style={{width: '80%', }}>
+                      {/* Верхний flex-блок: категория, дата */}
+                      <div style={{
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start', 
+                        marginBottom: 16, 
+                        marginTop: 16,
+                      }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                          <div className="category-info">
+                            {editForm?.categoryName && editForm?.categoryPrice ? 
+                              `${editForm.categoryName} за ${editForm.categoryPrice}` : 
+                              'Категория не указана'
+                            }
+                          </div>
+                          <div className="date-info">
+                            {new Date().toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Условие задачи */}
+                      <div className="statement">
+                        {editForm?.statement ? (
+                          <MarkdownErrorBoundary statement={editForm?.statement}>
+                            <ReactMarkdown
+                              remarkPlugins={[remarkMath]}
+                              rehypePlugins={[rehypeKatex]}
+                            >
+                              {typeof editForm?.statement === 'string' ? editForm.statement : ''}
+                            </ReactMarkdown>
+                          </MarkdownErrorBoundary>
+                        ) : (
+                          <div style={{ color: '#888', fontStyle: 'italic' }}>
+                            Условие задачи не указано
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Поле для ответа */}
+                      <div style={{ display: 'flex', gap: 12 }}>
+                        <input
+                          type="text"
+                          placeholder="Ваш ответ"
+                          disabled
+                          className="answer-input"
+                        />
+                        <button
+                          className="send-btn"
+                          disabled
+                          title="Предпросмотр"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 512 512" version="1.1"><path d="M 330.027 181.570 C 231.866 231.882, 151.243 273.374, 150.863 273.773 C 150.483 274.173, 156.197 307.800, 163.560 348.500 C 170.922 389.200, 176.958 422.838, 176.973 423.251 C 177.006 424.156, 281 354.951, 281 354.024 C 281 353.668, 265.725 343.504, 247.055 331.438 C 228.385 319.372, 213.198 309.174, 213.305 308.777 C 213.412 308.379, 278.750 260.084, 358.500 201.456 C 503.398 94.933, 509.937 90.094, 509 90.094 C 508.725 90.094, 428.187 131.258, 330.027 181.570" stroke="none" fill-rule="evenodd"/><path d="M 255.749 140.925 C 115.635 169.934, 0.767 193.900, 0.484 194.182 C 0.202 194.464, 33.732 212.502, 74.996 234.265 L 150.020 273.836 304.260 194.845 C 507.201 90.913, 509.989 89.501, 506.500 92.381 C 504.850 93.743, 438.250 142.827, 358.500 201.456 C 278.750 260.084, 213.413 308.379, 213.307 308.777 C 213.200 309.174, 227.779 318.950, 245.704 330.500 C 263.629 342.050, 279.466 352.455, 280.897 353.621 C 282.329 354.788, 307.125 371.099, 336 389.868 L 388.500 423.994 389.856 420.747 C 392.409 414.632, 512 89.644, 512 88.821 C 512 88.370, 511.663 88.041, 511.250 88.090 C 510.837 88.140, 395.862 111.916, 255.749 140.925" stroke="none" fill-rule="evenodd"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
                   {editErrors.global && <div style={{ color: 'red', marginBottom: 8 }}>{editErrors.global}</div>}
                   <button
                     type="submit"

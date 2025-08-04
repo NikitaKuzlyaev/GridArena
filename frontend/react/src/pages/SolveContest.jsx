@@ -12,6 +12,31 @@ import pinkGif2 from './pink-gif-2.gif';
 import { useApi } from '../hooks/useApi';
 import Icon from '../components/Icon';
 
+// Error Boundary для ReactMarkdown
+class MarkdownErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    // Можно логировать ошибку
+  }
+  componentDidUpdate(prevProps) {
+    if (prevProps.statement !== this.props.statement && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div style={{ color: 'red' }}>ошибка рендера условия</div>;
+    }
+    return this.props.children;
+  }
+}
+
 function SolveContest() {
   const [searchParams] = useSearchParams();
   const contestId = searchParams.get('contest_id');
@@ -500,12 +525,14 @@ function SolveContest() {
                       )}
                     </div>
                     <div style={{ marginBottom: 16, textAlign: 'left', fontSize: 14, lineHeight: 1.6 }}>
-                      <ReactMarkdown
-                        remarkPlugins={[remarkMath]}
-                        rehypePlugins={[rehypeKatex]}
-                      >
-                        {problem.problem?.statement || 'Нет условия'}
-                      </ReactMarkdown>
+                      <MarkdownErrorBoundary statement={problem.problem?.statement}>
+                        <ReactMarkdown
+                          remarkPlugins={[remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                        >
+                          {typeof problem.problem?.statement === 'string' ? problem.problem.statement : ''}
+                        </ReactMarkdown>
+                      </MarkdownErrorBoundary>
                     </div>
                     <div style={{ display: 'flex', gap: 12 }}>
                       <input
