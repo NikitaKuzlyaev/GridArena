@@ -1,44 +1,44 @@
-/* Локальные шрифты вместо Google Fonts */
+/* Оптимизированная загрузка Bootstrap Icons */
 
-/* Varela Round - используем системные шрифты */
+/* Предзагрузка шрифтов для ускорения загрузки */
 @font-face {
-  font-family: 'Varela Round';
+  font-display: swap; /* Оптимизация для производительности */
+  font-family: 'bootstrap-icons';
   font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Segoe UI'), local('Arial'), local('Helvetica'), sans-serif;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  src: url('/assets/fonts/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6') format('woff2'),
+       url('/assets/fonts/fonts/bootstrap-icons.woff?dd67030699838ea613ee6dbda90effa6') format('woff');
 }
 
-/* JetBrains Mono - используем системные моноширинные шрифты */
-@font-face {
-  font-family: 'JetBrains Mono';
+/* Базовые стили для иконок */
+.bi {
+  display: inline-block;
+  font-family: bootstrap-icons !important;
   font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Consolas'), local('Monaco'), local('Courier New'), monospace;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: text-bottom;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@font-face {
-  font-family: 'JetBrains Mono';
+/* Оптимизация для критических иконок */
+.bi::before {
+  display: inline-block;
+  font-family: bootstrap-icons !important;
   font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: local('Consolas'), local('Monaco'), local('Courier New'), monospace;
-}
-
-/* Inter - используем системные шрифты */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Segoe UI'), local('Arial'), local('Helvetica'), sans-serif;
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: local('Segoe UI'), local('Arial'), local('Helvetica'), sans-serif;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: text-bottom;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 } 
