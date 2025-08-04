@@ -452,21 +452,29 @@ function SolveContest() {
           {/* Купленные задачи */}
           {myProblems.length > 0 && (
             <div style={{ marginTop: 16 }}>
-              <h2 style={{ fontSize: 20, marginBottom: 16, textAlign: 'left', }}>Купленные задачи</h2>
+              <h2 style={{ fontSize: 20, marginBottom: 16, textAlign: 'left', }}>Активные карточки</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 64, }}>
                 {myProblems.map(problem => (
                   <div key={problem.selectedProblemId}
                     className={`bought-problem-card bought-problem-card--${problem.status}`}
                     style={{
                       borderRadius: 10,
-                      padding: 24,
-                      maxWidth: 800,
+                      padding: 18,
+                      boxSizing: 'border-box',
+                      width: '100%',
                       margin: '0 auto',
                       position: 'relative',
                       paddingTop: 0,
                     }}>
                     {/* Верхний flex-блок: категория, дата, сердечки */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, marginTop: 16, }}>
+                    <div style={
+                      { display: 'flex', 
+                        justifyContent: 'space-between',
+                         alignItems: 'flex-start', 
+                         marginBottom: 16, 
+                         marginTop: 16,
+                         }
+                      }>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                         <div style={{ fontSize: 15, fontWeight: 500, color: '#7b2ff2', marginBottom: 2 }}>
                           {problem.categoryName ? `${problem.categoryName} за ${problem.categoryPrice}` : ''}
