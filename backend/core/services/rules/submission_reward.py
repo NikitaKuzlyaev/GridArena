@@ -5,7 +5,14 @@ def calculate_max_submission_reward(
         number_of_tries_before: int,
         cost_of_problem_card: int,
         contest_rule_type: ContestRuleType,
-) -> int:
+) -> int | None:
+    print(
+        number_of_tries_before,
+        cost_of_problem_card,
+        contest_rule_type,
+        '\n'*2
+    )
+
     if contest_rule_type == ContestRuleType.DEFAULT:
         if number_of_tries_before == 0:
             return cost_of_problem_card * 2

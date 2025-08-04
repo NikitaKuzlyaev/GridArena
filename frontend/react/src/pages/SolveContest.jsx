@@ -508,21 +508,24 @@ function SolveContest() {
                           {new Date(problem.createdAt).toLocaleString()}
                         </div>
                       </div>
-                      {myProblemsRuleType === 'DEFAULT' && myProblemsMaxAttempts && (
-                        <div style={{ display: 'flex', gap: 2, marginLeft: 16 }}>
-                          {Array.from({ length: myProblemsMaxAttempts }).map((_, idx) => (
-                            <Icon
-                              key={idx}
-                              name={idx < problem.attemptsRemaining ? 'heart-fill' : 'heart'}
-                              style={{
-                                width: '16px',
-                                height: '16px',
-                                filter: idx < problem.attemptsRemaining ? 'brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%)' : 'brightness(0) saturate(100%) invert(80%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(89%) contrast(86%)',
-                              }}
-                            />
-                          ))}
-                        </div>
-                      )}
+                                              {myProblemsRuleType === 'DEFAULT' && myProblemsMaxAttempts && (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 16 }}>
+                            <div style={{ display: 'flex', gap: 2, marginBottom: 4, justifyContent: 'flex-end' }}>
+                              {Array.from({ length: myProblemsMaxAttempts }).map((_, idx) => (
+                                <Icon
+                                  key={idx}
+                                  name={idx < problem.attemptsRemaining ? 'heart-fill' : 'heart'}
+                                  style={{
+                                    width: '16px',
+                                    height: '16px',
+                                    filter: idx < problem.attemptsRemaining ? 'brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%)' : 'brightness(0) saturate(100%) invert(80%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(89%) contrast(86%)',
+                                  }}
+                                />
+                              ))}
+                            </div>
+                            {problem.possibleReward != null && (<div style={{ fontSize: '10px', color: '#666', textAlign: 'right' }}>Потенциально {problem.possibleReward}</div>)}
+                          </div>
+                        )}
                     </div>
                     <div style={{ marginBottom: 16, textAlign: 'left', fontSize: 14, lineHeight: 1.6 }}>
                       <MarkdownErrorBoundary statement={problem.problem?.statement}>

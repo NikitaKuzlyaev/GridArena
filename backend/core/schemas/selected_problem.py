@@ -22,6 +22,7 @@ class SelectedProblemInfoForContestant(BaseSchemaModel):
     category_price: int
     created_at: datetime
     attempts_remaining: int | None = None
+    possible_reward: int | None = None
 
 
 class ArraySelectedProblemInfoForContestant(BaseSchemaModel):

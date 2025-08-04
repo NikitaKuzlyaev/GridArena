@@ -2,6 +2,8 @@ from typing import (
     Sequence,
     Tuple,
     Optional,
+    Dict,
+    List,
 )
 
 from backend.core.models import (
@@ -25,6 +27,7 @@ from backend.core.schemas.selected_problem import (
 )
 from backend.core.services.access_policies.selected_problem import SelectedProblemAccessPolicy
 from backend.core.services.interfaces.selected_problem import ISelectedProblemService
+from backend.core.services.rules.submission_reward import calculate_max_submission_reward
 from backend.core.utilities.exceptions.database import EntityAlreadyExists
 from backend.core.utilities.exceptions.logic import PossibleLimitOverflow
 from backend.core.utilities.loggers.log_decorator import log_calls
@@ -41,11 +44,10 @@ class SelectedProblemService(ISelectedProblemService):
         self.uow = uow
         self.access_policy: SelectedProblemAccessPolicy = access_policy or SelectedProblemAccessPolicy()
 
-    async def _get_remaining_number_of_attempts_for_selected_problems(
+    async def _get_wrong_attempts(
             self,
             selected_problem_ids: list[int],
-            max_number_of_attempts: int = 3,
-    ) -> dict[int, int]:
+    ) -> Dict[int, int]:
         async with self.uow:
             # Правила DEFAULT подразумевают X попыток на решение задачи
             wrong_attempts_map: dict[int, int] = (
@@ -54,11 +56,47 @@ class SelectedProblemService(ISelectedProblemService):
                     filter_by_verdict=[SubmissionVerdict.WRONG.value]
                 )
             )
+            return wrong_attempts_map
+
+    async def _get_remaining_number_of_attempts_for_selected_problems(
+            self,
+            selected_problem_ids: list[int],
+            max_number_of_attempts: int = 3,
+    ) -> dict[int, int]:
+        async with self.uow:
+            # Правила DEFAULT подразумевают X попыток на решение задачи
+            wrong_attempts_map: Dict[int, int] = (
+                await self._get_wrong_attempts(selected_problem_ids=selected_problem_ids)
+            )
             attempts_by_selected_problem = {
                 sp_id: max_number_of_attempts - wrong_attempts_map.get(sp_id, 0)
                 for sp_id in selected_problem_ids
             }
             return attempts_by_selected_problem
+
+    async def _get_possible_reward(
+            self,
+            selected_problem_with_problem_card: List[Tuple[SelectedProblem, ProblemCard]],
+    ) -> Dict[int, int]:
+        async with self.uow:
+            wrong_attempts_map: dict[int, int] = (
+                await self._get_wrong_attempts(
+                    selected_problem_ids=[i[0].id for i in selected_problem_with_problem_card],
+                )
+            )
+            possible_reward_by_selected_problem = {}
+            for sp, pc in selected_problem_with_problem_card:
+                if sp.status != SelectedProblemStatusType.ACTIVE:
+                    continue
+                possible_reward = calculate_max_submission_reward(
+                    number_of_tries_before=wrong_attempts_map.get(sp.id, 0),
+                    cost_of_problem_card=pc.category_price,
+                    contest_rule_type=ContestRuleType.DEFAULT,
+                )
+                if possible_reward is not None:
+                    possible_reward_by_selected_problem[sp.id] = possible_reward
+
+            return possible_reward_by_selected_problem
 
     @log_calls
     async def get_contestant_selected_problems(
@@ -81,11 +119,19 @@ class SelectedProblemService(ISelectedProblemService):
             )
 
             attempts_by_selected_problem = {}
+            # Потенциальная награда за задачу по selected_problem_id
+            possible_reward_by_selected_problem: Dict[int, int] = {}
+
             if contest.rule_type == ContestRuleType.DEFAULT:
-                attempts_by_selected_problem: dict[int, int] = (
+                attempts_by_selected_problem: Dict[int, int] = (
                     await self._get_remaining_number_of_attempts_for_selected_problems(
                         selected_problem_ids=[i[0].id for i in rows],  # Берем SelectedProblem.id из rows
                         max_number_of_attempts=MAX_NUMBER_OF_ATTEMPTS, )
+                )
+                possible_reward_by_selected_problem: Dict[int, int] = (
+                    await self._get_possible_reward(
+                        selected_problem_with_problem_card=[(i[0], i[1]) for i in rows],
+                    )
                 )
 
             res = ArraySelectedProblemInfoForContestant(
@@ -101,6 +147,7 @@ class SelectedProblemService(ISelectedProblemService):
                         category_price=problem_card.category_price,
                         created_at=selected_problem.created_at,
                         attempts_remaining=attempts_by_selected_problem.get(selected_problem.id, None),
+                        possible_reward=possible_reward_by_selected_problem.get(selected_problem.id, None),
                     ) for selected_problem, problem_card, problem in rows if
                     selected_problem.status == SelectedProblemStatusType.ACTIVE  # todo: это что? 0_0
                 ],
