@@ -72,55 +72,51 @@ class TransactionCRUDRepository(BaseCRUDRepository):
             contestant_id: int,
             problem_card_id: int,
     ) -> SelectedProblem:
-        try:
-            res = await self.async_session.execute(
-                select(Contestant)
-                .where(Contestant.id == contestant_id)
-            )
-            contestant = res.scalar_one_or_none()
 
-            res = await self.async_session.execute(
-                select(ProblemCard)
-                .where(ProblemCard.id == problem_card_id)
-            )
-            problem_card = res.scalar_one_or_none()
+        res = await self.async_session.execute(
+            select(Contestant)
+            .where(Contestant.id == contestant_id)
+        )
+        contestant = res.scalar_one_or_none()
 
-            if contestant is None or problem_card is None:
-                raise ValueError("Invalid contestant or problem card")
+        res = await self.async_session.execute(
+            select(ProblemCard)
+            .where(ProblemCard.id == problem_card_id)
+        )
+        problem_card = res.scalar_one_or_none()
 
-            res = await self.async_session.execute(
-                select(Contest)
-                .join(User, User.domain_number == Contest.id)
-                .join(Contestant, Contestant.user_id == User.id)
-                .where(Contestant.id == contestant.id)
-            )
-            contest = res.scalar_one_or_none()
+        if contestant is None or problem_card is None:
+            raise ValueError("Invalid contestant or problem card")
 
-            if (contestant.points < problem_card.category_price and
-                    not contest.flag_user_can_have_negative_points):
-                raise ValueError("Not enough points")
+        res = await self.async_session.execute(
+            select(Contest)
+            .join(User, User.domain_number == Contest.id)
+            .join(Contestant, Contestant.user_id == User.id)
+            .where(Contestant.id == contestant.id)
+        )
+        contest = res.scalar_one_or_none()
 
-            await self.async_session.execute(
-                update(Contestant)
-                .where(Contestant.id == contestant_id)
-                .values(points=contestant.points - problem_card.category_price)
-                .execution_options(synchronize_session="fetch")
-            )
+        if (contestant.points < problem_card.category_price and
+                not contest.flag_user_can_have_negative_points):
+            raise ValueError("Not enough points")
 
-            selected_problem = SelectedProblem(
-                problem_card_id=problem_card_id,
-                contestant_id=contestant_id,
-                status=SelectedProblemStatusType.ACTIVE,
-            )
-            self.async_session.add(instance=selected_problem)
-            await self.async_session.flush()
-            # await self.async_session.commit()
-            # await self.async_session.refresh(selected_problem)
-            return selected_problem
+        await self.async_session.execute(
+            update(Contestant)
+            .where(Contestant.id == contestant_id)
+            .values(points=contestant.points - problem_card.category_price)
+            .execution_options(synchronize_session="fetch")
+        )
 
-        except Exception:
-            # await self.async_session.rollback()
-            raise
+        selected_problem = SelectedProblem(
+            problem_card_id=problem_card_id,
+            contestant_id=contestant_id,
+            status=SelectedProblemStatusType.ACTIVE,
+        )
+        self.async_session.add(instance=selected_problem)
+        await self.async_session.flush()
+        # await self.async_session.commit()
+        # await self.async_session.refresh(selected_problem)
+        return selected_problem
 
 
 """

@@ -34,6 +34,7 @@ from backend.core.services.rules.submission_reward import calculate_max_submissi
 from backend.core.utilities.exceptions.database import EntityAlreadyExists
 from backend.core.utilities.exceptions.logic import PossibleLimitOverflow
 from backend.core.utilities.loggers.log_decorator import log_calls
+from backend.handlers.contestant_log_writer import ContestantLogWriter
 
 MAX_NUMBER_OF_ATTEMPTS = 3  # todo: как-то по-другому это должно быть...
 
@@ -173,57 +174,41 @@ class SelectedProblemService(ISelectedProblemService):
 
             user: User = await self.uow.user_repo.get_user_by_id(user_id=user_id, )
             contestant: Contestant = await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id, )
-            problem_card: ProblemCard = (
-                await self.uow.problem_card_repo.get_problem_card_by_id(problem_card_id=problem_card_id, ))
+            contest: Contest = await self.uow.contest_repo.get_contest_by_id(contest_id=user.domain_number, )
+            problem_card: ProblemCard = await self.uow.problem_card_repo.get_problem_card_by_id(
+                problem_card_id=problem_card_id, )
             selected_problem: SelectedProblem | None = (
                 await self.uow.selected_problem_repo.get_selected_problem_by_contestant_and_problem_card(
                     contestant_id=contestant.id,
                     problem_card_id=problem_card_id, )
             )
-            if selected_problem:
+
+            if selected_problem:  # Пользователь не может купить такую же задачу повторно
                 raise EntityAlreadyExists("Selected problem already exists")
 
-            contest: Contest = (
-                await self.uow.contest_repo.get_contest_by_id(
-                    contest_id=user.domain_number, )
-            )
             active_selected_problems: Sequence[SelectedProblem] = (
                 await self.uow.selected_problem_repo.get_selected_problem_of_contestant_by_id(
                     contestant_id=contestant.id,
                     filter_by_status=[SelectedProblemStatusType.ACTIVE.value], )
             )
 
+            # Пользователь не может покупать задачи, если у него их максимум или больше допустимого число
+            #   Замечание: не исключается случай, когда пользователь может иметь задач больше допустимого
+            #   - например, когда одна или несколько задач были возвращены пользователю менеджером
             if len(active_selected_problems) >= contest.number_of_slots_for_problems:
-                raise PossibleLimitOverflow("")
+                raise PossibleLimitOverflow("Action Denied: possible limit overflow.")
 
-            try:
-                selected_problem: SelectedProblem = (
-                    await self.uow.transaction_repo.buy_problem(
-                        contestant_id=contestant.id,
-                        problem_card_id=problem_card.id, )
-                )
+            selected_problem: SelectedProblem = await self.uow.transaction_repo.buy_problem(
+                contestant_id=contestant.id, problem_card_id=problem_card.id, )
 
-                # Делаем лог
-                await self.uow.contestant_log_repo.create_log(
-                    contestant_id=contestant.id,
-                    log_level=ContestantLogLevelType.INFO,
-                    content=LogMessage.balance_decrease(
-                        points=problem_card.category_price,
-                    ),
-                )
-                await self.uow.contestant_log_repo.create_log(
-                    contestant_id=contestant.id,
-                    log_level=ContestantLogLevelType.INFO,
-                    content=LogMessage.add_selected_problem(
-                        category_name=problem_card.category_name,
-                        category_price=problem_card.category_price
-                    ),
-                )
+            # Делаем лог
+            async with ContestantLogWriter(uow=self.uow) as clw:  # Пишем логи
+                contestant_id = selected_problem.contestant_id
+                await clw.log_balance_decrease(contestant_id, problem_card.category_price, )
+                await clw.log_add_selected_problem(
+                    contestant_id, problem_card.category_name, problem_card.category_price, )
 
-                res = SelectedProblemId(
-                    selected_problem_id=selected_problem.id,
-                )
-                return res
-
-            except Exception as e:
-                raise e
+            res = SelectedProblemId(
+                selected_problem_id=selected_problem.id,
+            )
+            return res
