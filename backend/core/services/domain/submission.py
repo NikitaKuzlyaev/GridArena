@@ -1,6 +1,6 @@
 from typing import (
     Sequence,
-    Type,
+    Type, Tuple,
 )
 
 from pydantic import (
@@ -79,6 +79,9 @@ class SubmissionService(ISubmissionService):
     #   Создавать только инстанс посылки и задачу в воркер. Пользователю отдавать статус "на проверке"
     #   Это имеет смысл для расширяемости в будущем, даже если сейчас проверка относительно быстрая
     #   (в планах сделать автогенерацию тестов и проверку ответов в свободной форме с помощью ллм)
+    # todo:
+    #   UPD: в целом, если логика простая (проверка на совпадение) нет смысла делегировать проверку
+    #       (т.к. ответ проверить очень быстро)
     @log_calls
     async def check_submission(
             self,
@@ -86,86 +89,41 @@ class SubmissionService(ISubmissionService):
             selected_problem_id: int,
             answer: str,
     ) -> SubmissionId:
+
+        # Валидация ответа (не принимать ответы, которые не соответствуют модели)
+        # В случае, если ответ был передан без валидации на уровне эндпоинта, или попал сюда любым иным способом
+        is_answer_valid_by_model = self._is_answer_valid_by_model(answer, validate_model=AnswerValidatorModel)
+        # Валидация здесь чтобы не лезть в бд зря - Оптимизация...
+        # Участник не может сюда попасть самостоятельно, потому что валидация есть уровнем выше в ручке
+        if not is_answer_valid_by_model:
+            raise ValueError("Contestant answer is invalid by model")
+
         async with self.uow:
             # Проверка прав не требуется. Все описано в логике ниже.
             # Пользователь не может получить чужую информацию в принципе, так как жестко привязан своим domain_number
 
-            contestant: Contestant = await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id, )
-            selected_problem: SelectedProblem = (
-                await self.uow.selected_problem_repo.get_selected_problem_by_id(
-                    selected_problem_id=selected_problem_id, )
+            contestant, selected_problem, problem_card, problem = (
+                await self.uow.domain_repo.get_selected_problem_full_context(
+                    user_id=user_id, selected_problem_id=selected_problem_id, )
             )
-            problem_card: ProblemCard = (
-                await self.uow.problem_card_repo.get_problem_card_by_id(
-                    problem_card_id=selected_problem.problem_card_id, )
-            )
-            problem: Problem = await self.uow.problem_repo.get_problem_by_id(problem_id=problem_card.problem_id, )
-
             # Участник не может отправлять посылки не по своим купленным задачам
             if contestant.id != selected_problem.contestant_id:
-                raise PermissionDenied("Участник не может отправлять посылки не по своим купленным задачам")
+                raise PermissionDenied("Permission Denied: It's not your selected problem.")
 
-            # Валидация ответа (не принимать ответы, которые не соответствуют модели)
-            # В случае, если ответ был передан без валидации на уровне эндпоинта, или попал сюда любым иным способом
-            is_answer_valid_by_model = self._is_answer_valid_by_model(answer, validate_model=AnswerValidatorModel)
-            if not is_answer_valid_by_model:
-                raise ValueError("Contestant answer is invalid")
+            # todo: какая логика, если пришел такой же ответ? - сейчас: повторная проверка
 
-            # Не принимать ответ, если он уже был.
-            # Что делать, если к задаче ответ был неверный, а потом поменялся, и участник его уже отправлял?
-            # Что делать?
-            # todo: добавить систему перепроверки? разрешить отправку повторного ответа? возвращать все submission?
-            # Пока не предпринимаю никаких действий. Такой же ответ можно отправить повторно.
-
-            is_answer_correct = self._are_strings_equal(
+            verdict, possible_reward, next_status = await self._get_submission_verdict_reward_and_next_status(
+                selected_problem=selected_problem,
                 contestant_answer=answer,
                 problem_answer=problem.answer,
             )
-
-            verdict = SubmissionVerdict.ACCEPTED.value if is_answer_correct else SubmissionVerdict.WRONG.value
-
-            possible_reward = 0
-
-            if verdict == SubmissionVerdict.ACCEPTED.value:
-                possible_reward: int = (
-                    await self._get_possible_reward(
-                        selected_problem_id=selected_problem.id, )
-                )
-
-            next_status = await self._get_next_selected_problem_status(
-                selected_problem_id=selected_problem.id,
-                is_next_answer_correct=is_answer_correct,
-            )
-
-            if next_status == SelectedProblemStatusType.ACTIVE or next_status == SelectedProblemStatusType.FAILED:
-                # Пишем лог о том, что ответ неверный
-                await self.uow.contestant_log_repo.create_log(
-                    contestant_id=contestant.id,
-                    log_level=ContestantLogLevelType.INFO,
-                    content=LogMessage.wrong_answer(),
-                )
-            if next_status == SelectedProblemStatusType.FAILED:
-                # Пишем лог о том, что задача "сгорела"
-                ...
-            if next_status == SelectedProblemStatusType.SOLVED:
-                # Пишем лог о том, что ответ верный
-                await self.uow.contestant_log_repo.create_log(
-                    contestant_id=contestant.id,
-                    log_level=ContestantLogLevelType.INFO,
-                    content=LogMessage.correct_answer(),
-                )
-                await self.uow.contestant_log_repo.create_log(
-                    contestant_id=contestant.id,
-                    log_level=ContestantLogLevelType.INFO,
-                    content=LogMessage.balance_increase(points=possible_reward),
-                )
 
             submission: Submission = (
                 await self.uow.transaction_repo.create_submission(
                     contestant_id=contestant.id,
                     selected_problem_id=selected_problem_id,
                     answer=answer,
-                    verdict=verdict,
+                    verdict=verdict.value,
                     points_delta=possible_reward,
                     selected_problem_change_status=next_status.value, )
             )
@@ -173,6 +131,58 @@ class SubmissionService(ISubmissionService):
                 submission_id=submission.id,
             )
             return res
+
+    async def _get_submission_verdict_reward_and_next_status(
+            self,
+            selected_problem: SelectedProblem,
+            contestant_answer: str,
+            problem_answer: str,
+    ) -> Tuple[SubmissionVerdict, int, SelectedProblemStatusType]:
+
+        is_answer_correct = self._are_strings_equal(
+            contestant_answer=contestant_answer,
+            problem_answer=problem_answer,
+        )
+
+        verdict = SubmissionVerdict.ACCEPTED if is_answer_correct else SubmissionVerdict.WRONG
+
+        possible_reward = 0
+
+        if verdict == SubmissionVerdict.ACCEPTED:
+            possible_reward: int = (
+                await self._get_possible_reward(
+                    selected_problem_id=selected_problem.id, )
+            )
+
+        next_status = await self._get_next_selected_problem_status(
+            selected_problem_id=selected_problem.id,
+            is_next_answer_correct=is_answer_correct,
+        )
+
+        if next_status == SelectedProblemStatusType.ACTIVE or next_status == SelectedProblemStatusType.FAILED:
+            # Пишем лог о том, что ответ неверный
+            await self.uow.contestant_log_repo.create_log(
+                contestant_id=selected_problem.contestant_id,
+                log_level=ContestantLogLevelType.INFO,
+                content=LogMessage.wrong_answer(),
+            )
+        if next_status == SelectedProblemStatusType.FAILED:
+            # Пишем лог о том, что задача "сгорела"
+            ...
+        if next_status == SelectedProblemStatusType.SOLVED:
+            # Пишем лог о том, что ответ верный
+            await self.uow.contestant_log_repo.create_log(
+                contestant_id=selected_problem.contestant_id,
+                log_level=ContestantLogLevelType.INFO,
+                content=LogMessage.correct_answer(),
+            )
+            await self.uow.contestant_log_repo.create_log(
+                contestant_id=selected_problem.contestant_id,
+                log_level=ContestantLogLevelType.INFO,
+                content=LogMessage.balance_increase(points=possible_reward),
+            )
+
+        return verdict, possible_reward, next_status
 
     async def _get_possible_reward(
             self,
@@ -183,19 +193,8 @@ class SubmissionService(ISubmissionService):
         # Этот метод должен вызываться исключительно из кода внутри async with self.uow
         # (внутри контекстного менеджера, управляющего сессией к базе данных)
 
-        selected_problem: SelectedProblem = (
-            await self.uow.selected_problem_repo.get_selected_problem_by_id(
-                selected_problem_id=selected_problem_id, )
-        )
-        problem_card: ProblemCard = (
-            await self.uow.problem_card_repo.get_problem_card_by_id(
-                problem_card_id=selected_problem.problem_card_id, )
-        )
-        quiz_field: QuizField = (
-            await self.uow.quiz_field_repo.get_quiz_field_by_id(quiz_field_id=problem_card.quiz_field_id, )
-        )
-        contest: Contest = (
-            await self.uow.contest_repo.get_contest_by_id(contest_id=quiz_field.contest_id, )
+        selected_problem, problem_card, quiz_field, contest = await self.uow.domain_repo.get_possible_reward_full_context(
+            selected_problem_id=selected_problem_id,
         )
 
         # Награда за решение доступна только если задача активна (доступна для решения)
