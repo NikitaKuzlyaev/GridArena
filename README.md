@@ -54,7 +54,7 @@
 ![Image](https://github.com/NikitaKuzlyaev/quiz/blob/master/git-staff/pick2.jpg?raw=true)
 
 ### Схема данных (упрощенно и неаккуратно)
-![Image](https://github.com/NikitaKuzlyaev/quiz/blob/master/git-staff/pick3.png?raw=true)
+![Image](https://github.com/NikitaKuzlyaev/GridArena/blob/master/git-staff/pick6.png?raw=true)
 
 
 ## 🧑‍🏫 Кому может быть полезна платформа?
