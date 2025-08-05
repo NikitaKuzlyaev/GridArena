@@ -1,6 +1,10 @@
 from dataclasses import dataclass
-
+from datetime import datetime
+from typing import Sequence
+from pydantic import Field
+from backend.core.models.contestant_log import ContestantLogLevelType
 from backend.core.schemas.base import BaseSchemaModel
+from backend.core.utilities.server import get_server_time
 
 
 @dataclass
@@ -29,3 +33,20 @@ class LogMessage:
 
 class ContestantLogId(BaseSchemaModel):
     contestant_log_id: int
+
+
+class ContestantLogInfo(BaseSchemaModel):
+    contestant_log_id: int
+    log_level: ContestantLogLevelType
+    content: str
+    created_at: datetime
+
+
+class ContestantLogPaginatedResponse(BaseSchemaModel):
+    total: int
+    offset: int
+    limit: int
+    body: Sequence[ContestantLogInfo]
+    server_time: datetime = Field(
+        default_factory=lambda: get_server_time(with_server_timezone=True)
+    )

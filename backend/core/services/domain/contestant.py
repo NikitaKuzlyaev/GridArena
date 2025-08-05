@@ -9,30 +9,33 @@ from typing import (
     Optional,
 )
 
+from backend.configuration.settings import settings
 from backend.core.models import (
     Contest,
     Contestant,
     User,
     SelectedProblem,
+    ContestantLog,
 )
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.contestant import (
     ArrayContestantInfoForEditor,
     ContestantInfo,
-    ContestantId,
     ContestantPreviewInfo,
     ContestantInfoInContest,
 )
+from backend.core.schemas.contestant_log import (
+    ContestantLogPaginatedResponse,
+    ContestantLogInfo,
+)
 from backend.core.schemas.permission import PermissionPromise
-from backend.core.services.access_policies.contest import ContestAccessPolicy
 from backend.core.services.access_policies.contestant import ContestantAccessPolicy
 from backend.core.services.interfaces.contestant import IContestantService
-from backend.core.utilities.exceptions.database import (
-    EntityDoesNotExist,
-    EntityAlreadyExists,
-)
+
 from backend.core.utilities.loggers.log_decorator import log_calls
+
+UTC_PLUS = timezone(timedelta(hours=settings.SERVER_TIMEZONE_UTC_DELTA))
 
 
 class ContestantService(IContestantService):
@@ -45,26 +48,49 @@ class ContestantService(IContestantService):
         self.access_policy: ContestantAccessPolicy = access_policy or ContestantAccessPolicy()
 
     @log_calls
+    async def get_contestant_logs_in_contest(
+            self,
+            user_id: int,
+            offset: int = 0,
+            limit: int = 20,
+    ) -> ContestantLogPaginatedResponse:
+        async with self.uow:
+            user: User = await self.uow.user_repo.get_user_by_id(user_id=user_id, )
+            contestant: Contestant = await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id, )
+
+            total: int = await self.uow.contestant_log_repo.count_logs_by_contestant_id(contestant.id)
+
+            logs: Sequence[ContestantLog] = await self.uow.contestant_log_repo.get_contestant_logs_in_contest(
+                contestant_id=contestant.id,
+                limit=limit,
+                offset=offset,
+            )
+
+            res = ContestantLogPaginatedResponse(
+                total=total,
+                offset=offset,
+                limit=limit,
+                body=[
+                    ContestantLogInfo(
+                        contestant_log_id=log.id,
+                        log_level=log.level_type,
+                        content=log.content,
+                        created_at=log.created_at.astimezone(UTC_PLUS),
+                    ) for log in logs
+                ],
+            )
+
+            return res
+
+    @log_calls
     async def get_user_contestant_and_contest(
             self,
             user_id: int
     ) -> Tuple[User, Contestant, Contest]:
         async with self.uow:
-            user: User | None = await self.uow.user_repo.get_user_by_id(user_id=user_id, )
-            if not user:
-                raise EntityDoesNotExist("user not found")
-
-            contestant: Contestant | None = (
-                await self.uow.contestant_repo.get_contestant_by_user_id(
-                    user_id=user_id, ))
-            if not contestant:
-                raise EntityDoesNotExist("contestant was not found")
-
-            contest: Contest | None = (
-                await self.uow.contest_repo.get_contest_by_id(
-                    contest_id=user.domain_number, ))
-            if not contest:
-                raise EntityDoesNotExist("contest was not found")
+            user: User = await self.uow.user_repo.get_user_by_id(user_id=user_id, )
+            contestant: Contestant = await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id, )
+            contest: Contest = await self.uow.contest_repo.get_contest_by_id(contest_id=user.domain_number, )
 
             return user, contestant, contest
 
@@ -76,10 +102,8 @@ class ContestantService(IContestantService):
         async with self.uow:
             # Проверка прав не требуется в текущей логике
 
-            user, contestant, contest = (
-                await self.get_user_contestant_and_contest(
-                    user_id=user_id, )
-            )
+            user, contestant, contest = await self.get_user_contestant_and_contest(user_id=user_id, )
+
             selected_problems: Sequence[SelectedProblem] = (
                 await self.uow.selected_problem_repo.get_selected_problem_of_contestant_by_id(
                     contestant_id=contestant.id,
@@ -102,10 +126,7 @@ class ContestantService(IContestantService):
         async with self.uow:
             # Проверка прав не требуется в текущей логике
 
-            user, contestant, contest = (
-                await self.get_user_contestant_and_contest(
-                    user_id=user_id, )
-            )
+            user, contestant, contest = await self.get_user_contestant_and_contest(user_id=user_id, )
 
             utc_plus_7 = timezone(timedelta(hours=7))  # какой кринж
             current_time = datetime.now(utc_plus_7)  # todo: переделать нормально

@@ -14,6 +14,7 @@ from backend.core.schemas.contestant import (
     ContestantPreviewInfo,
     ContestantInfoInContest
 )
+from backend.core.schemas.contestant_log import ContestantLogPaginatedResponse
 from backend.core.services.interfaces.contest import IContestService
 from backend.core.services.interfaces.contestant import IContestantService
 from backend.core.services.providers.contest import get_contest_service
@@ -219,3 +220,27 @@ async def view_contestants(
     result = result.model_dump()
 
     return result
+
+@router.get(
+    path="/my/logs",
+    response_model=ContestantLogPaginatedResponse,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+
+    }
+)
+async def contestant_logs_in_contest(
+        user: User = Depends(get_user),
+        contestant_service: IContestantService = Depends(get_contestant_service),
+) -> ContestantLogPaginatedResponse:
+
+    res: ContestantLogPaginatedResponse = (
+        await contestant_service.get_contestant_logs_in_contest(
+            user_id=user.id,
+        )
+    )
+    res = res.model_dump()
+
+    return res

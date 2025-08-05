@@ -660,6 +660,17 @@ function SolveContest() {
           >
             Посылки
           </button>
+
+
+          <button
+            style={{ marginTop: 10, padding: '10px 0', fontSize: 16, borderRadius: 6, background: '#e0e7ff', border: '1px solid #bde0fe', cursor: 'pointer', width: '100%' }}
+            onClick={() => {
+              window.location.href = `/contest/my/logs`;
+            }}
+          >
+            Логи
+          </button>
+
         </div>
       </div>
     </div>
