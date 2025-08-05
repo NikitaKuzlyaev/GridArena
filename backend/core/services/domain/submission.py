@@ -1,6 +1,7 @@
 from typing import (
     Sequence,
-    Type, Tuple,
+    Type,
+    Tuple,
 )
 
 from pydantic import (
@@ -8,15 +9,7 @@ from pydantic import (
     ValidationError,
 )
 
-from backend.core.models import (
-    Contestant,
-    ProblemCard,
-    SelectedProblem,
-    Problem,
-    QuizField,
-    Contest,
-)
-from backend.core.models.contestant_log import ContestantLogLevelType
+from backend.core.models import SelectedProblem
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.models.submission import (
     SubmissionVerdict,
@@ -24,13 +17,13 @@ from backend.core.models.submission import (
 )
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.base import BaseSchemaModel
-from backend.core.schemas.contestant_log import LogMessage
 from backend.core.schemas.submission import SubmissionId
 from backend.core.services.interfaces.submission import ISubmissionService
 from backend.core.services.rules.submission_reward import calculate_max_submission_reward
 from backend.core.utilities.exceptions.permission import PermissionDenied
 from backend.core.utilities.formatters.string import make_string_clear
 from backend.core.utilities.loggers.log_decorator import log_calls
+from backend.handlers.contestant_log_writer import ContestantLogWriter
 
 
 class AnswerValidatorModel(BaseSchemaModel):
@@ -125,8 +118,22 @@ class SubmissionService(ISubmissionService):
                     answer=answer,
                     verdict=verdict.value,
                     points_delta=possible_reward,
-                    selected_problem_change_status=next_status.value, )
+                    selected_problem_change_status=next_status.value,
+                )
             )
+
+            async with ContestantLogWriter(uow=self.uow) as clw:  # Пишем логи
+                contestant_id = selected_problem.contestant_id
+                if verdict == SubmissionVerdict.WRONG:  # Пишем лог о том, что ответ неверный
+                    await clw.log_wrong_answer(contestant_id, )
+
+                if next_status == SelectedProblemStatusType.FAILED:
+                    # Пишем лог о том, что задача "сгорела"
+                    ...
+                if next_status == SelectedProblemStatusType.SOLVED:  # Пишем лог о том, что ответ верный
+                    await clw.log_correct_answer(contestant_id, )
+                    await clw.log_balance_increase(contestant_id, possible_reward, )
+
             res = SubmissionId(
                 submission_id=submission.id,
             )
@@ -139,48 +146,17 @@ class SubmissionService(ISubmissionService):
             problem_answer: str,
     ) -> Tuple[SubmissionVerdict, int, SelectedProblemStatusType]:
 
-        is_answer_correct = self._are_strings_equal(
-            contestant_answer=contestant_answer,
-            problem_answer=problem_answer,
-        )
-
+        is_answer_correct = self._are_strings_equal(contestant_answer, problem_answer, )
         verdict = SubmissionVerdict.ACCEPTED if is_answer_correct else SubmissionVerdict.WRONG
 
         possible_reward = 0
-
         if verdict == SubmissionVerdict.ACCEPTED:
-            possible_reward: int = (
-                await self._get_possible_reward(
-                    selected_problem_id=selected_problem.id, )
-            )
+            possible_reward: int = await self._get_possible_reward(selected_problem_id=selected_problem.id, )
 
         next_status = await self._get_next_selected_problem_status(
-            selected_problem_id=selected_problem.id,
+            selected_problem=selected_problem,
             is_next_answer_correct=is_answer_correct,
         )
-
-        if next_status == SelectedProblemStatusType.ACTIVE or next_status == SelectedProblemStatusType.FAILED:
-            # Пишем лог о том, что ответ неверный
-            await self.uow.contestant_log_repo.create_log(
-                contestant_id=selected_problem.contestant_id,
-                log_level=ContestantLogLevelType.INFO,
-                content=LogMessage.wrong_answer(),
-            )
-        if next_status == SelectedProblemStatusType.FAILED:
-            # Пишем лог о том, что задача "сгорела"
-            ...
-        if next_status == SelectedProblemStatusType.SOLVED:
-            # Пишем лог о том, что ответ верный
-            await self.uow.contestant_log_repo.create_log(
-                contestant_id=selected_problem.contestant_id,
-                log_level=ContestantLogLevelType.INFO,
-                content=LogMessage.correct_answer(),
-            )
-            await self.uow.contestant_log_repo.create_log(
-                contestant_id=selected_problem.contestant_id,
-                log_level=ContestantLogLevelType.INFO,
-                content=LogMessage.balance_increase(points=possible_reward),
-            )
 
         return verdict, possible_reward, next_status
 
@@ -218,7 +194,7 @@ class SubmissionService(ISubmissionService):
 
     async def _get_next_selected_problem_status(
             self,
-            selected_problem_id: int,
+            selected_problem: SelectedProblem,
             is_next_answer_correct: bool,
     ) -> SelectedProblemStatusType:
         # async with self.uow: -> Вызывается из check_submission(...)
@@ -229,9 +205,6 @@ class SubmissionService(ISubmissionService):
         if is_next_answer_correct:
             return SelectedProblemStatusType.SOLVED
 
-        selected_problem: SelectedProblem = (
-            await self.uow.selected_problem_repo.get_selected_problem_by_id(selected_problem_id=selected_problem_id)
-        )
         submissions: Sequence[Submission] | None = (
             await self.uow.submission_repo.get_submissions_of_selected_problem_by_id(
                 selected_problem_id=selected_problem.id,
