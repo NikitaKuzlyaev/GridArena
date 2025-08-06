@@ -71,7 +71,7 @@ async def create_contestant(
     result: ContestantId = (
         await contest_service.create_contestant(
             user_id=user.id,
-            **params.model_dump(),
+            contestant_data=params,
         )
     )
     result = result.model_dump()
@@ -221,6 +221,7 @@ async def view_contestants(
 
     return result
 
+
 @router.get(
     path="/my/logs",
     response_model=ContestantLogPaginatedResponse,
@@ -235,7 +236,6 @@ async def contestant_logs_in_contest(
         user: User = Depends(get_user),
         contestant_service: IContestantService = Depends(get_contestant_service),
 ) -> ContestantLogPaginatedResponse:
-
     res: ContestantLogPaginatedResponse = (
         await contestant_service.get_contestant_logs_in_contest(
             user_id=user.id,

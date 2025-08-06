@@ -4,6 +4,7 @@
 Определяет контракт для реализации бизнес-логики, связанной с созданием, обновлением,
 удалением и получением информации о контестах, а также получения результатов и отправленных решений.
 """
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol
 
@@ -13,9 +14,9 @@ from backend.core.schemas.contest import (
     ContestInfoForContestant,
     ArrayContestShortInfo,
     ContestStandings,
-    ContestSubmissions,
+    ContestSubmissions, ContestCreateRequest, ContestUpdateRequest,
 )
-from backend.core.schemas.contestant import ContestantId
+from backend.core.schemas.contestant import ContestantId, ContestantInCreate
 
 
 class IContestService(Protocol):
@@ -57,21 +58,13 @@ class IContestService(Protocol):
     async def create_full_contest(
             self,
             user_id: int,
-            name: str,
-            started_at: datetime,
-            closed_at: datetime,
-            start_points: int,
-            number_of_slots_for_problems: int,
+            contest_data: ContestCreateRequest,
     ) -> ContestId:
         """
         Создать новый контест с полным набором параметров.
 
         :param user_id: Идентификатор пользователя (создателя).
-        :param name: Название контеста.
-        :param started_at: Дата и время начала контеста.
-        :param closed_at: Дата и время окончания контеста.
-        :param start_points: Стартовое количество баллов.
-        :param number_of_slots_for_problems: Количество слотов для задач.
+        :param contest_data: # todo.
         :return: Объект с идентификатором созданного контеста.
         """
         ...
@@ -118,21 +111,13 @@ class IContestService(Protocol):
     async def create_contest(
             self,
             user_id: int,
-            name: str,
-            started_at: datetime,
-            closed_at: datetime,
-            start_points: int,
-            number_of_slots_for_problems: int,
+            contest_data: ContestCreateRequest,
     ) -> ContestId:
         """
         Создать новый контест (базовая версия).
 
         :param user_id: Идентификатор пользователя (создателя).
-        :param name: Название контеста.
-        :param started_at: Дата и время начала контеста.
-        :param closed_at: Дата и время окончания контеста.
-        :param start_points: Стартовое количество баллов.
-        :param number_of_slots_for_problems: Количество слотов для задач.
+        :param contest_data: # todo
         :return: Объект с идентификатором созданного контеста.
         """
         ...
@@ -140,27 +125,13 @@ class IContestService(Protocol):
     async def update_contest(
             self,
             user_id: int,
-            contest_id: int,
-            name: str,
-            started_at: datetime,
-            closed_at: datetime,
-            start_points: int,
-            number_of_slots_for_problems: int,
-            rule_type: str,
-            flag_user_can_have_negative_points: bool,
+            contest_data: ContestUpdateRequest,
     ) -> ContestId:
         """
         Обновить параметры контеста.
 
         :param user_id: Идентификатор пользователя (инициатора обновления).
-        :param contest_id: Идентификатор контеста.
-        :param name: Новое название контеста.
-        :param started_at: Новое время начала.
-        :param closed_at: Новое время окончания.
-        :param start_points: Новое стартовое количество баллов.
-        :param number_of_slots_for_problems: Новое количество слотов для задач.
-        :param rule_type: Тип правил контеста.
-        :param flag_user_can_have_negative_points: Флаг, разрешающий отрицательные баллы у участников.
+        :param contest_data: # todo
         :return: Объект с идентификатором созданного контеста.
         """
         ...
@@ -180,21 +151,13 @@ class IContestService(Protocol):
     async def create_contestant(
             self,
             user_id: int,
-            contest_id: int,
-            username: str,
-            password: str,
-            name: str,
-            points: int,
+            contestant_data: ContestantInCreate,
     ) -> ContestantId:
         """
         Получить список контестов, связанных с пользователем (где пользователь - редактор).
 
         :param user_id: Идентификатор пользователя (инициатора запроса).
-        :param contest_id: Идентификатор контеста.
-        :param username: Имя (логин) пользователя.
-        :param password: Пароль пользователя.
-        :param name: Имя (полное название) пользователя.
-        :param points: Начальный баланс пользователя.
+        :param contestant_data: # todo
         :return: Объект с идентификатором нового пользователя.
         """
         ...

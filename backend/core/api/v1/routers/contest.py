@@ -72,13 +72,10 @@ async def create_contest(
         - Даты проверяются на корректность порядка (через @model_validator)
     """
 
-    res: ContestId = (
-        await contest_service.create_full_contest(
-            user_id=user.id,
-            **params.model_dump(),
-        )
+    res: ContestId = await contest_service.create_full_contest(
+        user_id=user.id,
+        contest_data=params,
     )
-
     return res
 
 
@@ -128,11 +125,9 @@ async def update_contest(
         - Даты проверяются на корректность порядка
     """
 
-    result: ContestId = (
-        await contest_service.update_contest(
-            user_id=user.id,
-            **params.model_dump(),
-        )
+    result: ContestId = await contest_service.update_contest(
+        user_id=user.id,
+        contest_data=params,
     )
     result = result.model_dump()
 
@@ -183,7 +178,6 @@ async def delete_contest(
         user_id=user.id,
         contest_id=contest_id,
     )
-
     return None
 
 
@@ -221,10 +215,8 @@ async def view_contests(
         todo: add later
     """
 
-    result: ArrayContestShortInfo = (
-        await contest_service.get_user_contests(
-            user_id=user.id,
-        )
+    result: ArrayContestShortInfo = await contest_service.get_user_contests(
+        user_id=user.id,
     )
     result = result.model_dump()
 
@@ -273,11 +265,9 @@ async def contest_info_for_editor(
         EntityDoesNotExist: Если контест с указанным ID не существует (возвращает 404).
     """
 
-    result: ContestInfoForEditor = (
-        await contest_service.contest_info_for_editor(
-            user_id=user.id,
-            contest_id=contest_id,
-        )
+    result: ContestInfoForEditor = await contest_service.contest_info_for_editor(
+        user_id=user.id,
+        contest_id=contest_id,
     )
     result = result.model_dump()
 
@@ -306,7 +296,6 @@ async def contest_info_for_contestant(
     Возвращает общедоступные данные: название, ID и временные рамки контеста.
 
     Args:
-        contest_id (int): ID контеста, информация о котором запрашивается (передаётся в query).
         user (User): Авторизованный пользователь (определяется по JWT).
         contest_service (IContestService): Сервис для получения данных контеста.
 
@@ -318,10 +307,8 @@ async def contest_info_for_contestant(
         EntityDoesNotExist: Если контест с указанным ID не существует (возвращает 404).
     """
 
-    result: ContestInfoForContestant = (
-        await contest_service.contest_info_for_contestant(
-            user_id=user.id,
-        )
+    result: ContestInfoForContestant = await contest_service.contest_info_for_contestant(
+        user_id=user.id,
     )
     result = result.model_dump()
 
@@ -374,11 +361,9 @@ async def contest_standings(
         EntityDoesNotExist: Если контест с указанным ID не существует (возвращает 404).
     """
 
-    result: ContestStandings = (
-        await contest_service.contest_standings(
-            user_id=user.id,
-            contest_id=contest_id,
-        )
+    result: ContestStandings = await contest_service.contest_standings(
+        user_id=user.id,
+        contest_id=contest_id,
     )
     result = result.model_dump()
 
@@ -433,12 +418,10 @@ async def contest_submissions(
         EntityDoesNotExist: Если контест с указанным ID не существует (возвращает 404).
     """
 
-    result: ContestSubmissions = (
-        await contest_service.contest_submissions(
-            user_id=user.id,
-            contest_id=contest_id,
-            show_user_only=show_user_only,
-        )
+    result: ContestSubmissions = await contest_service.contest_submissions(
+        user_id=user.id,
+        contest_id=contest_id,
+        show_user_only=show_user_only,
     )
     result = result.model_dump()
 
