@@ -69,7 +69,7 @@ class SelectedProblemService(ISelectedProblemService):
             )
             attempts_by_selected_problem = {
                 sp_id: max_number_of_attempts - wrong_attempts_map.get(sp_id, 0)
-                for sp_id in selected_problem_ids,
+                for sp_id in selected_problem_ids
             }
             return attempts_by_selected_problem
 
