@@ -6,7 +6,7 @@
 
 from typing import Protocol
 
-from backend.core.schemas.submission import SubmissionId
+from backend.core.schemas.submission import SubmissionId, SubmissionCreateRequest
 
 
 class ISubmissionService(Protocol):
@@ -18,15 +18,13 @@ class ISubmissionService(Protocol):
     async def check_submission(
             self,
             user_id: int,
-            selected_problem_id: int,
-            answer: str,
+            data: SubmissionCreateRequest,
     ) -> SubmissionId:
         """
         Проверить отправленное решение задачи.
 
         :param user_id: Идентификатор пользователя (участника).
-        :param selected_problem_id: Идентификатор выбранной задачи.
-        :param answer: Ответ, отправленный пользователем.
+        :param data: todo
         :return: Объект с идентификатором отправки решения.
         """
         ...

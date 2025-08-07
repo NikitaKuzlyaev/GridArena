@@ -70,7 +70,7 @@ async def check_submission(
     result: SubmissionId = (
         await submission_service.check_submission(
             user_id=user.id,
-            **params.model_dump(),
+            data=params,
         )
     )
     result = result.model_dump()

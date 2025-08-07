@@ -17,7 +17,7 @@ from backend.core.models.submission import (
 )
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.base import BaseSchemaModel
-from backend.core.schemas.submission import SubmissionId
+from backend.core.schemas.submission import SubmissionId, SubmissionCreateRequest
 from backend.core.services.interfaces.submission import ISubmissionService
 from backend.core.services.rules.submission_reward import calculate_max_submission_reward
 from backend.core.utilities.exceptions.permission import PermissionDenied
@@ -79,13 +79,12 @@ class SubmissionService(ISubmissionService):
     async def check_submission(
             self,
             user_id: int,
-            selected_problem_id: int,
-            answer: str,
+            data: SubmissionCreateRequest,
     ) -> SubmissionId:
 
         # Валидация ответа (не принимать ответы, которые не соответствуют модели)
         # В случае, если ответ был передан без валидации на уровне эндпоинта, или попал сюда любым иным способом
-        is_answer_valid_by_model = self._is_answer_valid_by_model(answer, validate_model=AnswerValidatorModel)
+        is_answer_valid_by_model = self._is_answer_valid_by_model(data.answer, validate_model=AnswerValidatorModel)
         # Валидация здесь чтобы не лезть в бд зря - Оптимизация...
         # Участник не может сюда попасть самостоятельно, потому что валидация есть уровнем выше в ручке
         if not is_answer_valid_by_model:
@@ -97,7 +96,7 @@ class SubmissionService(ISubmissionService):
 
             contestant, selected_problem, problem_card, problem = (
                 await self.uow.domain_repo.get_selected_problem_full_context(
-                    user_id=user_id, selected_problem_id=selected_problem_id, )
+                    user_id=user_id, selected_problem_id=data.selected_problem_id, )
             )
             # Участник не может отправлять посылки не по своим купленным задачам
             if contestant.id != selected_problem.contestant_id:
@@ -107,19 +106,16 @@ class SubmissionService(ISubmissionService):
 
             verdict, possible_reward, next_status = await self._get_submission_verdict_reward_and_next_status(
                 selected_problem=selected_problem,
-                contestant_answer=answer,
+                contestant_answer=data.answer,
                 problem_answer=problem.answer,
             )
-
-            submission: Submission = (
-                await self.uow.transaction_repo.create_submission(
-                    contestant_id=contestant.id,
-                    selected_problem_id=selected_problem_id,
-                    answer=answer,
-                    verdict=verdict.value,
-                    points_delta=possible_reward,
-                    selected_problem_change_status=next_status.value,
-                )
+            submission: Submission = await self.uow.transaction_repo.create_submission(
+                contestant_id=contestant.id,
+                selected_problem_id=data.selected_problem_id,
+                answer=data.answer,
+                verdict=verdict.value,
+                points_delta=possible_reward,
+                selected_problem_change_status=next_status.value,
             )
 
             async with ContestantLogWriter(uow=self.uow) as clw:  # Пишем логи
@@ -134,9 +130,7 @@ class SubmissionService(ISubmissionService):
                     await clw.log_correct_answer(contestant_id, )
                     await clw.log_balance_increase(contestant_id, possible_reward, )
 
-            res = SubmissionId(
-                submission_id=submission.id,
-            )
+            res = SubmissionId(submission_id=submission.id, )
             return res
 
     async def _get_submission_verdict_reward_and_next_status(
