@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 from sqlalchemy import (
     select,
@@ -57,6 +57,31 @@ class DomainCRUDRepository(BaseCRUDRepository):
         )
         result = await self.async_session.execute(stmt)
         return result.one_or_none()
+
+    async def get_contestant_full_context(
+            self,
+            *,
+            user_id: Optional[int] = None,
+            contestant_id: Optional[int] = None,
+    ) -> Tuple[User, Contestant, Contest] | None:
+        stmt = (
+            select(User, Contestant, Contest)
+            .join(Contestant, User.id == Contestant.user_id)
+            .join(Contest, Contest.id == User.domain_number)
+        )
+
+        if not user_id is None:
+            stmt = stmt.where(User.id == user_id)
+
+        elif not contestant_id is None:
+            stmt = stmt.where(Contestant.id == contestant_id)
+
+        else:
+            raise RuntimeError(f"user_id or contestant_id must be specified")
+
+        res = await self.async_session.execute(stmt)
+        res = res.one_or_none()
+        return res
 
 
 """
