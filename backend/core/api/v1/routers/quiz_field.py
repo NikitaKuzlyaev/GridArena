@@ -69,7 +69,7 @@ async def update_quiz_field(
     result: QuizFieldId = (
         await quiz_service.update_quiz_field(
             user_id=user.id,
-            **params.model_dump(),
+            data=params,
         )
     )
     result = result.model_dump()

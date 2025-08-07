@@ -52,7 +52,7 @@ class ContestantService(IContestantService):
             limit: int = 20,
     ) -> ContestantLogPaginatedResponse:
         async with self.uow:
-            user, contestant, _ = await self.uow.domain_repo.get_contestant_full_context(user_id=user_id, )
+            user, contestant, _, _ = await self.uow.domain_repo.get_contestant_full_context(user_id=user_id, )
 
             total: int = await self.uow.contestant_log_repo.count_logs_by_contestant_id(contestant.id, )
 
@@ -70,7 +70,7 @@ class ContestantService(IContestantService):
         async with self.uow:
             # Проверка прав не требуется в текущей логике
 
-            user, contestant, contest = await self.uow.domain_repo.get_contestant_full_context(user_id=user_id, )
+            user, contestant, contest, _ = await self.uow.domain_repo.get_contestant_full_context(user_id=user_id, )
 
             selected_problems: Sequence[SelectedProblem] = (
                 await self.uow.selected_problem_repo.get_selected_problem_of_contestant_by_id(
@@ -88,7 +88,7 @@ class ContestantService(IContestantService):
         async with self.uow:
             # Проверка прав не требуется в текущей логике
 
-            user, contestant, contest = await self.uow.domain_repo.get_contestant_full_context(user_id=user_id, )
+            user, contestant, contest, _ = await self.uow.domain_repo.get_contestant_full_context(user_id=user_id, )
 
             current_time = get_server_time(with_server_timezone=True)
 

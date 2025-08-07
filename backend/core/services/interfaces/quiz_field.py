@@ -10,7 +10,7 @@ from typing import Protocol
 from backend.core.schemas.quiz_field import (
     QuizFieldId,
     QuizFieldInfoForEditor,
-    QuizFieldInfoForContestant,
+    QuizFieldInfoForContestant, QuizFieldUpdateRequest,
 )
 
 
@@ -46,38 +46,16 @@ class IQuizFieldService(Protocol):
         """
         ...
 
-    async def create_quiz_field(
-            self,
-            user_id: int,
-            contest_id: int,
-            number_of_rows: int,
-            number_of_columns: int,
-    ) -> QuizFieldId:
-        """
-        Создать новое поле.
-
-        :param user_id: Идентификатор пользователя (редактора).
-        :param contest_id: Идентификатор контеста.
-        :param number_of_rows: Количество строк.
-        :param number_of_columns: Количество столбцов.
-        :return: Объект с идентификатором созданного поля.
-        """
-        ...
-
     async def update_quiz_field(
             self,
             user_id: int,
-            quiz_field_id: int,
-            number_of_rows: int,
-            number_of_columns: int,
+            data: QuizFieldUpdateRequest,
     ) -> QuizFieldId:
         """
         Обновить параметры поля.
 
         :param user_id: Идентификатор пользователя (редактора).
-        :param quiz_field_id: Идентификатор поля.
-        :param number_of_rows: Новое количество строк.
-        :param number_of_columns: Новое количество столбцов.
+        :param data: todo
         :return: Объект с идентификатором обновлённого поля.
         """
         ...

@@ -63,11 +63,12 @@ class DomainCRUDRepository(BaseCRUDRepository):
             *,
             user_id: Optional[int] = None,
             contestant_id: Optional[int] = None,
-    ) -> Tuple[User, Contestant, Contest] | None:
+    ) -> Tuple[User, Contestant, Contest, QuizField] | None:
         stmt = (
             select(User, Contestant, Contest)
             .join(Contestant, User.id == Contestant.user_id)
             .join(Contest, Contest.id == User.domain_number)
+            .join(QuizField, QuizField.contest_id == Contest.id)
         )
 
         if not user_id is None:
