@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import (
     Sequence,
     Tuple,
@@ -8,25 +7,21 @@ from typing import (
 )
 
 from backend.core.models import (
-    Contestant,
-    User,
     SelectedProblem,
     ProblemCard,
     Problem,
     Contest,
 )
 from backend.core.models.contest import ContestRuleType
-from backend.core.models.contestant_log import ContestantLogLevelType
 from backend.core.models.selected_problem import SelectedProblemStatusType
 from backend.core.models.submission import SubmissionVerdict
 from backend.core.repository.crud.uow import UnitOfWork
-from backend.core.schemas.contestant_log import LogMessage
-from backend.core.schemas.permission import PermissionPromise
 from backend.core.schemas.problem import ProblemInfoForContestant
 from backend.core.schemas.selected_problem import (
     SelectedProblemId,
     SelectedProblemInfoForContestant,
     ArraySelectedProblemInfoForContestant,
+    SelectedProblemBuyRequest,
 )
 from backend.core.services.access_policies.selected_problem import SelectedProblemAccessPolicy
 from backend.core.services.interfaces.selected_problem import ISelectedProblemService
@@ -57,7 +52,7 @@ class SelectedProblemService(ISelectedProblemService):
             wrong_attempts_map: dict[int, int] = (
                 await self.uow.submission_repo.get_attempts_count_grouped_by_selected_problem_id(
                     selected_problem_ids=selected_problem_ids,
-                    filter_by_verdict=[SubmissionVerdict.WRONG.value]
+                    filter_by_verdict=[SubmissionVerdict.WRONG.value],
                 )
             )
             return wrong_attempts_map
@@ -70,11 +65,11 @@ class SelectedProblemService(ISelectedProblemService):
         async with self.uow:
             # Правила DEFAULT подразумевают X попыток на решение задачи
             wrong_attempts_map: Dict[int, int] = (
-                await self._get_wrong_attempts(selected_problem_ids=selected_problem_ids)
+                await self._get_wrong_attempts(selected_problem_ids=selected_problem_ids, )
             )
             attempts_by_selected_problem = {
                 sp_id: max_number_of_attempts - wrong_attempts_map.get(sp_id, 0)
-                for sp_id in selected_problem_ids
+                for sp_id in selected_problem_ids,
             }
             return attempts_by_selected_problem
 
@@ -111,78 +106,51 @@ class SelectedProblemService(ISelectedProblemService):
             # Проверка прав не требуется. Все описано в логике ниже.
             # Пользователь не может получить чужую информацию в принципе, так как жестко привязан своим domain_number
 
-            contestant: Contestant = (
-                await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id, )
-            )
+            _, contestant, contest, _ = await self.uow.domain_repo.get_contestant_full_context(user_id=user_id, )
+
             rows: Sequence[Tuple[SelectedProblem, ProblemCard, Problem]] = (
                 await self.uow.selected_problem_repo.get_selected_problem_with_problem_card_and_problem_of_contestant_by_id(
-                    contestant_id=contestant.id, )
-            )
-            contest: Contest = (
-                await self.uow.contest_repo.get_contest_by_user_id(user_id=user_id, )
+                    contestant_id=contestant.id, )  # todo: это за замечательное название метода? <3
             )
 
             attempts_by_selected_problem = {}
-            # Потенциальная награда за задачу по selected_problem_id
             possible_reward_by_selected_problem: Dict[int, int] = {}
 
             if contest.rule_type == ContestRuleType.DEFAULT:
                 attempts_by_selected_problem: Dict[int, int] = (
                     await self._get_remaining_number_of_attempts_for_selected_problems(
-                        selected_problem_ids=[i[0].id for i in rows],  # Берем SelectedProblem.id из rows
+                        selected_problem_ids=[i[0].id for i in rows],
                         max_number_of_attempts=MAX_NUMBER_OF_ATTEMPTS, )
                 )
                 possible_reward_by_selected_problem: Dict[int, int] = (
-                    await self._get_possible_reward(
-                        selected_problem_with_problem_card=[(i[0], i[1]) for i in rows],
-                    )
+                    await self._get_possible_reward(selected_problem_with_problem_card=[(i[0], i[1]) for i in rows], )
                 )
 
-            res = ArraySelectedProblemInfoForContestant(
-                body=[
-                    SelectedProblemInfoForContestant(
-                        selected_problem_id=selected_problem.id,
-                        problem_card_id=problem_card.id,
-                        problem=ProblemInfoForContestant(
-                            problem_id=problem.id,
-                            statement=problem.statement,
-                        ),
-                        category_name=problem_card.category_name,
-                        category_price=problem_card.category_price,
-                        created_at=selected_problem.created_at,
-                        attempts_remaining=attempts_by_selected_problem.get(selected_problem.id, None),
-                        possible_reward=possible_reward_by_selected_problem.get(selected_problem.id, None),
-                    ) for selected_problem, problem_card, problem in rows if
-                    selected_problem.status == SelectedProblemStatusType.ACTIVE  # todo: это что? 0_0
-                ],
-                rule_type=contest.rule_type,
-                max_attempts_for_problem=MAX_NUMBER_OF_ATTEMPTS if contest.rule_type == ContestRuleType.DEFAULT else None,
-            )
+            res = self._map_array_selected_problem_info_for_contestant(
+                rows, contest, attempts_by_selected_problem, possible_reward_by_selected_problem, )
+
             return res
 
     @log_calls
     async def buy_selected_problem(  # todo: метод перегружен. предпринять что-то для оптимизации
             self,
             user_id: int,
-            problem_card_id: int,
+            data: SelectedProblemBuyRequest,
     ) -> SelectedProblemId:
         async with self.uow:
-            # Проверка прав доступа к ресурсу. Если доступа нет - выбросится исключение (raise_if_none=True)
-            permission: PermissionPromise = (
-                await self.access_policy.can_contestant_buy_problem_card(
-                    uow=self.uow, user_id=user_id, problem_card_id=problem_card_id, raise_if_none=True, ))
+            await self.access_policy.can_contestant_buy_problem_card(
+                uow=self.uow, user_id=user_id, problem_card_id=data.problem_card_id, raise_if_none=True, )
 
-            user: User = await self.uow.user_repo.get_user_by_id(user_id=user_id, )
-            contestant: Contestant = await self.uow.contestant_repo.get_contestant_by_user_id(user_id=user_id, )
-            contest: Contest = await self.uow.contest_repo.get_contest_by_id(contest_id=user.domain_number, )
+            user, contestant, contest, _ = await self.uow.domain_repo.get_contestant_full_context(user_id=user_id, )
+
             problem_card: ProblemCard = await self.uow.problem_card_repo.get_problem_card_by_id(
-                problem_card_id=problem_card_id, )
+                problem_card_id=data.problem_card_id, )
+
             selected_problem: SelectedProblem | None = (
                 await self.uow.selected_problem_repo.get_selected_problem_by_contestant_and_problem_card(
                     contestant_id=contestant.id,
-                    problem_card_id=problem_card_id, )
+                    problem_card_id=data.problem_card_id, )
             )
-
             if selected_problem:  # Пользователь не может купить такую же задачу повторно
                 raise EntityAlreadyExists("Selected problem already exists")
 
@@ -208,7 +176,35 @@ class SelectedProblemService(ISelectedProblemService):
                 await clw.log_add_selected_problem(
                     contestant_id, problem_card.category_name, problem_card.category_price, )
 
-            res = SelectedProblemId(
-                selected_problem_id=selected_problem.id,
-            )
+            res = SelectedProblemId(selected_problem_id=selected_problem.id, )
             return res
+
+    @staticmethod
+    def _map_array_selected_problem_info_for_contestant(
+            rows: Sequence[Tuple[SelectedProblem, ProblemCard, Problem]],
+            contest: Contest,
+            attempts_by_selected_problem: Dict[int, int],
+            possible_reward_by_selected_problem: Dict[int, int],
+    ) -> ArraySelectedProblemInfoForContestant:
+
+        res = ArraySelectedProblemInfoForContestant(
+            body=[
+                SelectedProblemInfoForContestant(
+                    selected_problem_id=selected_problem.id,
+                    problem_card_id=problem_card.id,
+                    problem=ProblemInfoForContestant(
+                        problem_id=problem.id,
+                        statement=problem.statement,
+                    ),
+                    category_name=problem_card.category_name,
+                    category_price=problem_card.category_price,
+                    created_at=selected_problem.created_at,
+                    attempts_remaining=attempts_by_selected_problem.get(selected_problem.id, None),
+                    possible_reward=possible_reward_by_selected_problem.get(selected_problem.id, None),
+                ) for selected_problem, problem_card, problem in rows if
+                selected_problem.status == SelectedProblemStatusType.ACTIVE  # todo: это что? 0_0
+            ],
+            rule_type=contest.rule_type,
+            max_attempts_for_problem=MAX_NUMBER_OF_ATTEMPTS if contest.rule_type == ContestRuleType.DEFAULT else None,
+        )
+        return res

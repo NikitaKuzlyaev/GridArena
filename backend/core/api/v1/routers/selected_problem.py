@@ -75,7 +75,7 @@ async def buy_problem(
     result: SelectedProblemId = (
         await selected_problem_service.buy_selected_problem(
             user_id=user.id,
-            **params.model_dump(),
+            data=params,
         )
     )
     result = result.model_dump()

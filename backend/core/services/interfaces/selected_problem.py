@@ -8,7 +8,7 @@ from typing import Protocol
 
 from backend.core.schemas.selected_problem import (
     SelectedProblemId,
-    ArraySelectedProblemInfoForContestant,
+    ArraySelectedProblemInfoForContestant, SelectedProblemBuyRequest,
 )
 
 
@@ -33,13 +33,13 @@ class ISelectedProblemService(Protocol):
     async def buy_selected_problem(
             self,
             user_id: int,
-            selected_problem_id: int,
+            data: SelectedProblemBuyRequest,
     ) -> SelectedProblemId:
         """
         Купить выбранную задачу (открыть задачу для решения).
 
         :param user_id: Идентификатор пользователя (участника).
-        :param selected_problem_id: Идентификатор выбранной задачи.
+        :param data: todo
         :return: Объект с идентификатором выбранной задачи.
         """
         ...
