@@ -10,6 +10,8 @@ from typing import Protocol
 from backend.core.schemas.problem_card import (
     ProblemCardId,
     ProblemCardInfoForEditor,
+    ProblemCardWithProblemCreateRequest,
+    ProblemCardWithProblemUpdateRequest,
 )
 
 
@@ -22,25 +24,13 @@ class IProblemCardService(Protocol):
     async def create_problem_card_with_problem(
             self,
             user_id: int,
-            quiz_field_id: int,
-            row: int,
-            column: int,
-            category_name: str,
-            category_price: int,
-            statement: str,
-            answer: str,
+            data: ProblemCardWithProblemCreateRequest,
     ) -> ProblemCardId:
         """
         Создать новую карточку задачи и задачу одновременно.
 
         :param user_id: Идентификатор пользователя (редактора).
-        :param quiz_field_id: Идентификатор поля.
-        :param row: Номер строки на поле.
-        :param column: Номер столбца на поле.
-        :param category_name: Название категории.
-        :param category_price: Цена категории (баллы).
-        :param statement: Условие задачи.
-        :param answer: Ответ на задачу.
+        :param data: todo
         :return: Объект с идентификатором созданной карточки задачи.
         """
         ...
@@ -48,48 +38,14 @@ class IProblemCardService(Protocol):
     async def update_problem_card_with_problem(
             self,
             user_id: int,
-            problem_card_id: int,
-            problem_id: int,
-            category_name: str,
-            category_price: int,
-            statement: str,
-            answer: str,
+            data: ProblemCardWithProblemUpdateRequest,
     ) -> ProblemCardId:
         """
         Обновить карточку задачи и связанную с ней задачу.
 
         :param user_id: Идентификатор пользователя (редактора).
-        :param problem_card_id: Идентификатор карточки задачи.
-        :param problem_id: Идентификатор задачи.
-        :param category_name: Новое название категории.
-        :param category_price: Новая цена категории.
-        :param statement: Новое условие задачи.
-        :param answer: Новый ответ на задачу.
+        :param data: todo
         :return: Объект с идентификатором обновлённой карточки задачи.
-        """
-        ...
-
-    async def create_problem_card(
-            self,
-            user_id: int,
-            problem_id: int,
-            category_name: str,
-            category_price: int,
-            quiz_field_id: int,
-            row: int,
-            column: int,
-    ) -> ProblemCardId:
-        """
-        Создать новую карточку задачи для существующей задачи.
-
-        :param user_id: Идентификатор пользователя (редактора).
-        :param problem_id: Идентификатор задачи.
-        :param category_name: Название категории.
-        :param category_price: Цена категории (баллы).
-        :param quiz_field_id: Идентификатор поля.
-        :param row: Номер строки на поле.
-        :param column: Номер столбца на поле.
-        :return: Объект с идентификатором созданной карточки задачи.
         """
         ...
 

@@ -5,7 +5,6 @@ from datetime import (
 )
 from typing import (
     Sequence,
-    Tuple,
     Optional,
 )
 
@@ -13,7 +12,6 @@ from backend.configuration.settings import settings
 from backend.core.models import (
     Contest,
     Contestant,
-    User,
     SelectedProblem,
     ContestantLog,
 )
@@ -29,10 +27,8 @@ from backend.core.schemas.contestant_log import (
     ContestantLogPaginatedResponse,
     ContestantLogInfo,
 )
-from backend.core.schemas.permission import PermissionPromise
 from backend.core.services.access_policies.contestant import ContestantAccessPolicy
 from backend.core.services.interfaces.contestant import IContestantService
-
 from backend.core.utilities.loggers.log_decorator import log_calls
 from backend.core.utilities.server import get_server_time
 

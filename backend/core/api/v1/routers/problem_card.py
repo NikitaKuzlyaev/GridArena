@@ -4,13 +4,11 @@ from fastapi import (
     Depends,
     Query,
 )
-from starlette.responses import JSONResponse
 
 from backend.core.dependencies.authorization import get_user
 from backend.core.models import User
 from backend.core.schemas.problem_card import (
     ProblemCardId,
-    ProblemCardUpdateRequest,
     ProblemCardInfoForEditor,
     ProblemCardWithProblemUpdateRequest,
     ProblemCardWithProblemCreateRequest,
@@ -18,62 +16,23 @@ from backend.core.schemas.problem_card import (
 from backend.core.services.interfaces.problem_card import IProblemCardService
 from backend.core.services.providers.problem_card import get_problem_card_service
 from backend.core.utilities.exceptions.database import EntityDoesNotExist
+from backend.core.utilities.exceptions.handlers.development import ObsoleteException
 from backend.core.utilities.exceptions.handlers.http400 import async_http_exception_mapper
 from backend.core.utilities.exceptions.permission import PermissionDenied
 
 router = fastapi.APIRouter(prefix="/problem-card", tags=["problem-card"])
 
 
+# todo: эта ручка вообще используется?
+#   обновление карточки происходит по @router.patch(path="/with-problem", ...)
 @router.patch(
     path="/",
     response_model=ProblemCardId,
     status_code=200,
 )
-@async_http_exception_mapper(
-    mapping={
-        PermissionDenied: (403, None),
-        EntityDoesNotExist: (404, None),
-    }
-)
 async def update_problem_card(
-        params: ProblemCardUpdateRequest = Body(...),
-        user: User = Depends(get_user),
-        problem_card_service: IProblemCardService = Depends(get_problem_card_service),
-) -> JSONResponse:
-    """
-    Обновляет категорию и стоимость карточки задачи (problem card).
-
-    Доступно только пользователям с правами на редактирование данной карточки.
-
-    Args:
-        params (ProblemCardUpdateRequest): Новые данные для карточки:
-            - problem_card_id: ID карточки, которую необходимо обновить
-            - category_name: новое название категории (до 32 символов)
-            - category_price: новая стоимость задачи (от 0 до 10000 баллов)
-        user (User): Авторизованный пользователь (определяется по JWT).
-        problem_card_service (IProblemCardService): Сервис для обновления карточки.
-
-    Returns:
-        JSONResponse: Объект с обновлённым ID карточки в поле `body`
-
-    Raises:
-        PermissionDenied: Если у пользователя нет прав на редактирование этой карточки (возвращает 403).
-        EntityDoesNotExist: Если карточка с указанным problem_card_id не существует (возвращает 404).
-
-    Примечание:
-        Изменение стоимости может повлиять на начисление баллов при решении.
-        Логика применения изменений на идущем контесте может быть непредсказуемой. (может меняться)
-    """
-
-    result: ProblemCardId = (
-        await problem_card_service.update_problem_card(
-            user_id=user.id,
-            **params.model_dump(),
-        )
-    )
-    result = result.model_dump()
-
-    return JSONResponse({'body': result})
+) -> None:
+    raise ObsoleteException('is it obsolete?')
 
 
 @router.get(
@@ -185,7 +144,7 @@ async def problem_card_update_with_problem(
     result: ProblemCardId = (
         await problem_card_service.update_problem_card_with_problem(
             user_id=user.id,
-            **params.model_dump(),
+            data=params,
         )
     )
     result = result.model_dump()
@@ -239,7 +198,7 @@ async def problem_card_create_with_problem(
     result: ProblemCardId = (
         await problem_card_service.create_problem_card_with_problem(
             user_id=user.id,
-            **params.model_dump(),
+            data=params,
         )
     )
     result = result.model_dump()

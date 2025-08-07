@@ -9,7 +9,6 @@ from typing import Protocol
 
 from backend.core.schemas.contestant import (
     ArrayContestantInfoForEditor,
-    ContestantId,
     ContestantPreviewInfo,
     ContestantInfoInContest,
 )
