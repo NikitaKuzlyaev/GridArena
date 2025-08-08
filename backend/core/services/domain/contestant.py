@@ -8,20 +8,24 @@ from typing import (
     Optional,
 )
 
+from sqlalchemy.ext.asyncio.session import AsyncSession
+
 from backend.configuration.settings import settings
 from backend.core.models import (
     Contest,
     Contestant,
     SelectedProblem,
-    ContestantLog,
+    ContestantLog, User,
 )
 from backend.core.models.selected_problem import SelectedProblemStatusType
+from backend.core.repository.crud.contestant import fernet
 from backend.core.repository.crud.uow import UnitOfWork
 from backend.core.schemas.contestant import (
     ArrayContestantInfoForEditor,
     ContestantInfo,
     ContestantPreviewInfo,
     ContestantInfoInContest,
+    ContestantInfoForEditor, ContestantPatchRequest, ContestantId,
 )
 from backend.core.schemas.contestant_log import (
     ContestantLogPaginatedResponse,
@@ -43,6 +47,40 @@ class ContestantService(IContestantService):
     ):
         self.uow = uow
         self.access_policy: ContestantAccessPolicy = access_policy or ContestantAccessPolicy()
+
+    @log_calls
+    async def update_contestant(
+            self,
+            user_id: int,
+            data=ContestantPatchRequest,
+    ) -> ContestantId:
+        async with self.uow:
+            user, contestant, contest, _ = await self.uow.domain_repo.get_contestant_full_context(
+                contestant_id=data.contestant_id, )
+
+            await self.access_policy.can_user_manage_contest(
+                uow=self.uow, user_id=user_id, contest_id=contest.id, raise_if_none=True)
+
+            await self._update_user_and_contestant(user_id=user.id, **data.model_dump(), )
+
+            res = ContestantId(contestant_id=contestant.id, )
+            return res
+
+    @log_calls
+    async def get_contestant_info_for_editor(
+            self,
+            user_id: int,
+            contestant_id: int,
+    ) -> ContestantInfoForEditor:
+        async with self.uow:
+            user, contestant, contest, _ = await self.uow.domain_repo.get_contestant_full_context(
+                contestant_id=contestant_id, )
+
+            await self.access_policy.can_user_manage_contest(
+                uow=self.uow, user_id=user_id, contest_id=contest.id, raise_if_none=True)
+
+            res = self._map_contestant_info_for_editor(user, contestant, )
+            return res
 
     @log_calls
     async def get_contestant_logs_in_contest(
@@ -112,6 +150,10 @@ class ContestantService(IContestantService):
             return res
 
     @staticmethod
+    def _get_contestant_plain_password(contestant: Contestant) -> str:
+        return fernet.decrypt(contestant.password_encrypted.encode()).decode()
+
+    @staticmethod
     def _map_contestant_info_in_contest(
             contestant: Contestant,
             selected_problems: Sequence[SelectedProblem],
@@ -177,3 +219,41 @@ class ContestantService(IContestantService):
             ]
         )
         return res
+
+    def _map_contestant_info_for_editor(
+            self,
+            user: User,
+            contestant: Contestant,
+    ) -> ContestantInfoForEditor:
+        # !!! Warning
+        contestant_plain_password = self._get_contestant_plain_password(contestant, )
+
+        res = ContestantInfoForEditor(
+            contestant_id=contestant.id,
+            user_id=user.id,
+            username=user.username,
+            password=contestant_plain_password,
+            contestant_name=contestant.name,
+            points=contestant.points,
+        )
+        return res
+
+    async def _update_user_and_contestant(
+            self,
+            user_id,
+            contestant_id: int,
+            username: str,
+            password: str,
+            contestant_name: str,
+            points: int,
+    ) -> None:
+        await self.uow.contestant_repo.update_contestant(
+            contestant_id=contestant_id,
+            name=contestant_name,
+            password=password,
+            points=points, )
+        await self.uow.user_repo.update_user(
+            user_id=user_id,
+            username=username,
+            password=password,
+        )

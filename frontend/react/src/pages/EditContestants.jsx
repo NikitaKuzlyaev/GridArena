@@ -10,18 +10,63 @@ function EditContestants() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ username: '', password: '', name: '', points: '' });
+  const [form, setForm] = useState({ username: '', password: '', contestantName: '', points: '' });
   const [modalError, setModalError] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [editForm, setEditForm] = useState({ username: '', name: '', points: '' });
+  const [editForm, setEditForm] = useState({ username: '', password: '', contestantName: '', points: '' });
   const [editModalError, setEditModalError] = useState(null);
   const [editSaving, setEditSaving] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Получаем contest_id из query
   const searchParams = new URLSearchParams(location.search);
   const contestId = searchParams.get('contest_id');
+
+  // Функция валидации
+  const validateForm = (formData, isEdit = false) => {
+    const errors = [];
+    
+    // Валидация username (String(64), nullable=False)
+    if (!formData.username || formData.username.trim() === '') {
+      errors.push('Username обязателен');
+    } else if (formData.username.length > 64) {
+      errors.push('Username не может быть длиннее 64 символов');
+    }
+    
+    // Валидация password (только для создания, 3-32 символа)
+    if (!isEdit) {
+      if (!formData.password || formData.password.trim() === '') {
+        errors.push('Password обязателен');
+      } else if (formData.password.length < 3 || formData.password.length > 32) {
+        errors.push('Password должен быть от 3 до 32 символов');
+      }
+    } else if (formData.password && (formData.password.length < 3 || formData.password.length > 32)) {
+      errors.push('Password должен быть от 3 до 32 символов');
+    }
+    
+    // Валидация contestantName (String(256), nullable=False)
+    if (!formData.contestantName || formData.contestantName.trim() === '') {
+      errors.push('Имя участника обязательно');
+    } else if (formData.contestantName.length > 256) {
+      errors.push('Имя участника не может быть длиннее 256 символов');
+    }
+    
+    // Валидация points (Integer, nullable=False, 0-10000)
+    if (formData.points === '' || formData.points === null || formData.points === undefined) {
+      errors.push('Баллы обязательны');
+    } else {
+      const pointsNum = Number(formData.points);
+      if (isNaN(pointsNum) || !Number.isInteger(pointsNum)) {
+        errors.push('Баллы должны быть целым числом');
+      } else if (pointsNum < 0 || pointsNum > 10000) {
+        errors.push('Баллы должны быть от 0 до 10000');
+      }
+    }
+    
+    return errors;
+  };
 
   const fetchContestants = async () => {
     setLoading(true);
@@ -54,7 +99,7 @@ function EditContestants() {
   }, [contestId]);
 
   const handleOpenModal = () => {
-    setForm({ username: '', password: '', name: '', points: '' });
+    setForm({ username: '', password: '', contestantName: '', points: '' });
     setModalError(null);
     setShowModal(true);
   };
@@ -70,17 +115,25 @@ function EditContestants() {
 
   const handleSave = async () => {
     setModalError(null);
+    
+    // Валидация
+    const validationErrors = validateForm(form, false);
+    if (validationErrors.length > 0) {
+      setModalError(validationErrors.join(', '));
+      return;
+    }
+    
     setSaving(true);
     try {
       await makeRequest(`${config.backendUrl}api/v1/contestant`, {
         method: 'POST',
-        body: JSON.stringify({
-          username: form.username,
-          password: form.password,
-          name: form.name,
-          points: Number(form.points),
-          contest_id: Number(contestId),
-        }),
+                 body: JSON.stringify({
+           username: form.username.trim(),
+           password: form.password,
+           name: form.contestantName.trim(),
+           points: Number(form.points),
+           contest_id: Number(contestId),
+         }),
       });
       setSaving(false);
       handleCloseModal();
@@ -102,11 +155,13 @@ function EditContestants() {
     setEditModalError(null);
     setEditLoading(true);
     setEditId(contestantId);
+    setShowPassword(false); // Сбрасываем состояние показа пароля
     try {
       const data = await makeRequest(`${config.backendUrl}api/v1/contestant/info-editor?contestant_id=${contestantId}`);
       setEditForm({
         username: data.username || '',
-        name: data.name || '',
+        password: data.password || '', // Предзаполняем пароль из API
+        contestantName: data.contestantName || '',
         points: data.points?.toString() || '',
       });
       setShowModal('edit-' + contestantId);
@@ -129,21 +184,37 @@ function EditContestants() {
 
   const handleEditSave = async () => {
     setEditModalError(null);
+    
+    // Валидация
+    const validationErrors = validateForm(editForm, true);
+    if (validationErrors.length > 0) {
+      setEditModalError(validationErrors.join(', '));
+      return;
+    }
+    
     setEditSaving(true);
     try {
+      const updateData = {
+        contestant_id: editId,
+        username: editForm.username.trim(),
+        contestantName: editForm.contestantName.trim(),
+        points: Number(editForm.points),
+      };
+      
+      // Добавляем пароль только если он был изменен
+      if (editForm.password && editForm.password.trim() !== '') {
+        updateData.password = editForm.password;
+      }
+      
       await makeRequest(`${config.backendUrl}api/v1/contestant`, {
         method: 'PATCH',
-        body: JSON.stringify({
-          contestant_id: editId,
-          username: editForm.username,
-          name: editForm.name,
-          points: Number(editForm.points),
-        }),
+        body: JSON.stringify(updateData),
       });
-      setEditSaving(false);
-      setShowModal(false);
-      setEditId(null);
-      fetchContestants();
+             setEditSaving(false);
+       setShowModal(false);
+       setEditId(null);
+       setShowPassword(false);
+       fetchContestants();
     } catch (error) {
       setEditSaving(false);
       let msg = 'Ошибка сети';
@@ -183,12 +254,11 @@ function EditContestants() {
             justifyContent: 'space-between',
             boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
           }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <div><b>ID:</b> {contestant.contestantId}</div>
-              <div><b>Username:</b> {contestant.username}</div>
-              <div><b>Имя:</b> {contestant.name}</div>
-              <div><b>Баллы:</b> {contestant.points}</div>
-            </div>
+                         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+               <div><b>ID:</b> {contestant.contestantId}</div>
+               <div><b>Имя:</b> {contestant.name}</div>
+               <div><b>Баллы:</b> {contestant.points}</div>
+             </div>
             <button
               style={{
                 background: 'none',
@@ -217,12 +287,61 @@ function EditContestants() {
                     <div style={{ minHeight: 60 }}>Загрузка...</div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      <input name="username" placeholder="Username" value={editForm.username} onChange={handleEditFormChange} style={{ padding: 8 }} />
-                      <input name="name" placeholder="Имя" value={editForm.name} onChange={handleEditFormChange} style={{ padding: 8 }} />
-                      <input name="points" type="number" placeholder="Баллы" value={editForm.points} onChange={handleEditFormChange} style={{ padding: 8 }} />
+                      <input 
+                        name="username" 
+                        placeholder="Username (обязательно, до 64 символов)" 
+                        value={editForm.username} 
+                        onChange={handleEditFormChange} 
+                        style={{ padding: 8 }} 
+                      />
+                                             <div style={{ position: 'relative' }}>
+                         <input 
+                           name="password" 
+                           type={showPassword ? "text" : "password"}
+                           placeholder="Password (необязательно, 3-32 символа)" 
+                           value={editForm.password} 
+                           onChange={handleEditFormChange} 
+                           style={{ padding: 8, paddingRight: 40, width: '100%', boxSizing: 'border-box' }} 
+                         />
+                         <button
+                           type="button"
+                           onClick={() => setShowPassword(!showPassword)}
+                           style={{
+                             position: 'absolute',
+                             right: 8,
+                             top: '50%',
+                             transform: 'translateY(-50%)',
+                             background: 'none',
+                             border: 'none',
+                             cursor: 'pointer',
+                             padding: 4,
+                             fontSize: 12
+                           }}
+                           title={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                         >
+                           {showPassword ? "👁️" : "👁️‍🗨️"}
+                         </button>
+                       </div>
+                      <input 
+                        name="contestantName" 
+                        placeholder="Имя участника (обязательно, до 256 символов)" 
+                        value={editForm.contestantName} 
+                        onChange={handleEditFormChange} 
+                        style={{ padding: 8 }} 
+                      />
+                      <input 
+                        name="points" 
+                        type="number" 
+                        min="0"
+                        max="10000"
+                        placeholder="Баллы (обязательно, 0-10000)" 
+                        value={editForm.points} 
+                        onChange={handleEditFormChange} 
+                        style={{ padding: 8 }} 
+                      />
                       {editModalError && <div style={{ color: 'red', marginTop: 4 }}>{editModalError}</div>}
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
-                        <button onClick={() => { setShowModal(false); setEditId(null); }} style={{ padding: '8px 16px', background: '#eee', border: 'none', borderRadius: 4 }}>Отмена</button>
+                                                 <button onClick={() => { setShowModal(false); setEditId(null); setShowPassword(false); }} style={{ padding: '8px 16px', background: '#eee', border: 'none', borderRadius: 4 }}>Отмена</button>
                         <button onClick={handleEditSave} style={{ padding: '8px 16px', background: '#21a1f3', color: '#fff', border: 'none', borderRadius: 4 }} disabled={editSaving}>
                           {editSaving ? 'Сохранение...' : 'Сохранить'}
                         </button>
@@ -241,10 +360,38 @@ function EditContestants() {
           <div style={{ background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
             <h2 style={{ marginTop: 0 }}>Добавить участника</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <input name="username" placeholder="Username" value={form.username} onChange={handleFormChange} style={{ padding: 8 }} />
-              <input name="password" type="password" placeholder="Password" value={form.password} onChange={handleFormChange} style={{ padding: 8 }} />
-              <input name="name" placeholder="Имя" value={form.name} onChange={handleFormChange} style={{ padding: 8 }} />
-              <input name="points" type="number" placeholder="Баллы" value={form.points} onChange={handleFormChange} style={{ padding: 8 }} />
+              <input 
+                name="username" 
+                placeholder="Username (обязательно, до 64 символов)" 
+                value={form.username} 
+                onChange={handleFormChange} 
+                style={{ padding: 8 }} 
+              />
+              <input 
+                name="password" 
+                type="password" 
+                placeholder="Password (обязательно, 3-32 символа)" 
+                value={form.password} 
+                onChange={handleFormChange} 
+                style={{ padding: 8 }} 
+              />
+              <input 
+                name="contestantName" 
+                placeholder="Имя участника (обязательно, до 256 символов)" 
+                value={form.contestantName} 
+                onChange={handleFormChange} 
+                style={{ padding: 8 }} 
+              />
+              <input 
+                name="points" 
+                type="number" 
+                min="0"
+                max="10000"
+                placeholder="Баллы (обязательно, 0-10000)" 
+                value={form.points} 
+                onChange={handleFormChange} 
+                style={{ padding: 8 }} 
+              />
               {modalError && <div style={{ color: 'red', marginTop: 4 }}>{modalError}</div>}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
                 <button onClick={handleCloseModal} style={{ padding: '8px 16px', background: '#eee', border: 'none', borderRadius: 4 }}>Отмена</button>

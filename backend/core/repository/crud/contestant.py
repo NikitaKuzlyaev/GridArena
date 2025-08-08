@@ -1,6 +1,9 @@
 from typing import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import (
+    select,
+    update,
+)
 
 from backend.core.models import (
     Contestant,
@@ -15,6 +18,32 @@ fernet = Fernet(settings.FERNET_KEY)
 
 
 class ContestantCRUDRepository(BaseCRUDRepository):
+
+    @log_calls
+    async def update_contestant(
+            self,
+            contestant_id: int,
+            name: str,
+            password: str,
+            points: int,
+    ) -> Contestant | None:
+        await self.async_session.execute(
+            update(Contestant)
+            .where(Contestant.id == contestant_id)
+            .values(
+                name=name,
+                password_encrypted=fernet.encrypt(password.encode()).decode(),
+                points=points,
+            )
+            .execution_options(synchronize_session="fetch")
+        )
+        await self.async_session.flush()
+
+        result = await self.async_session.execute(
+            select(Contestant)
+            .where(Contestant.id == contestant_id)
+        )
+        return result.scalar_one_or_none()
 
     @log_calls
     async def get_contestant_by_id(

@@ -334,5 +334,6 @@ class ContestService(IContestService):
             user_id=user.id,
             name=data.name,
             points=data.points,
+            password=data.password,
         )
         return contestant

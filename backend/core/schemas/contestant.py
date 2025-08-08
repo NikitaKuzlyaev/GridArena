@@ -1,10 +1,38 @@
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Sequence
+from typing import (
+    Sequence,
+    Annotated,
+)
 
-from pydantic import Field
+from pydantic import (
+    Field,
+    conint,
+    constr,
+)
 
 from backend.core.schemas.base import BaseSchemaModel
 from backend.core.utilities.server import get_server_time
+
+
+@dataclass
+class ModelConstrains:
+    UsernameStr = Annotated[
+        str,
+        constr(min_length=1, max_length=64),
+    ]
+    PasswordStr = Annotated[
+        str,
+        constr(min_length=1, max_length=32),
+    ]
+    NameStr = Annotated[
+        str,
+        constr(min_length=1, max_length=256),
+    ]
+    PointsInt = Annotated[
+        int,
+        conint(ge=0, le=10000),
+    ]
 
 
 class ContestantId(BaseSchemaModel):
@@ -48,8 +76,25 @@ class ContestantInfoInContest(BaseSchemaModel):
 
 
 class ContestantInCreate(BaseSchemaModel):
-    username: str
-    password: str
-    name: str
+    username: ModelConstrains.UsernameStr
+    password: ModelConstrains.PasswordStr
+    name: ModelConstrains.NameStr
     contest_id: int
-    points: int
+    points: ModelConstrains.PointsInt
+
+
+class ContestantInfoForEditor(BaseSchemaModel):
+    contestant_id: int
+    user_id: int
+    username: ModelConstrains.UsernameStr
+    password: ModelConstrains.PasswordStr
+    contestant_name: ModelConstrains.NameStr
+    points: ModelConstrains.PointsInt
+
+
+class ContestantPatchRequest(BaseSchemaModel):
+    contestant_id: int
+    username: ModelConstrains.UsernameStr
+    password: ModelConstrains.PasswordStr
+    contestant_name: ModelConstrains.NameStr
+    points: ModelConstrains.PointsInt

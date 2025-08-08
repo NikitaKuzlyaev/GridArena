@@ -11,6 +11,9 @@ from backend.core.schemas.contestant import (
     ArrayContestantInfoForEditor,
     ContestantPreviewInfo,
     ContestantInfoInContest,
+    ContestantInfoForEditor,
+    ContestantId,
+    ContestantPatchRequest,
 )
 from backend.core.schemas.contestant_log import ContestantLogPaginatedResponse
 
@@ -20,6 +23,20 @@ class IContestantService(Protocol):
     Протокол (интерфейс) сервиса управления участниками контестов.
     Описывает методы для работы с участниками, которые должны быть реализованы в сервисе.
     """
+
+    async def update_contestant(
+            self,
+            user_id: int,
+            data=ContestantPatchRequest,
+    ) -> ContestantId:
+        ...
+
+    async def get_contestant_info_for_editor(
+            self,
+            user_id: int,
+            contestant_id: int,
+    ) -> ContestantInfoForEditor:
+        ...
 
     async def get_contestant_logs_in_contest(
             self,

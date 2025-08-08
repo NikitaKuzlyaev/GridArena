@@ -1,6 +1,9 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import (
+    select,
+    update,
+)
 
 from backend.core.models.user import User
 from backend.core.repository.crud.base import BaseCRUDRepository
@@ -15,6 +18,31 @@ from backend.core.utilities.loggers.log_decorator import log_calls
 
 
 class UserCRUDRepository(BaseCRUDRepository):
+
+    @log_calls
+    async def update_user(
+            self,
+            user_id: int,
+            username: str,
+            password: str,
+    ) -> User | None:
+        await self.async_session.execute(
+            update(User)
+            .where(User.id == user_id)
+            .values(
+                username=username,
+                hashed_password=hash_password(password),
+            )
+            .execution_options(synchronize_session="fetch")
+        )
+        await self.async_session.flush()
+
+        result = await self.async_session.execute(
+            select(User)
+            .where(User.id == user_id)
+        )
+        return result.scalar_one_or_none()
+
     @log_calls
     async def create_site_user(
             self,

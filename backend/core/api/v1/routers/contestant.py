@@ -12,7 +12,8 @@ from backend.core.schemas.contestant import (
     ContestantId,
     ContestantInCreate,
     ContestantPreviewInfo,
-    ContestantInfoInContest
+    ContestantInfoInContest,
+    ContestantInfoForEditor, ContestantPatchRequest
 )
 from backend.core.schemas.contestant_log import ContestantLogPaginatedResponse
 from backend.core.services.interfaces.contest import IContestService
@@ -242,6 +243,68 @@ async def contestant_logs_in_contest(
     res: ContestantLogPaginatedResponse = (
         await contestant_service.get_contestant_logs_in_contest(
             user_id=user.id,
+        )
+    )
+    res = res.model_dump()
+
+    return res
+
+
+@router.get(
+    path="/info-editor",
+    response_model=ContestantInfoForEditor,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def get_contestant_info_for_editor(
+        contestant_id: int = Query(...),
+        user: User = Depends(get_user),
+        contestant_service: IContestantService = Depends(get_contestant_service),
+) -> ContestantInfoForEditor:
+    """
+    # todo: write doc
+    """
+
+    res: ContestantInfoForEditor = (
+        await contestant_service.get_contestant_info_for_editor(
+            user_id=user.id,
+            contestant_id=contestant_id,
+        )
+    )
+    res = res.model_dump()
+
+    return res
+
+
+@router.patch(
+    path="/",
+    response_model=ContestantId,
+    status_code=200,
+)
+@async_http_exception_mapper(
+    mapping={
+        PermissionDenied: (403, None),
+        EntityDoesNotExist: (404, None),
+    }
+)
+async def preview_contestant_info(
+        params: ContestantPatchRequest = Body(...),
+        user: User = Depends(get_user),
+        contestant_service: IContestantService = Depends(get_contestant_service),
+) -> ContestantId:
+    """
+    # todo
+    """
+
+    res: ContestantId = (
+        await contestant_service.update_contestant(
+            user_id=user.id,
+            data=params,
         )
     )
     res = res.model_dump()
