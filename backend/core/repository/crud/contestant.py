@@ -8,6 +8,10 @@ from backend.core.models import (
 )
 from backend.core.repository.crud.base import BaseCRUDRepository
 from backend.core.utilities.loggers.log_decorator import log_calls
+from cryptography.fernet import Fernet
+from backend.configuration.settings import settings
+
+fernet = Fernet(settings.FERNET_KEY)
 
 
 class ContestantCRUDRepository(BaseCRUDRepository):
@@ -41,6 +45,7 @@ class ContestantCRUDRepository(BaseCRUDRepository):
     async def create_contestant(
             self,
             user_id: int,
+            password: str,
             name: str,
             points: int,
     ) -> Contestant:
@@ -49,6 +54,7 @@ class ContestantCRUDRepository(BaseCRUDRepository):
                 user_id=user_id,
                 name=name,
                 points=points,
+                password_encrypted=fernet.encrypt(password.encode()).decode(),  # base64
             )
         )
         self.async_session.add(instance=contestant)

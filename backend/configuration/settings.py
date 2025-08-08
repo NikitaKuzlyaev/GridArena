@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     REDIS_KV_SIMPLE_CACHE_PORT: int = 6379
     REDIS_KV_SIMPLE_CACHE_DB: int = 0
 
+    #  Fernet key must be 32 url-safe base64-encoded bytes.
+    FERNET_KEY: str = "vHf2zp7vofWyFNhkfbR1pEXZ8718gaUF1i-KXIHXpdg="
+
     SECRET_KEY: str = "super-secret-key"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 180

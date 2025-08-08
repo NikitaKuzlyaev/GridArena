@@ -33,6 +33,11 @@ class Contestant(Base):
         nullable=True,
     )
 
+    password_encrypted: Mapped[str] = mapped_column(
+        String(128),
+        nullable=False,
+    )
+
     name: Mapped[str] = mapped_column(
         String(length=256),
         unique=False,
