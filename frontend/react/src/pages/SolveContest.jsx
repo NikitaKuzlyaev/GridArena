@@ -6,7 +6,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import './SolveContest.css';
-import FallingFlowers from './FallingFlowers';
+// import FallingFlowers from './FallingFlowers';
 import pinkGif from './pink-gif.gif';
 import pinkGif2 from './pink-gif-2.gif';
 import { useApi } from '../hooks/useApi';
@@ -282,7 +282,7 @@ function SolveContest() {
 
   return (
     <div className={bgClass} style={{ minHeight: '100vh', width: '100vw', position: 'relative' }}>
-      {theme === 'pink' && <FallingFlowers />}
+      {/* {theme === 'pink' && <FallingFlowers />} */}
       {theme === 'pink' && (
         <img
           ref={stickerRef}

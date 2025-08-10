@@ -15,10 +15,8 @@
   transition: background 0.2s;
 }
 
-/* Отступ для основного контента, чтобы не перекрывался хедером */
 .header-spacer {
-  height: 32px; /* подбери под фактическую высоту хедера */
-  width: 100%;
+  height: 50px; 
 }
 
 .header-left {
