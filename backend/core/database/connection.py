@@ -5,15 +5,23 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 
 from backend.configuration.settings import settings
 
-DATABASE_URI = settings.MAIN_ASYNC_DATABASE_URI
+ASYNC_DATABASE_URI = settings.MAIN_ASYNC_DATABASE_URI
+SYNC_DATABASE_URI = settings.MAIN_SYNC_DATABASE_URI
 
 engine = create_async_engine(
-    DATABASE_URI,
+    ASYNC_DATABASE_URI,
     echo=False,  # Логи выключены
+    future=True,
+)
+
+engine_sync = create_engine(
+    SYNC_DATABASE_URI,
+    echo=False,
     future=True,
 )
 
