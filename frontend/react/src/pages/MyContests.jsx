@@ -73,10 +73,22 @@ function MyContests() {
               <div style={{ display: 'flex', alignItems: 'stretch', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <div style={{ fontSize: '0.97rem', color: '#555', marginBottom: 2 }}>
-                    <b>Начало:</b> {new Date(contest.startedAt).toLocaleString()}
+                    <b>Начало:</b> {new Date(contest.startedAt).toLocaleString('ru-RU', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </div>
                   <div style={{ fontSize: '0.97rem', color: '#555' }}>
-                    <b>Окончание:</b> {new Date(contest.closedAt).toLocaleString()}
+                    <b>Окончание:</b> {new Date(contest.closedAt).toLocaleString('ru-RU', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </div>
                 </div>
                 <a

@@ -54,6 +54,7 @@ function SolveContest() {
   const holdIntervals = useRef({});
   const [contestantInfo, setContestantInfo] = useState(null);
   const [contestInfo, setContestInfo] = useState(null);
+  const [serverTime, setServerTime] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Определяем класс для фона в зависимости от темы
@@ -166,11 +167,20 @@ function SolveContest() {
   // Таймер для обновления текущего времени
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      if (serverTime) {
+        // Вычисляем текущее время на основе времени сервера и прошедшего времени
+        // serverTime уже в локальном часовом поясе, поэтому просто добавляем разность
+        const timeDiff = Date.now() - serverTime.getTime();
+        const newCurrentTime = new Date(serverTime.getTime() + timeDiff);
+        setCurrentTime(newCurrentTime);
+      } else {
+        // Если время сервера еще не получено, используем локальное время
+        setCurrentTime(new Date());
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [serverTime]);
 
   useEffect(() => {
     if (!contestId) {
@@ -204,6 +214,13 @@ function SolveContest() {
       try {
         const data = await makeRequest(`${config.backendUrl}api/v1/contest/info-contestant`);
         setContestInfo(data);
+        // Устанавливаем время сервера как базовое время
+        if (data && data.serverTime) {
+          // Создаем объект Date из UTC строки - это автоматически конвертирует в локальное время
+          const serverTimeDate = new Date(data.serverTime);
+          setServerTime(serverTimeDate);
+          setCurrentTime(serverTimeDate);
+        }
       } catch (error) {
         console.error('Ошибка при загрузке информации о конкурсе:', error);
       }
@@ -245,6 +262,14 @@ function SolveContest() {
       minute: '2-digit',
       second: '2-digit'
     });
+  };
+
+  // Получение информации о часовом поясе
+  const getTimezoneInfo = () => {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const offsetHours = -new Date().getTimezoneOffset() / 60;
+    const offsetString = offsetHours >= 0 ? `+${offsetHours}` : `${offsetHours}`;
+    return { timezone, offsetHours, offsetString };
   };
 
   const formatDate = (date) => {
@@ -609,6 +634,26 @@ function SolveContest() {
               <div style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 8 }}>
                 <div><b>Начало:</b> {formatDate(new Date(contestInfo.startedAt))}</div>
                 <div><b>Окончание:</b> {formatDate(new Date(contestInfo.closedAt))}</div>
+              </div>
+              
+              {/* Текущее время */}
+              <div style={{ 
+                padding: 6, 
+                borderRadius: 4, 
+                background: '#f1f5f9',
+                border: '1px solid #e2e8f0',
+                textAlign: 'center',
+                marginBottom: 8
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 500, marginBottom: 2 }}>
+                  Текущее время
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 600, fontFamily: 'monospace' }}>
+                  {formatTime(currentTime)}
+                </div>
+                <div style={{ fontSize: 9, color: '#666', marginTop: 2 }}>
+                  {getTimezoneInfo().timezone} (UTC{getTimezoneInfo().offsetString})
+                </div>
               </div>
               
               {/* Обратный отсчет */}

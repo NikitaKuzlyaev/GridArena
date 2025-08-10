@@ -24,12 +24,19 @@ function CreateContest() {
     setError(null);
     setLoading(true);
     try {
+      // Конвертируем локальные даты в UTC для отправки на сервер
+      const convertLocalToUtc = (localDateTimeString) => {
+        if (!localDateTimeString) return '';
+        const localDate = new Date(localDateTimeString);
+        return localDate.toISOString();
+      };
+
       const data = await makeRequest(config.backendUrl + 'api/v1/contest', {
         method: 'POST',
         body: JSON.stringify({
           name: form.name,
-          started_at: form.started_at,
-          closed_at: form.closed_at,
+          started_at: convertLocalToUtc(form.started_at),
+          closed_at: convertLocalToUtc(form.closed_at),
           start_points: Number(form.start_points),
           number_of_slots_for_problems: Number(form.number_of_slots_for_problems),
         }),

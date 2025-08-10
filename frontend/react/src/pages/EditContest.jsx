@@ -24,12 +24,22 @@ function EditContest() {
       try {
         const data = await makeRequest(`${config.backendUrl}api/v1/contest/info-editor?contest_id=${contestId}`);
         if (data) {
+          // Конвертируем UTC даты в локальный часовой пояс для отображения в форме
+          const convertUtcToLocal = (utcString) => {
+            if (!utcString) return '';
+            const date = new Date(utcString);
+            // Получаем смещение в минутах и конвертируем в формат YYYY-MM-DDTHH:mm
+            const offset = date.getTimezoneOffset();
+            const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+            return localDate.toISOString().slice(0, 16);
+          };
+
           setForm({
             name: data.name || '',
             start_points: data.startPoints?.toString() || '',
             number_of_slots_for_problems: data.numberOfSlotsForProblems?.toString() || '',
-            started_at: data.startedAt ? data.startedAt.slice(0, 16) : '',
-            closed_at: data.closedAt ? data.closedAt.slice(0, 16) : '',
+            started_at: convertUtcToLocal(data.startedAt),
+            closed_at: convertUtcToLocal(data.closedAt),
             rule_type: data.ruleType || 'DEFAULT',
             flag_user_can_have_negative_points: !!data.flagUserCanHaveNegativePoints,
           });
@@ -64,6 +74,13 @@ function EditContest() {
     setError(null);
     setLoading(true);
     try {
+      // Конвертируем локальные даты обратно в UTC для отправки на сервер
+      const convertLocalToUtc = (localDateTimeString) => {
+        if (!localDateTimeString) return '';
+        const localDate = new Date(localDateTimeString);
+        return localDate.toISOString();
+      };
+
       await makeRequest(`${config.backendUrl}api/v1/contest/`, {
         method: 'PATCH',
         body: JSON.stringify({
@@ -71,8 +88,8 @@ function EditContest() {
           name: form.name,
           startPoints: Number(form.start_points),
           numberOfSlotsForProblems: Number(form.number_of_slots_for_problems),
-          startedAt: form.started_at,
-          closedAt: form.closed_at,
+          startedAt: convertLocalToUtc(form.started_at),
+          closedAt: convertLocalToUtc(form.closed_at),
           ruleType: form.rule_type,
           flagUserCanHaveNegativePoints: form.flag_user_can_have_negative_points,
         }),

@@ -79,6 +79,9 @@ class ContestInfoForEditor(BaseSchemaModel):
     closed_at: datetime
     rule_type: ContestRuleType = Field(default=ContestRuleType.DEFAULT)
     flag_user_can_have_negative_points: bool = Field(default=False)
+    server_time: datetime = Field(
+        default_factory=lambda: get_server_time(with_server_timezone=False)
+    )
 
 
 class ContestInfoForContestant(BaseSchemaModel):
@@ -86,9 +89,8 @@ class ContestInfoForContestant(BaseSchemaModel):
     name: str
     started_at: datetime
     closed_at: datetime
-    # Серверное время. (Присваивается автоматически при создании экземпляра модели)
     server_time: datetime = Field(
-        default_factory=lambda: get_server_time(with_server_timezone=True)
+        default_factory=lambda: get_server_time(with_server_timezone=False)
     )
 
 
