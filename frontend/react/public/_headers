@@ -1,0 +1,17 @@
+# Заголовки для оптимизации кэширования статических файлов
+
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/assets/fonts/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+*.woff
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: * 
