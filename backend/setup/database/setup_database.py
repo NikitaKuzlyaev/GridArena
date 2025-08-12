@@ -1,8 +1,9 @@
-import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from urllib.parse import urlparse
 import os
 import sys
+from urllib.parse import urlparse
+
+import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.insert(0, project_root)
@@ -22,6 +23,10 @@ def create_database_if_not_exists(database_url: str):
     password = parsed_url.password
     host = parsed_url.hostname
     port = parsed_url.port or 5432
+
+    # Отладочные принты
+    print("Connecting to database...")
+    print("Database URL: {}".format(database_url))
 
     # Подключаемся к postgres (служебная база) для проверки/создания базы
     conn = psycopg2.connect(

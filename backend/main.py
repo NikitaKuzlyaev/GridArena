@@ -4,12 +4,12 @@ from fastapi import (
     FastAPI,
     Request,
 )
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from pyinstrument import Profiler
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
+
 from backend.core.api.v1.routers import routers as routers_v1
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from backend.metrics.middleware import MetricsMiddleware
 
 app = FastAPI(root_path='/api')
@@ -17,7 +17,8 @@ app = FastAPI(root_path='/api')
 origins = [
     "http://localhost:5173",
     "http://192.168.0.2:5173",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "http://localhost",
 ]
 
 app.add_middleware(

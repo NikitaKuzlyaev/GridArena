@@ -9,9 +9,13 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from backend.configuration.settings import settings
 
-from backend.core.models import * # NOT DELETE !!!
 from backend.core.database.connection import Base
+from backend.core.models import *  # NOT DELETE !!!
+
+# Костыль, чтобы from backend.core.models import * не удалялась как неиспользуемая авто-оптимизатором
+some_model_from_models = Contest
 
 config = context.config
 if config.config_file_name is not None:
@@ -21,7 +25,8 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
+    url = settings.MAIN_SYNC_DATABASE_URI
+
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -33,6 +38,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    config.set_main_option("sqlalchemy.url", settings.MAIN_SYNC_DATABASE_URI)
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -42,7 +48,6 @@ def run_migrations_online() -> None:
         context.configure(
             connection=connection, target_metadata=target_metadata
         )
-
         with context.begin_transaction():
             context.run_migrations()
 

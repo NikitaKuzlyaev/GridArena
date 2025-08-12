@@ -2,7 +2,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!
 
 ЗАПУСКАТЬ ИЗ ПАПКИ `backend`
-python setup\setup_alembic.py
+python setup\migrations\setup_alembic.py
 
 
 ИСПОЛЬЗОВАТЬ !ТОЛЬКО! ПРИ ИНИЦИАЛИЗАЦИИ НОВОГО ПРОЕКТА (КОГДЕ НЕТ БАЗЫ)
