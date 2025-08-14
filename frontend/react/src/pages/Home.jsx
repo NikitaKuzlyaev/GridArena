@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useApi } from '../hooks/useApi';
 import config from '../config';
+import { sendNotification } from '../components/NotificationFactory';
 
 function Home() {
   const [markdown, setMarkdown] = useState('');
@@ -36,6 +37,26 @@ function Home() {
 
   return (
     <div style={{ maxWidth: 700, margin: '32px auto' }}>
+      {/* Кнопка для теста уведомлений */}
+      {/* <button
+        onClick={() => sendNotification({
+          level: 'INFO',
+          content: 'Это тестовое уведомление!',
+          color: '#1677ff',
+        })}
+        style={{
+          marginBottom: 24,
+          padding: '10px 20px',
+          borderRadius: 8,
+          border: 'none',
+          background: '#1677ff',
+          color: '#fff',
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        Показать уведомление
+      </button> */}
       {/* Блок с информацией о контесте */}
       {contestantData && (
         <div style={{

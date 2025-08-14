@@ -11,6 +11,7 @@ import pinkGif from './pink-gif.gif';
 import pinkGif2 from './pink-gif-2.gif';
 import { useApi } from '../hooks/useApi';
 import Icon from '../components/Icon';
+import { sendNotification } from '../components/NotificationFactory';
 
 // Error Boundary для ReactMarkdown
 class MarkdownErrorBoundary extends React.Component {
@@ -586,12 +587,29 @@ function SolveContest() {
                           outlineOffset: '0px',
                         }}
                         onClick={async () => {
+                          const answer = answers[problem.selectedProblemId] || '';
+                          if (!answer.trim()) {
+                            sendNotification({
+                              level: 'WARNING',
+                              content: 'Ответ не может быть пустым!',
+                              color: '#f59e42',
+                            });
+                            return;
+                          }
+                          if (answer.length > 32) {
+                            sendNotification({
+                              level: 'WARNING',
+                              content: 'Ответ не должен превышать 32 символа!',
+                              color: '#f59e42',
+                            });
+                            return;
+                          }
                           try {
                             await makeRequest(`${config.backendUrl}api/v1/submission`, {
                               method: 'POST',
                               body: JSON.stringify({
                                 selected_problem_id: problem.selectedProblemId,
-                                answer: answers[problem.selectedProblemId] || ''
+                                answer,
                               }),
                             });
                             window.location.reload();

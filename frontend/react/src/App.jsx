@@ -16,6 +16,8 @@ import ContestStandings from './pages/ContestStandings';
 import ContestSubmissions from './pages/ContestSubmissions';
 import Logs from './pages/Logs.jsx';
 import './App.css';
+import { NotificationProvider } from './components/NotificationContext.jsx';
+import NotificationContainer from './components/NotificationContainer.jsx';
 
 function App() {
   useEffect(() => {
@@ -27,27 +29,30 @@ function App() {
     document.body.classList.add('font-' + font);
   }, []);
   return (
-    <BrowserRouter>
-      <div className="App">
-        <Header />
-        <div className="header-spacer" />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/my-contests" element={<MyContests />} />
-          <Route path="/create-contest" element={<CreateContest />} />
-          <Route path="/edit-contest/:contestId" element={<EditContest />} />
-          <Route path="/edit-field" element={<EditQuizField />} />
-          <Route path="/edit-contestants" element={<EditContestants />} />
-          <Route path="/edit-submissions" element={<EditSubmissions />} />
-          <Route path="/contest" element={<SolveContest />} />
-          <Route path="/standings" element={<ContestStandings />} />
-          <Route path="/submissions" element={<ContestSubmissions />} />
-          <Route path="/contest/my/logs" element={<Logs />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+    <NotificationProvider>
+      <BrowserRouter>
+        <div className="App">
+          <Header />
+          <div className="header-spacer" />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/my-contests" element={<MyContests />} />
+            <Route path="/create-contest" element={<CreateContest />} />
+            <Route path="/edit-contest/:contestId" element={<EditContest />} />
+            <Route path="/edit-field" element={<EditQuizField />} />
+            <Route path="/edit-contestants" element={<EditContestants />} />
+            <Route path="/edit-submissions" element={<EditSubmissions />} />
+            <Route path="/contest" element={<SolveContest />} />
+            <Route path="/standings" element={<ContestStandings />} />
+            <Route path="/submissions" element={<ContestSubmissions />} />
+            <Route path="/contest/my/logs" element={<Logs />} />
+          </Routes>
+          <NotificationContainer />
+        </div>
+      </BrowserRouter>
+    </NotificationProvider>
   );
 }
 
