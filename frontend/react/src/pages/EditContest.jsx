@@ -19,6 +19,26 @@ function EditContest() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Валидация полей
+  const validate = (form) => {
+    const errors = {};
+    if (form.name.length < 1 || form.name.length > 256) {
+      errors.name = 'Название должно содержать от 1 до 256 символов';
+    }
+    const startPoints = Number(form.start_points);
+    if (isNaN(startPoints) || startPoints < 0 || startPoints > 10000) {
+      errors.start_points = 'Стартовый баланс должен быть от 0 до 10000';
+    }
+    const slots = Number(form.number_of_slots_for_problems);
+    if (isNaN(slots) || slots < 1 || slots > 5) {
+      errors.number_of_slots_for_problems = 'Число задач должно быть от 1 до 5';
+    }
+    return errors;
+  };
+
+  const errors = validate(form);
+  const isFormValid = Object.keys(errors).length === 0;
+
   useEffect(() => {
     const fetchContestData = async () => {
       try {
@@ -121,17 +141,61 @@ function EditContest() {
       <div style={{ maxWidth: 600, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.08)' }}>
         <h1 style={{ textAlign: 'center' }}>Редактирование контеста</h1>
         <form style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }} onSubmit={handleSubmit}>
-          <label>
+          <label style={{ marginBottom: 0 }}>
             Название:
-            <input name="name" type="text" maxLength={256} required value={form.name} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
+            <input
+              name="name"
+              type="text"
+              maxLength={256}
+              required
+              value={form.name}
+              onChange={handleChange}
+              style={{
+                width: '100%', marginTop: 4, padding: 8,
+                border: errors.name ? '1.5px solid #e53935' : undefined
+              }}
+            />
+            <div style={{ fontSize: 12, color: errors.name ? '#e53935' : '#888', minHeight: 12 }}>
+              {'Строка длиной от 1 до 256 символов'}
+            </div>
           </label>
-          <label>
+          <label style={{ marginBottom: 0 }}>
             Стартовый баланс:
-            <input name="start_points" type="number" min={0} max={10000} required value={form.start_points} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
+            <input
+              name="start_points"
+              type="number"
+              min={0}
+              max={10000}
+              required
+              value={form.start_points}
+              onChange={handleChange}
+              style={{
+                width: '100%', marginTop: 4, padding: 8,
+                border: errors.start_points ? '1.5px solid #e53935' : undefined
+              }}
+            />
+            <div style={{ fontSize: 12, color: errors.start_points ? '#e53935' : '#888', minHeight: 12 }}>
+              {'Целое число от 0 до 10000'}
+            </div>
           </label>
-          <label>
+          <label style={{ marginBottom: 0 }}>
             Сколько задач разрешено держать одновременно (1–5):
-            <input name="number_of_slots_for_problems" type="number" min={1} max={5} required value={form.number_of_slots_for_problems} onChange={handleChange} style={{ width: '100%', marginTop: 4, padding: 8 }} />
+            <input
+              name="number_of_slots_for_problems"
+              type="number"
+              min={1}
+              max={5}
+              required
+              value={form.number_of_slots_for_problems}
+              onChange={handleChange}
+              style={{
+                width: '100%', marginTop: 4, padding: 8,
+                border: errors.number_of_slots_for_problems ? '1.5px solid #e53935' : undefined
+              }}
+            />
+            <div style={{ fontSize: 12, color: errors.number_of_slots_for_problems ? '#e53935' : '#888', minHeight: 12 }}>
+              {'Целое число от 1 до 5'}
+            </div>
           </label>
           <label>
             Начало:
@@ -156,7 +220,7 @@ function EditContest() {
             />
             Разрешить отрицательный баланс у участника
           </label>
-          <button type="submit" style={{ padding: 10, background: '#61dafb', color: '#282c34', border: 'none', borderRadius: 4, fontWeight: 500, marginTop: 12 }} disabled={loading}>
+          <button type="submit" style={{ padding: 10, background: '#61dafb', color: '#282c34', border: 'none', borderRadius: 4, fontWeight: 500, marginTop: 12, opacity: isFormValid && !loading ? 1 : 0.6 }} disabled={!isFormValid || loading}>
             {loading ? 'Сохранение...' : 'Сохранить'}
           </button>
         </form>

@@ -13,7 +13,7 @@ from backend.core.utilities.server import get_server_time
 
 
 class ContestCreateRequest(BaseSchemaModel):
-    name: str = Field(..., max_length=256)
+    name: str = Field(..., min_length=1, max_length=256)
     started_at: datetime
     closed_at: datetime
     start_points: int = Field(
