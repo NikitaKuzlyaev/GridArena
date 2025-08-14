@@ -38,6 +38,39 @@ class MarkdownErrorBoundary extends React.Component {
   }
 }
 
+function TimeAgo({ createdAt, currentTime }) {
+  const created = new Date(createdAt);
+  const now = new Date(currentTime);
+  const diffMs = now - created;
+
+  const seconds = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  let text = '';
+  if (seconds < 60) {
+    text = `${seconds} ${seconds === 1 ? 'секунду' : seconds < 5 ? 'секунды' : 'секунд'} назад`;
+  } else if (minutes < 60) {
+    text = `${minutes} ${minutes === 1 ? 'минуту' : minutes < 5 ? 'минуты' : 'минут'} назад`;
+  } else if (hours < 24) {
+    const remainingMinutes = minutes % 60;
+    if (remainingMinutes === 0) {
+      text = `${hours} ${hours === 1 ? 'час' : hours < 5 ? 'часа' : 'часов'} назад`;
+    } else {
+      text = `${hours} ${hours === 1 ? 'час' : hours < 5 ? 'часа' : 'часов'} ${remainingMinutes} ${remainingMinutes === 1 ? 'минуту' : remainingMinutes < 5 ? 'минуты' : 'минут'} назад`;
+    }
+  } else {
+    text = `${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'} назад`;
+  }
+
+  return (
+    <span style={{ color: '#888', marginLeft: 8, fontSize: 12 }}>
+      ({text})
+    </span>
+  );
+}
+
 function SolveContest() {
   const [searchParams] = useSearchParams();
   const contestId = searchParams.get('contest_id');
@@ -532,6 +565,7 @@ function SolveContest() {
                         </div>
                         <div style={{ fontWeight: 400, color: '#555', fontSize: 13 }}>
                           {new Date(problem.createdAt).toLocaleString()}
+                          <TimeAgo createdAt={problem.createdAt} currentTime={currentTime} />
                         </div>
                       </div>
                                               {myProblemsRuleType === 'DEFAULT' && myProblemsMaxAttempts && (
