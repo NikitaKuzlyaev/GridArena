@@ -53,7 +53,45 @@ A lightweight and fast online platform for hosting intellectual competitions in 
 
 
 ### Preview (participant’s view of the competition page)
-![Image](https://github.com/NikitaKuzlyaev/quiz/blob/master/git-staff/pick2.jpg?raw=true)
+![Image](https://github.com/NikitaKuzlyaev/GridArena/blob/master/git-staff/contest-solving.png?raw=true)
+
+### Other images:
+<details>
+  <summary>Authorization page</summary>
+  
+![Image](https://github.com/NikitaKuzlyaev/GridArena/blob/master/git-staff/auth.png?raw=true)
+
+</details>
+
+<details>
+  <summary>Contest log page (view by contestant)</summary>
+  
+![Image](https://github.com/NikitaKuzlyaev/GridArena/blob/master/git-staff/logs.png?raw=true)
+
+</details>
+
+<details>
+  <summary>Contest field editing page (view by manager)</summary>
+  
+![Image](https://github.com/NikitaKuzlyaev/GridArena/blob/master/git-staff/field-custom.png?raw=true)
+
+</details>
+
+<details>
+  <summary>Contest submissions page (view by contestant)</summary>
+  
+![Image](https://github.com/NikitaKuzlyaev/GridArena/blob/master/git-staff/submissions.png?raw=true)
+
+</details>
+
+<details>
+  <summary>Contest standing page (view by contestant)</summary>
+  
+![Image](https://github.com/NikitaKuzlyaev/GridArena/blob/master/git-staff/standings.png?raw=true)
+
+</details>
+
+And it's not all pages and vigets.
 
 ## 🧑‍🏫 Who Is It For?
 
