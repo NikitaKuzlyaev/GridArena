@@ -1,7 +1,7 @@
 Привет!
 
 Инструкция по развертыванию проекта. 
-В качестве примера использовалась ВМ с YandexCloud с ОС Ubuntu-24.
+В качестве примера использовалась ВМ YandexCloud с ОС Ubuntu-24.
 
 1) Допустим, что машина запущена и мы к ней подключились в терминале через ssh.
 
@@ -12,13 +12,13 @@ cd GridArena
 ```
 
 3) Теперь поработаем с конфигурацией.
-   * Перейдите в *backend/configuration/settings.py* и убедитесь, что тип установлена среда "DEVELOPMENT":
+   * Перейдите в *backend/configuration/settings.py* и убедитесь, что установлена среда "PRODUCTION":
     
-   ```current_environment = Environment.DEVELOPMENT```
+   ```current_environment = Environment.PRODUCTION```
 
-    * Проверьте *backend/configuration/.env.development* и убедитесь, что он вас устраивает. 
+    * Проверьте конфиг *backend/configuration/.env.production* и убедитесь, что он вас устраивает. 
    По желанию вы можете менять любые параметры и ключи.
-    * Откройте *frontend/react/src/config.js* и укажите реальный адрес на котором расположен backend. 
+    * Откройте конфиг *frontend/react/src/config.js* и укажите реальный адрес на котором расположен backend. 
    В текущей реализации frontend и backend на одном сервере и адресе, например, если публичный ip адрес машины *158.160.135.116*, то
    укажите ```'http://158.160.135.116:80/'``` (у вас может быть другой порт и протокол!)
 
