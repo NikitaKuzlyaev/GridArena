@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   root: '.', // корень — папка с index.html и package.json (frontend)
-  base: './', // чтобы пути к ресурсам были относительными
+  base: '/', // фикс бага на проде
   plugins: [react()],
   resolve: {
     alias: {
