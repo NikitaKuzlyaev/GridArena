@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   nginx:
     build:
@@ -33,7 +31,7 @@ services:
     image: postgres:17
     container_name: postgres
     ports:
-      - "5433:5432" # Внимание! Порт 5433 для отладки (подключения с локального компьютера, не мешая основной postgres)
+      - "5432:5432"
     environment:
       POSTGRES_DB: quiz
       POSTGRES_USER: postgres
